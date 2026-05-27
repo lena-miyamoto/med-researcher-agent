@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This repo is for the Medical DB workflow under `./med-db/`.
+This repo contains reusable medical research agent configuration and the local Medical DB workflow under `./med-db/`.
 
 ## Shared
 
@@ -10,11 +10,8 @@ This repo is for the Medical DB workflow under `./med-db/`.
 ## Medical DB (`./med-db/`)
 
 - Use for medical, nutritional, or endometriosis literature collection and evidence summaries.
-- The Python scripts live in `.agents/scripts/` and must be run from the repo root with Python `>= 3.12`. Later references omit the path and interpreter prefix for brevity.
-- Treat `./med-db` as the local archive; create it if missing and keep every used search result, abstract, metadata record, and source page updated.
-- Use NCBI E-utilities or `pubmed-med-db.py`, not PubMed HTML, as the primary PubMed workflow.
-- Prefer formal evidence over general summaries; do not use mechanistic, animal, or risk-association studies as treatment evidence.
-- Before concluding, rerun the exact machine-readable search and record query, access date, PMID, DOI, journal, and study type.
-- If full text is blocked, summarize only what is supported by abstract, metadata, PMC, or accessible supplements.
-- Use cautious wording, avoid turning absence of evidence into harm, and name important evidence limits.
-- Use `pubmed-med-db.py` for archiving and `med-db-validate.py` for archive validation.
+- Canonical PubMed archival command: `pubmed-med-db.py --query '...' --archive-first N --validate`.
+- Canonical PMID archival command: `pubmed-med-db.py --pmid 12345678 --pmid 23456789 --validate`.
+- Canonical validation command: `med-db-validate.py --med-db med-db`.
+- Repository-wide onboarding for GitHub Copilot lives in `.github/copilot-instructions.md`.
+- Detailed medical-research behavior belongs in the dedicated med-researcher agent definitions under `.github/agents/med-researcher.agent.md` and `.claude/agents/med-researcher.md`.

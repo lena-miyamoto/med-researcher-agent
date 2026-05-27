@@ -1,7 +1,6 @@
 @AGENTS.md
-@.agents/med-researcher.instructions.md
 
-<!-- Maintainer note: keep reusable med-researcher workflow text in .agents/ and update wrappers only when platform-specific frontmatter or invocation details change. -->
+<!-- Maintainer note: keep this file small and route specialized behavior into dedicated Claude subagents. -->
 
 ## Claude Code
 
