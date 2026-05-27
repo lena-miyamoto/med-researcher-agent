@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import datetime
+import html
 import json
 import re
 import subprocess
@@ -15,6 +16,11 @@ from pathlib import Path
 EUTILS_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 EUROPE_PMC_BASE = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 GOOGLE_SCHOLAR_BASE = "https://scholar.google.com/scholar"
+DOAJ_ARTICLES_BASE = "https://doaj.org/search/articles"
+OPEN_SCIENCE_DIRECTORY_BASE = "https://opensciencedirectory.net/"
+FREE_MEDICAL_JOURNALS_BASE = "http://www.freemedicaljournals.com/"
+OPENMD_BASE = "https://openmd.com/"
+TRIP_DATABASE_BASE = "https://www.tripdatabase.com/Searchresult"
 USER_AGENT = (
 	"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
 	"(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
@@ -84,6 +90,11 @@ def source_label(source_name):
 		"pubmed": "PubMed",
 		"europe-pmc": "Europe PMC",
 		"google-scholar": "Google Scholar",
+		"doaj": "Directory of Open Access Journals",
+		"open-science-directory": "Open Science Directory",
+		"free-medical-journals": "Free Medical Journals",
+		"openmd": "OpenMD",
+		"trip-database": "Trip Database",
 	}
 	return labels.get(source_name, source_name)
 
@@ -94,6 +105,65 @@ def europe_pmc_article_url(source_name, record_id):
 
 def build_google_scholar_url(query):
 	return f"{GOOGLE_SCHOLAR_BASE}?{urllib.parse.urlencode({'q': query, 'hl': 'en'})}"
+
+
+def build_doaj_url(query):
+	payload = {
+		"query": {
+			"multi_match": {
+				"query": query,
+				"operator": "and",
+			}
+		},
+		"size": 10,
+		"track_total_hits": True,
+	}
+	params = {
+		"ref": "homepage",
+		"source": json.dumps(payload, separators=(",", ":")),
+	}
+	return f"{DOAJ_ARTICLES_BASE}?{urllib.parse.urlencode(params)}"
+
+
+def build_trip_database_url(query):
+	return f"{TRIP_DATABASE_BASE}?{urllib.parse.urlencode({'criteria': query, 'search_type': 'standard'})}"
+
+
+WEB_SOURCE_SPECS = {
+	"google-scholar": {
+		"label": "Google Scholar",
+		"filename_prefix": "google-scholar",
+		"landing_url": GOOGLE_SCHOLAR_BASE,
+		"query_url_builder": build_google_scholar_url,
+	},
+	"doaj": {
+		"label": "Directory of Open Access Journals",
+		"filename_prefix": "doaj",
+		"landing_url": DOAJ_ARTICLES_BASE,
+		"query_url_builder": build_doaj_url,
+	},
+	"open-science-directory": {
+		"label": "Open Science Directory",
+		"filename_prefix": "open-science-directory",
+		"landing_url": OPEN_SCIENCE_DIRECTORY_BASE,
+	},
+	"free-medical-journals": {
+		"label": "Free Medical Journals",
+		"filename_prefix": "free-medical-journals",
+		"landing_url": FREE_MEDICAL_JOURNALS_BASE,
+	},
+	"openmd": {
+		"label": "OpenMD",
+		"filename_prefix": "openmd",
+		"landing_url": OPENMD_BASE,
+	},
+	"trip-database": {
+		"label": "Trip Database",
+		"filename_prefix": "trip-database",
+		"landing_url": TRIP_DATABASE_BASE,
+		"query_url_builder": build_trip_database_url,
+	},
+}
 
 
 def load_existing_readme_entries(readme_path):
@@ -236,7 +306,7 @@ def sync_readme(med_db, search_updates, paper_updates, web_updates=None):
 		"",
 		f"Collected search results, metadata, abstracts, and archived web sources. Saved on {today}.",
 		"",
-		"Sources: PubMed via NCBI E-utilities, Europe PMC via the REST API, and archived web sources such as Google Scholar search definitions.",
+		"Sources: PubMed via NCBI E-utilities, Europe PMC via the REST API, and archived web discovery sources such as Google Scholar, DOAJ, Open Science Directory, Free Medical Journals, OpenMD, and Trip Database.",
 		"",
 		"Note: this archive prefers machine-readable search results and greppable abstract text over brittle HTML scraping.",
 		"",
@@ -285,7 +355,7 @@ def sync_readme(med_db, search_updates, paper_updates, web_updates=None):
 		"- For cited records, read both `metadata/` and `abstracts/` before summarizing.",
 		"- Distinguish study types when evidence conflicts: risk, therapy, biomarker, and animal model are not interchangeable.",
 		"- When new structured records are archived, keep both `metadata/*.json` and `abstracts/*.txt` in sync.",
-		"- Use Google Scholar as a discovery surface in this workflow; archive reproducible query pages or downstream accessible sources in `web/` rather than relying on fragile structured scraping.",
+		"- Use Google Scholar and other web discovery sources in this workflow; archive reproducible query pages when available, otherwise archive source landing pages with the saved query text in `web/` rather than relying on fragile structured scraping.",
 	])
 	readme_path.write_text("\n".join(content) + "\n", encoding="utf-8")
 
@@ -399,31 +469,45 @@ def archive_europe_pmc_record(med_db, record_spec):
 	return metadata_file, abstract_file, title, f"{source_name}:{record_id}", europe_pmc_article_url(source_name, record_id)
 
 
-def archive_google_scholar_query(args, med_db):
-	query_url = build_google_scholar_url(args.query)
+def archive_web_query(args, med_db):
+	spec = WEB_SOURCE_SPECS[args.source]
+	query_url_builder = spec.get("query_url_builder")
+	target_url = query_url_builder(args.query) if query_url_builder else spec["landing_url"]
 	web_dir = med_db / "web"
 	web_dir.mkdir(parents=True, exist_ok=True)
-	search_slug = args.search_slug or slugify(args.query, fallback="google-scholar-search")
-	web_file = web_dir / f"google-scholar-{search_slug}.html"
+	search_slug = args.search_slug or slugify(args.query, fallback=f"{spec['filename_prefix']}-search")
+	web_file = web_dir / f"{spec['filename_prefix']}-{search_slug}.html"
 	today = datetime.date.today().isoformat()
-	html = "\n".join([
+	if query_url_builder:
+		archive_note = (
+			f"This file archives a reproducible {spec['label']} search URL for discovery use in the med-db workflow."
+		)
+		link_label = f"Open this {spec['label']} query"
+	else:
+		archive_note = (
+			"This source does not expose a stable public query URL in this workflow. "
+			"This file preserves the query text together with the source landing page used for manual lookup."
+		)
+		link_label = f"Open the {spec['label']} search entry"
+	html_body = "\n".join([
 		"<!doctype html>",
 		"<html lang=\"en\">",
 		"<head>",
 		"  <meta charset=\"utf-8\">",
-		f"  <title>Google Scholar query archive: {args.query}</title>",
+		f"  <title>{spec['label']} query archive: {html.escape(args.query)}</title>",
 		"</head>",
 		"<body>",
-		"  <h1>Google Scholar Query Archive</h1>",
-		f"  <p><strong>Query:</strong> {args.query}</p>",
+		f"  <h1>{spec['label']} Query Archive</h1>",
+		f"  <p><strong>Source:</strong> {spec['label']}</p>",
+		f"  <p><strong>Query:</strong> {html.escape(args.query)}</p>",
 		f"  <p><strong>Access date:</strong> {today}</p>",
-		"  <p>This file archives a reproducible Google Scholar search URL for discovery use in the med-db workflow.</p>",
-		f"  <p><a href=\"{query_url}\">Open this Google Scholar query</a></p>",
+		f"  <p>{archive_note}</p>",
+		f"  <p><a href=\"{target_url}\">{link_label}</a></p>",
 		"</body>",
 		"</html>",
 	])
-	save_text(web_file, html + "\n")
-	return web_file, query_url
+	save_text(web_file, html_body + "\n")
+	return web_file, target_url
 
 
 def dedupe(values):
@@ -452,11 +536,11 @@ def run_validator(med_db):
 
 def parse_args():
 	parser = argparse.ArgumentParser(
-		description="Archive PubMed or Europe PMC searches, structured literature records, and Google Scholar query definitions into the local med-db schema.",
+		description="Archive PubMed or Europe PMC searches, structured literature records, and source-specific web discovery queries into the local med-db schema.",
 	)
 	parser.add_argument(
 		"--source",
-		choices=("pubmed", "europe-pmc", "google-scholar"),
+		choices=("pubmed", "europe-pmc") + tuple(WEB_SOURCE_SPECS),
 		default="pubmed",
 		help="Primary source for the current run. Defaults to pubmed.",
 	)
@@ -484,7 +568,7 @@ def parse_args():
 		"--retmax",
 		type=int,
 		default=20,
-		help="How many PubMed hits to request for the archived search JSON.",
+		help="How many machine-readable hits to request for the archived search JSON.",
 	)
 	parser.add_argument(
 		"--med-db",
@@ -517,8 +601,8 @@ def parse_args():
 		parser.error("--archive-first must be >= 0")
 	if args.archive_first and not args.query:
 		parser.error("--archive-first requires --query")
-	if args.source == "google-scholar" and args.archive_first:
-		parser.error("--archive-first is not supported with --source google-scholar")
+	if args.source in WEB_SOURCE_SPECS and args.archive_first:
+		parser.error("--archive-first is not supported with web discovery sources")
 	if args.retmax < 1:
 		parser.error("--retmax must be >= 1")
 	return args
@@ -537,8 +621,8 @@ def main():
 	pmids = list(args.pmid)
 	epmc_records = list(args.epmc_record)
 	if args.query:
-		if args.source == "google-scholar":
-			web_file, query_url = archive_google_scholar_query(args, med_db)
+		if args.source in WEB_SOURCE_SPECS:
+			web_file, query_url = archive_web_query(args, med_db)
 			web_updates[web_file.name] = {
 				"url": query_url,
 				"purpose": DEFAULT_WEB_PURPOSE,

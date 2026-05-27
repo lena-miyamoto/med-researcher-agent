@@ -24,7 +24,7 @@ This repository contains reusable medical-research agent configuration plus the 
 - Do not treat mechanistic, animal, or risk-association studies as treatment evidence.
 - Use NCBI E-utilities or the local archival script for PubMed, Europe PMC, and archived web-source workflows instead of PubMed HTML.
 - Use Europe PMC as a second structured literature source when it adds relevant coverage, especially for preprints, full-text-linked records, or citation-network exploration.
-- Use Google Scholar as a broader discovery surface and archive reproducible query pages or downstream accessible sources under `web/` instead of relying on brittle structured scraping.
+- Use Google Scholar and the supported open-access web discovery sources as broader discovery surfaces; archive reproducible query pages when available or source landing pages with saved query text under `web/` instead of relying on brittle structured scraping.
 - If full text is blocked, summarize only what is supported by abstracts, metadata, PMC, or accessible supplements.
 - Use cautious wording and do not turn absence of evidence into harm.
 
