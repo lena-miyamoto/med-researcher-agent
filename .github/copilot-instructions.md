@@ -22,7 +22,9 @@ This repository contains reusable medical-research agent configuration plus the 
 
 - Prefer formal evidence over general summaries: guidelines, systematic reviews or meta-analyses, randomized trials, then observational studies.
 - Do not treat mechanistic, animal, or risk-association studies as treatment evidence.
-- Use NCBI E-utilities or the local PubMed archival script instead of PubMed HTML as the primary PubMed workflow.
+- Use NCBI E-utilities or the local archival script for PubMed, Europe PMC, and archived web-source workflows instead of PubMed HTML.
+- Use Europe PMC as a second structured literature source when it adds relevant coverage, especially for preprints, full-text-linked records, or citation-network exploration.
+- Use Google Scholar as a broader discovery surface and archive reproducible query pages or downstream accessible sources under `web/` instead of relying on brittle structured scraping.
 - If full text is blocked, summarize only what is supported by abstracts, metadata, PMC, or accessible supplements.
 - Use cautious wording and do not turn absence of evidence into harm.
 

@@ -6,6 +6,12 @@ import sys
 from pathlib import Path
 
 
+def slugify(text):
+	text = str(text).lower()
+	text = re.sub(r"[^a-z0-9]+", "-", text).strip("-")
+	return text or "record"
+
+
 def parse_args():
 	parser = argparse.ArgumentParser(
 		description="Validate the local med-db structure and index consistency.",
@@ -53,13 +59,25 @@ def validate_search_json(root, issues):
 		except json.JSONDecodeError as error:
 			issues.append(f"invalid search json: {path.name}: {error}")
 			continue
-		if data.get("header", {}).get("type") != "esearch":
-			issues.append(f"unexpected search header type: {path.name}")
-		result = data.get("esearchresult", {})
-		if "idlist" not in result:
-			issues.append(f"missing search idlist: {path.name}")
-		if "querytranslation" not in result:
-			issues.append(f"missing search querytranslation: {path.name}")
+
+		pubmed_result = data.get("esearchresult", {})
+		if data.get("header", {}).get("type") == "esearch" and pubmed_result:
+			if "idlist" not in pubmed_result:
+				issues.append(f"missing search idlist: {path.name}")
+			if "querytranslation" not in pubmed_result:
+				issues.append(f"missing search querytranslation: {path.name}")
+			continue
+
+		europe_pmc_request = data.get("request", {})
+		europe_pmc_results = data.get("resultList", {})
+		if europe_pmc_request and europe_pmc_results is not None:
+			if not europe_pmc_request.get("queryString"):
+				issues.append(f"missing Europe PMC queryString: {path.name}")
+			if "result" not in europe_pmc_results:
+				issues.append(f"missing Europe PMC result list: {path.name}")
+			continue
+
+		issues.append(f"unrecognized search json format: {path.name}")
 
 	if actual_numbers:
 		expected_numbers = list(range(1, len(actual_numbers) + 1))
@@ -86,21 +104,40 @@ def validate_metadata_and_abstracts(root, issues):
 	for name in metadata_files:
 		path = metadata_dir / name
 		match = re.match(r"pmid-(\d+)-.+\.json$", name)
-		if not match:
-			issues.append(f"bad metadata filename: {name}")
-			continue
-		expected_pmid = match.group(1)
 		try:
 			data = json.loads(read_text(path))
 		except json.JSONDecodeError as error:
 			issues.append(f"invalid metadata json: {name}: {error}")
 			continue
-		uids = data.get("result", {}).get("uids", [])
-		if len(uids) != 1:
-			issues.append(f"unexpected uid count in metadata: {name}")
+
+		if match:
+			expected_pmid = match.group(1)
+			uids = data.get("result", {}).get("uids", [])
+			if len(uids) != 1:
+				issues.append(f"unexpected uid count in metadata: {name}")
+				continue
+			if uids[0] != expected_pmid:
+				issues.append(f"pmid mismatch in metadata: {name}: expected {expected_pmid}, got {uids[0]}")
 			continue
-		if uids[0] != expected_pmid:
-			issues.append(f"pmid mismatch in metadata: {name}: expected {expected_pmid}, got {uids[0]}")
+
+		epmc_match = re.match(r"epmc-([a-z0-9]+)-([a-z0-9]+)-.+\.json$", name)
+		if not epmc_match:
+			issues.append(f"bad metadata filename: {name}")
+			continue
+
+		expected_source = epmc_match.group(1).upper()
+		expected_id_slug = epmc_match.group(2)
+		results = data.get("resultList", {}).get("result", [])
+		if len(results) != 1:
+			issues.append(f"unexpected Europe PMC result count in metadata: {name}")
+			continue
+		record = results[0]
+		source_name = str(record.get("source") or "").upper()
+		record_id = str(record.get("id") or record.get("pmid") or "")
+		if source_name != expected_source:
+			issues.append(f"Europe PMC source mismatch in metadata: {name}: expected {expected_source}, got {source_name}")
+		if slugify(record_id) != expected_id_slug:
+			issues.append(f"Europe PMC id mismatch in metadata: {name}: expected slug {expected_id_slug}, got {slugify(record_id)}")
 
 	for name in abstract_files:
 		path = abstracts_dir / name
@@ -132,7 +169,7 @@ def validate_readme_index(root, issues):
 	actual_web = collect_files(root / "web", "*.html")
 
 	readme_searches = sorted(re.findall(r"\| searches/(s\d{2}-[^|`]+\.json) \|", content))
-	readme_pairs = sorted(re.findall(r"`(pmid-\d+-[^`]+)\.\{json,txt\}`", content))
+	readme_pairs = sorted(re.findall(r"`([^`]+)\.\{json,txt\}`", content))
 	readme_web = sorted(re.findall(r"\| web/([^|` ]+\.html) \|", content))
 
 	expected_metadata = sorted(f"{stem}.json" for stem in readme_pairs)

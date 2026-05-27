@@ -2,6 +2,8 @@
 
 Reusable medical research agent configuration for both GitHub Copilot and Claude Code.
 
+The repository includes a local `med-db/` workflow that can archive structured literature data from PubMed and Europe PMC, plus reproducible discovery pages for broader sources such as Google Scholar.
+
 ## Agent Files
 
 - GitHub Copilot repository instructions: `.github/copilot-instructions.md`

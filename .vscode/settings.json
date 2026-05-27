@@ -222,7 +222,7 @@
     "Invoke-Expression": false,
 
     // ── Project-specific allow-list ──
-    "/^python3 .agents/scripts/pubmed-med-db.py .+$/": true,
+    "/^python3 .agents/scripts/med-db.py .+$/": true,
     "/^python3 .agents/scripts/med-db-validate.py .+$/": true
   },
   "chat.tools.terminal.blockDetectedFileWrites": "all",
