@@ -17,9 +17,19 @@ The repository includes a local `med-db/` workflow that can archive structured l
 - `.github/copilot-instructions.md` contains GitHub Copilot repository onboarding.
 - `.github/agents/med-researcher.agent.md` contains the Copilot-specific med-research agent prompt.
 - `.claude/agents/med-researcher.md` contains the Claude Code med-research subagent prompt.
+- `.agents/skills/` contains shared cross-harness skill procedures.
+- `.github/skills/` and `.claude/skills/` contain thin harness-specific skill wrappers.
 - `.agents/scripts/` contains the local archive tooling used by both agent variants.
 
 Specialized workflow text lives in the documented agent surfaces for each runtime.
+
+## Skill Surfaces
+
+This repo also exposes shared repo-maintenance skills:
+
+- `create-med-skill`: creates a new shared skill with `.agents` source-of-truth plus `.github` and `.claude` wrappers
+- `create-med-agent`: creates a new paired Copilot and Claude agent that stays aligned with repo conventions
+- `optimize`: audits and cleans up repo customization files to remove redundancy and restore a clear source of truth
 
 ## Agent Differences
 
