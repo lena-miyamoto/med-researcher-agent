@@ -11,65 +11,40 @@ This shared skill file is the cross-harness source of truth for creating new rep
 
 ## When to Use
 
-- The user wants to add a new skill to this repository.
-- The new skill must be available through both Copilot and Claude.
-- The new skill should follow this repo's established shared-skill convention: one shared skill file plus thin harness wrappers.
+- User wants to add a skill available through both Copilot and Claude.
+- New skill follows the repo convention: one shared file plus thin harness wrappers.
+- If the request is really a custom agent, stop and route to `create-med-agent`.
 
 ## Procedure
 
-1. Clarify the new skill contract before writing files:
-   - Confirm the skill name in lowercase kebab-case.
-   - Confirm what the skill should accomplish and when it should be used.
-   - Capture the discovery description, optional argument hint, and whether `user-invocable` should remain true.
-   - If the request is actually for a custom agent rather than a skill, stop and route to `create-med-agent` instead of guessing.
-2. Create the shared source-of-truth file at `.agents/skills/<name>/SKILL.md`:
-   - The frontmatter `name` must match the folder name exactly.
-   - The `description` must be keyword-rich and specific enough for discovery.
-   - Keep the body self-contained for the procedure, writing rules, validation, and output format.
-   - Prefer the same section structure used in this repo's shared skills: `When to Use`, `Procedure`, `Writing Rules` when needed, `Validation`, and `Output`.
-3. Create the Copilot wrapper at `.github/skills/<name>/SKILL.md`:
-   - Keep the same frontmatter discovery fields as the shared skill when practical.
-   - Keep the body minimal.
-   - Point explicitly to `.agents/skills/<name>/SKILL.md` as the source of truth.
-4. Create the Claude wrapper at `.claude/skills/<name>/SKILL.md`:
-   - Keep the same `name`, description, and argument hint semantics as the shared skill.
-   - Keep the body minimal.
-   - Point explicitly to `.agents/skills/<name>/SKILL.md` as the source of truth.
-   - Mention `CLAUDE.md` and `AGENTS.md` only when needed for harness context.
-5. Keep stable workflow in shared files, not wrappers:
-   - Do not duplicate the procedure across `.agents`, `.github`, and `.claude`.
-   - Put long-lived workflow knowledge in `.agents/skills/<name>/SKILL.md`.
-   - Keep wrappers limited to discovery and redirection.
-6. Adapt the new skill to this repo's medical-research conventions when needed:
-   - Medical-research workflow, archive rules, and evidence standards belong in `AGENTS.md` and the `med-researcher` agents, not in generic wrappers.
-   - If a new skill depends on repo tooling, prefer the existing helper scripts in `.agents/scripts/` and the `med-db/` workflow instead of inventing parallel tooling.
-7. Update routing or repo docs only when the new skill changes discoverability or should be advertised:
-   - Update `README.md` when the new skill should be visible in repo surface docs.
-   - Update `CLAUDE.md` or `.github/copilot-instructions.md` only when routing boundaries need to mention the new skill.
-   - Avoid incidental doc churn when the new skill is internal-only.
+1. Clarify contract: lowercase kebab-case name, what it does and when to use, discovery description, optional argument hint, `user-invocable` value.
+2. Write the shared source of truth at `.agents/skills/<name>/SKILL.md`:
+   - Frontmatter `name` matches folder; `description` is keyword-rich.
+   - Body is self-contained. Use sections: `When to Use`, `Procedure`, `Writing Rules` (when needed), `Validation`, `Output`.
+3. Write the Copilot wrapper at `.github/skills/<name>/SKILL.md`: mirror discovery frontmatter, point body at the shared file.
+4. Write the Claude wrapper at `.claude/skills/<name>/SKILL.md`: same as Copilot wrapper, but reference `CLAUDE.md` and `AGENTS.md` when harness context helps.
+5. Never duplicate procedure across `.agents`, `.github`, `.claude`. Wrappers only discover and redirect.
+6. Reuse repo tooling: `.agents/scripts/` and the `med-db/` workflow. Keep medical-research workflow in `AGENTS.md` and the `med-researcher` agents, not in generic skills.
+7. Update `README.md` only if the skill should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md` only when routing boundaries change.
 
 ## Writing Rules
 
-- Use ASCII unless the file already needs non-ASCII content.
-- Keep skill descriptions concrete and keyword-rich.
-- Keep wrappers short; the shared file should carry the real workflow.
-- Match the repo's existing tone: direct, procedural, and low on repetition.
-- Do not invent a second source of truth outside `.agents/skills/<name>/SKILL.md`.
+- ASCII unless the file already needs non-ASCII.
+- Descriptions concrete and keyword-rich.
+- Direct, procedural tone. No padding.
+- Single source of truth: `.agents/skills/<name>/SKILL.md`.
 
 ## Validation
 
-1. Confirm the new skill exists in all three locations:
-   - `.agents/skills/<name>/SKILL.md`
-   - `.github/skills/<name>/SKILL.md`
-   - `.claude/skills/<name>/SKILL.md`
-2. Confirm frontmatter parses cleanly in all three files.
-3. Confirm the shared file contains the substantive procedure and the wrappers do not duplicate it.
-4. Confirm the wrapper bodies reference the shared file path exactly.
-5. Run markdown diagnostics on every changed instruction file.
-6. If repo docs were updated, confirm their references match the created paths.
+1. All three files exist: `.agents/`, `.github/`, `.claude/` `skills/<name>/SKILL.md`.
+2. Frontmatter parses in each.
+3. Shared file holds the procedure; wrappers do not duplicate it.
+4. Wrapper bodies cite the shared file path exactly.
+5. Markdown diagnostics clean on every changed file.
+6. Repo doc references match created paths.
 
 ## Output
 
-- State which skill files were created or updated.
-- State whether any repo docs or routing files were updated.
-- Call out any unresolved ambiguity that the user still needs to decide.
+- Files created or updated.
+- Repo doc or routing changes, if any.
+- Unresolved decisions left to the user.
