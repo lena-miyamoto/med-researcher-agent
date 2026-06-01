@@ -24,4 +24,4 @@ This repo contains reusable medical research agent configuration and the local M
 - Detailed medical-research behavior belongs in the dedicated med-researcher agent definitions under `.github/agents/med-researcher.agent.md` and `.claude/agents/med-researcher.md`.
 - Detailed shared-skill creation behavior belongs in `.agents/skills/create-med-skill/SKILL.md`; harness-specific skill wrappers live in `.github/skills/create-med-skill/SKILL.md` and `.claude/skills/create-med-skill/SKILL.md`.
 - Detailed paired-agent creation behavior belongs in `.agents/skills/create-med-agent/SKILL.md`; harness-specific skill wrappers live in `.github/skills/create-med-agent/SKILL.md` and `.claude/skills/create-med-agent/SKILL.md`.
-- Detailed instruction cleanup behavior belongs in `.agents/skills/optimize/SKILL.md`; harness-specific skill wrappers live in `.github/skills/optimize/SKILL.md` and `.claude/skills/optimize/SKILL.md`.
+- Detailed instruction cleanup behavior belongs in `.agents/skills/optimize-repo/SKILL.md`; harness-specific skill wrappers live in `.github/skills/optimize-repo/SKILL.md` and `.claude/skills/optimize-repo/SKILL.md`.

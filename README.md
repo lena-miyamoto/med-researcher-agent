@@ -18,7 +18,7 @@ The repository includes a local `med-db/` workflow that can archive structured l
 
 - `create-med-skill`: add a new shared skill with `.agents` source-of-truth plus `.github` and `.claude` wrappers.
 - `create-med-agent`: add a new paired Copilot/Claude agent.
-- `optimize`: audit and clean up repo customization files.
+- `optimize-repo`: audit and clean up repo customization files.
 
 Paired agents stay semantically aligned; differences are limited to harness frontmatter, tool names, and model selection. See `.agents/skills/create-med-agent/SKILL.md`.
 
