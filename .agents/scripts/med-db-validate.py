@@ -48,7 +48,12 @@ def validate_non_empty_files(root, issues):
 def validate_search_json(root, issues):
 	search_dir = root / "searches"
 	actual_numbers = []
-	for path in sorted(search_dir.glob("*.json")):
+
+	def sort_key(path):
+		match = re.match(r"s(\d+)-.+\.json$", path.name)
+		return (0, int(match.group(1))) if match else (1, path.name)
+
+	for path in sorted(search_dir.glob("*.json"), key=sort_key):
 		match = re.match(r"s(\d+)-.+\.json$", path.name)
 		if not match:
 			issues.append(f"bad search filename: {path.name}")
@@ -168,7 +173,7 @@ def validate_readme_index(root, issues):
 	actual_abstracts = collect_files(root / "abstracts", "*.txt")
 	actual_web = collect_files(root / "web", "*.html")
 
-	readme_searches = sorted(re.findall(r"\| searches/(s\d{2}-[^|`]+\.json) \|", content))
+	readme_searches = sorted(re.findall(r"\| searches/(s\d+-[^|`]+\.json) \|", content))
 	readme_pairs = sorted(re.findall(r"`([^`]+)\.\{json,txt\}`", content))
 	readme_web = sorted(re.findall(r"\| web/([^|` ]+\.html) \|", content))
 
