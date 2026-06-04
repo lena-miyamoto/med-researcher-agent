@@ -1,6 +1,6 @@
 ---
 name: create-med-agent
-description: 'Create a new repo agent for this workspace, with paired .github and .claude agent files that stay aligned while keeping shared workflow in AGENTS.md and shared skills. Use when adding a new agent for both Copilot and Claude.'
+description: 'Create a new repo agent for this workspace, with shared role instructions in .agents/agents and thin .github/.claude wrappers. Use when adding a new agent for both Copilot and Claude.'
 argument-hint: 'Provide the new agent name, role, trigger description, tool scope, and whether it should be user-invocable or subagent-only'
 user-invocable: true
 ---

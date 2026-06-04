@@ -6,6 +6,7 @@ This repo contains reusable medical research agent configuration and the local M
 
 - Make the smallest local change that works; if patch context is stale, re-read the exact snippet and retry; treat scratch files as ephemeral unless asked to preserve them.
 - Keep cross-harness skill procedure in `.agents/skills/<name>/SKILL.md`; `.github/skills` and `.claude/skills` should stay as thin wrappers only.
+- Keep cross-harness agent behavior in `.agents/agents/<name>.md`; `.github/agents` and `.claude/agents` should stay as thin harness wrappers only.
 - For German prose, use standard German orthography by default: write umlauts and `ß` normally instead of ASCII substitutions like `ae`, `oe`, `ue`, or `ss`, unless the user explicitly asks for ASCII or a technical constraint requires it.
 
 ## Medical DB (`./med-db/`)
@@ -21,7 +22,7 @@ This repo contains reusable medical research agent configuration and the local M
 - Supported web discovery sources: `google-scholar`, `doaj`, `open-science-directory`, `free-medical-journals`, `openmd`, `trip-database`.
 - Use Google Scholar and the supported open-access web discovery sources in this workflow; archive reproducible query pages when available, otherwise archive source landing pages with the saved query text under `web/`; use PubMed and Europe PMC for structured machine-readable record archival.
 - Repository-wide onboarding for GitHub Copilot lives in `.github/copilot-instructions.md`.
-- Detailed medical-research behavior belongs in the dedicated med-researcher agent definitions under `.github/agents/med-researcher.agent.md` and `.claude/agents/med-researcher.md`.
+- Detailed medical-research behavior belongs in `.agents/agents/med-researcher.md`; harness wrappers live in `.github/agents/med-researcher.agent.md` and `.claude/agents/med-researcher.md`.
 - Detailed shared-skill creation behavior belongs in `.agents/skills/create-med-skill/SKILL.md`; harness-specific skill wrappers live in `.github/skills/create-med-skill/SKILL.md` and `.claude/skills/create-med-skill/SKILL.md`.
-- Detailed paired-agent creation behavior belongs in `.agents/skills/create-med-agent/SKILL.md`; harness-specific skill wrappers live in `.github/skills/create-med-agent/SKILL.md` and `.claude/skills/create-med-agent/SKILL.md`.
+- Detailed shared-agent creation behavior belongs in `.agents/skills/create-med-agent/SKILL.md`; harness-specific skill wrappers live in `.github/skills/create-med-agent/SKILL.md` and `.claude/skills/create-med-agent/SKILL.md`.
 - Detailed instruction cleanup behavior belongs in `.agents/skills/optimize-repo/SKILL.md`; harness-specific skill wrappers live in `.github/skills/optimize-repo/SKILL.md` and `.claude/skills/optimize-repo/SKILL.md`.

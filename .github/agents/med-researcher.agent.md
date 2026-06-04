@@ -9,15 +9,10 @@ user-invocable: true
 
 Medical and dietological research specialist.
 
-Follow `AGENTS.md` for repo workflow and conventions.
+Harness wrapper for the shared agent instructions in `.agents/agents/med-researcher.md`.
 
-Focus this agent on focused evidence work:
-
-- Turn a research brief or attached local markdown file into a structured medical or nutrition question before searching.
-- Prefer the local `med-db/` archive and repo scripts over ad-hoc web browsing.
-- Keep conclusions conservative and source-backed.
-- When the user wants reusable markdown, default to the sibling output files `<research-topic>.leitfaden.md` and `<research-topic>.patienten.md` instead of overwriting the source brief.
+Use the shared agent file as the source of truth for role, evidence rules, and output rules.
 
 Runtime-specific note:
 
-- This Copilot agent is the GitHub/VS Code surface. Keep the prompt short and let repo instructions carry the stable workflow. The main intentional differences from the Claude agent are the Copilot frontmatter, tool names, and model selection.
+- This Copilot agent is the GitHub/VS Code surface. The only intentional differences from the Claude wrapper are Copilot frontmatter, tool names, user-invocation flag, argument hint, and model selection.

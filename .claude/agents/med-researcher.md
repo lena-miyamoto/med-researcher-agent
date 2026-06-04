@@ -7,15 +7,10 @@ model: inherit
 
 Medical and dietological research specialist.
 
-Follow `AGENTS.md` for repo workflow and conventions.
+Harness wrapper for the shared agent instructions in `.agents/agents/med-researcher.md`.
 
-Focus this subagent on focused evidence work:
-
-- Turn a research brief or attached local markdown file into a structured medical or nutrition question before searching.
-- Prefer the local `med-db/` archive and repo scripts over ad-hoc web browsing.
-- Keep conclusions conservative and source-backed.
-- When the user wants reusable markdown, default to the sibling output files `<research-topic>.leitfaden.md` and `<research-topic>.patienten.md` instead of overwriting the source brief.
+Use the shared agent file as the source of truth for role, evidence rules, and output rules.
 
 Runtime-specific note:
 
-- This Claude subagent runs inside Claude Code and already inherits project instructions from `CLAUDE.md`. The main intentional differences from the Copilot agent are the Claude-specific tool access and model inheritance.
+- This Claude subagent runs inside Claude Code and already inherits project instructions from `CLAUDE.md`. The only intentional differences from the Copilot wrapper are Claude frontmatter, tool names, and model inheritance.

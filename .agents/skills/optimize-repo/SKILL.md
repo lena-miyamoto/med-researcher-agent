@@ -35,7 +35,7 @@ Cross-harness source of truth for optimizing this repo's customization and instr
 5. Audit before editing:
    - Duplicated procedure across shared skills and wrappers.
    - Stale paths or source-of-truth references.
-   - Paired agents drifted beyond needed harness differences.
+   - Agent wrappers drifted beyond needed harness differences.
    - Repo docs restating routing owned elsewhere.
 6. Narrowest useful fix:
    - Delete over rewrite.
@@ -51,7 +51,7 @@ Cross-harness source of truth for optimizing this repo's customization and instr
 
 - Strict source-of-truth ownership.
 - Anything excluded by `.gitignore` is out of scope and must remain untouched.
-- Wrappers and paired agents stay short unless a harness difference forces more.
+- Skill wrappers and agent wrappers stay short unless a harness difference forces more.
 - Preserve keyword-rich frontmatter for discovery.
 - Match the repo's direct procedural tone.
 - Prefer brevity and clarity over grammatical smoothness in every repo `*.md`.
@@ -66,7 +66,7 @@ Cross-harness source of truth for optimizing this repo's customization and instr
 3. Grep for stale paths, outdated source-of-truth references, old duplicated phrases.
 4. Re-read each changed `*.md` for verbosity and repetition; tighten until no obvious padding remains.
 5. Shared skill files hold the procedure; wrappers stay minimal.
-6. Paired agents aligned except for needed harness differences.
+6. Agent wrappers aligned except for needed harness differences.
 7. Routing/README changes match actual file layout.
 
 ## Output
