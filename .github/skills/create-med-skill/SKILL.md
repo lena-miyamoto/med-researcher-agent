@@ -7,6 +7,4 @@ user-invocable: true
 
 # Create Med Skill
 
-Harness wrapper for the shared skill instructions in `.agents/skills/create-med-skill/SKILL.md`.
-
-Use the shared skill file as the source of truth for procedure, writing rules, and validation. Keep this wrapper minimal so Copilot and Claude stay synchronized.
+Wrapper. Source of truth: `.agents/skills/create-med-skill/SKILL.md`.

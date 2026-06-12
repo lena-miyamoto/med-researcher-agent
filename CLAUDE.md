@@ -8,3 +8,4 @@
 - Use the skill in `.claude/skills/create-med-skill/SKILL.md` when the user wants to add a new shared repo skill that works in both Copilot and Claude.
 - Use the skill in `.claude/skills/create-med-agent/SKILL.md` when the user wants to add a new shared repo agent with Copilot and Claude wrappers.
 - Use the skill in `.claude/skills/optimize-repo/SKILL.md` when the user wants to audit and clean up repo customization files for redundancy and consistency.
+- Use the skill in `.claude/skills/analyze-med-claims/SKILL.md` when the user wants to verify medical claims against the scientific literature.
