@@ -56,6 +56,7 @@ uv run pytest -v     # re-run tests
 - `create-med-skill`: add a new shared skill with `.agents` source-of-truth plus `.github` and `.claude` wrappers.
 - `create-med-agent`: add a new shared agent with `.agents` source-of-truth plus `.github` and `.claude` wrappers.
 - `optimize-repo`: audit and clean up repo customization files.
+- `analyze-med-claims`: verify medical claims against the scientific literature, producing structured evidence reports with verdicts.
 
 Agent wrappers stay semantically aligned; differences are limited to harness frontmatter, tool names, and model selection. See `.agents/skills/create-med-agent/SKILL.md`.
 
