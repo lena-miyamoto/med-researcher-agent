@@ -22,6 +22,10 @@
       "^https://europepmc.org(/|$)",
       "^https://aura.abdn.ac.uk(/|$)"
     ],
-    "Bash": ["^python3? .agents/scripts/med-db(-validate)?.py(\\s|$)", "html2text"]
+    "Bash": [
+      "^python3? .agents/scripts/med-db(-validate)?.py(\\s|$)",
+      "^python3? -m json.tool(\\s|$)",
+      "html2text"
+    ]
   }
 }

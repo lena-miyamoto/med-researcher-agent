@@ -2,7 +2,7 @@
 
 Reusable medical research agent configuration for both GitHub Copilot and Claude Code.
 
-The repository includes a local `med-db/` workflow that can archive structured literature data from PubMed and Europe PMC, plus reproducible discovery pages for broader sources such as Google Scholar, DOAJ, Open Science Directory, Free Medical Journals, OpenMD, and Trip Database.
+The repository includes a local `med-db/` workflow for archiving structured literature from PubMed, Europe PMC, and web discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Journals, OpenMD, Trip Database).
 
 ## Setup and Tests
 
@@ -58,7 +58,7 @@ uv run pytest -v     # re-run tests
 - `optimize-repo`: audit and clean up repo customization files.
 - `analyze-med-claims`: verify medical claims against the scientific literature, producing structured evidence reports with verdicts.
 
-Agent wrappers stay semantically aligned; differences are limited to harness frontmatter, tool names, and model selection. See `.agents/skills/create-med-agent/SKILL.md`.
+Agent wrappers stay aligned; differences are limited to harness frontmatter, tool names, and model selection.
 
 ## Claude Code Usage
 

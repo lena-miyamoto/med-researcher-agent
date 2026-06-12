@@ -7,13 +7,13 @@ user-invocable: true
 
 # Create Med Agent
 
-This shared skill file is the cross-harness source of truth for creating new repo agents that work in both Copilot and Claude.
+Cross-harness source of truth for creating new repo agents that work in both Copilot and Claude.
 
 ## When to Use
 
 - User wants a custom agent available in both Copilot and Claude.
 - New agent follows the repo convention: one shared agent instruction file plus thin harness wrappers.
-- If the request is really a skill, stop and route to `create-med-skill`.
+- If the request is a skill, not an agent, stop and route to `create-med-skill`.
 
 ## Procedure
 
@@ -24,7 +24,7 @@ This shared skill file is the cross-harness source of truth for creating new rep
 5. Write the Claude wrapper at `.claude/agents/<name>.md` with Claude-compatible tools and model behavior. Point the body at the shared agent file.
 6. Keep wrappers aligned. Differences are limited to harness frontmatter, tool names, model settings, invocation fields, and brief runtime notes.
 7. Push broader workflow out of the agent: repo-wide behavior into `AGENTS.md`, reusable procedure into `.agents/skills/`. Agent wrappers stay short.
-8. Reuse repo tooling: `med-db/` workflow and `.agents/scripts/`. Keep evidence and safety rules in repo-level instructions unless the shared agent file truly needs specialization.
+8. Reuse repo tooling: `med-db/` workflow and `.agents/scripts/`. Keep evidence and safety rules in repo-level instructions unless the shared agent file needs specialization.
 9. Update `README.md` only if the agent should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md` only when routing boundaries change.
 
 ## Writing Rules

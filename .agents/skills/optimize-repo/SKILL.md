@@ -7,7 +7,7 @@ user-invocable: true
 
 # Optimize Repo
 
-Cross-harness source of truth for optimizing this repo's customization and instruction files. Also the audit path: run report-only when the user wants findings without edits.
+Cross-harness source of truth for optimizing this repo's customization and instruction files. Also the audit path: run report-only for findings without edits.
 
 ## When to Use
 
@@ -51,7 +51,7 @@ Cross-harness source of truth for optimizing this repo's customization and instr
 
 - Strict source-of-truth ownership.
 - Anything excluded by `.gitignore` is out of scope and must remain untouched.
-- Skill wrappers and agent wrappers stay short unless a harness difference forces more.
+- Skill wrappers and agent wrappers stay short unless a harness difference requires more.
 - Preserve keyword-rich frontmatter for discovery.
 - Match the repo's direct procedural tone.
 - Prefer brevity and clarity over grammatical smoothness in every repo `*.md`.

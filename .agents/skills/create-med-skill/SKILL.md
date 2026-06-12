@@ -7,13 +7,13 @@ user-invocable: true
 
 # Create Med Skill
 
-This shared skill file is the cross-harness source of truth for creating new repo skills that work in both Copilot and Claude.
+Cross-harness source of truth for creating new repo skills that work in both Copilot and Claude.
 
 ## When to Use
 
 - User wants to add a skill available through both Copilot and Claude.
 - New skill follows the repo convention: one shared file plus thin harness wrappers.
-- If the request is really a custom agent, stop and route to `create-med-agent`.
+- If the request is an agent, not a skill, stop and route to `create-med-agent`.
 
 ## Procedure
 
