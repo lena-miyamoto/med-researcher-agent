@@ -198,21 +198,11 @@ def validate_index(root, issues):
         if (root / "web").is_dir()
     )
 
-    index_searches = sorted(
-        re.findall(r"\| `(searches/[^`]+\.json)` \|", content)
-    )
-    index_papers = sorted(
-        re.findall(r"\| `(papers/[^`]+)/` \|", content)
-    )
-    index_fulltext = sorted(
-        re.findall(r"\| `(fulltext/[^`]+)/` \|", content)
-    )
-    index_guidelines = sorted(
-        re.findall(r"\| `(guidelines/[^`]+)/` \|", content)
-    )
-    index_web = sorted(
-        re.findall(r"\| `(web/[^`]+\.html)` \|", content)
-    )
+    index_searches = _index_paths(content, "searches", file_suffix=".json")
+    index_papers = _index_paths(content, "papers", directory=True)
+    index_fulltext = _index_paths(content, "fulltext", directory=True)
+    index_guidelines = _index_paths(content, "guidelines", directory=True)
+    index_web = _index_paths(content, "web", file_suffix=".html")
 
     for label, indexed, on_disk in (
         ("search index", index_searches, actual_searches),
@@ -227,6 +217,19 @@ def validate_index(root, issues):
             issues.append(f"{label} references missing file: {item}")
         for item in extra:
             issues.append(f"{label} is missing existing entry: {item}")
+
+
+def _index_paths(content, prefix, file_suffix=None, directory=False):
+    paths = set()
+    pattern = re.compile(rf"\|\s*`?({re.escape(prefix)}/[^`|]+?)`?\s*\|")
+    for match in pattern.finditer(content):
+        path = match.group(1).strip()
+        if directory:
+            path = path.rstrip("/")
+        if file_suffix and not path.endswith(file_suffix):
+            continue
+        paths.add(path)
+    return sorted(paths)
 
 
 def validate_legacy_dirs(root, warnings):

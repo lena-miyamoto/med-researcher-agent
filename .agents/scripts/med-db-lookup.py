@@ -124,17 +124,12 @@ def _extract_abstract_medline(raw):
             break
     abstract = " ".join(ab_lines).strip()
     if not abstract:
-        # Fallback: plain-text format "Abstract\n\n..." (efetch rettype=abstract)
-        match = re.search(r"Abstract\s*\n\n(.+)", raw, re.DOTALL | re.IGNORECASE)
-        if not match:
-            match = re.search(r"Abstract\s*\n-+\s*\n(.+)", raw, re.DOTALL | re.IGNORECASE)
+        match = re.search(r"\bAbstract\s*(?:\n\s*-+\s*)?\n+(.+)", raw, re.DOTALL | re.IGNORECASE)
         if match:
             abstract = match.group(1).strip()
-            # Truncate at next section heading or copyright
-            cutoff = re.search(r"\n\n[A-Z][a-z]+(\s+[A-Z][a-z]+)*\s*\n", abstract)
+            cutoff = re.search(r"\n\s*(?:Publication types|MeSH terms|Substances|Grant support)\s*\n", abstract, re.IGNORECASE)
             if cutoff:
                 abstract = abstract[:cutoff.start()].strip()
-            # Also cut at "Copyright" line
             cutoff = re.search(r"\n\s*Copyright\b", abstract, re.IGNORECASE)
             if cutoff:
                 abstract = abstract[:cutoff.start()].strip()

@@ -33,10 +33,19 @@ def _read_json(path):
         return None
 
 
+def _read_json_with_error(path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8")), None
+    except json.JSONDecodeError as exc:
+        return None, f"invalid metadata json: {exc}"
+    except OSError as exc:
+        return None, f"could not read metadata json: {exc}"
+
+
 def _paper_metadata(paper_dir):
-    meta = _read_json(paper_dir / "metadata.json")
+    meta, error = _read_json_with_error(paper_dir / "metadata.json")
     if meta is None:
-        return None, None
+        return {"error": error}, None
 
     pubmed_result = meta.get("result", {})
     if isinstance(pubmed_result, dict) and "uids" in pubmed_result:
@@ -77,7 +86,7 @@ def _paper_metadata(paper_dir):
             "publication_date": record.get("firstPublicationDate", ""),
         }, meta
 
-    return None, meta
+    return {"error": "unrecognized metadata format"}, meta
 
 
 # ---------------------------------------------------------------------------
@@ -132,7 +141,7 @@ def list_topic_papers(med_db, topic):
             continue
         ident, url = utils.default_paper_entry(meta_file)
         info, _ = _paper_metadata(paper_dir)
-        title = info.get("title", "Unknown title") if info else "Unknown title"
+        title = info.get("title", "Unknown title") if info and "error" not in info else "Unknown title"
         papers.append({
             "folder": str(paper_dir.relative_to(med_db)),
             "identifier": ident,
@@ -208,8 +217,9 @@ def extract_pmids_from_search(search_path):
 def read_paper_metadata(paper_dir):
     """Read structured metadata from a paper directory."""
     info, _ = _paper_metadata(Path(paper_dir))
-    if info is None:
-        return {"error": f"could not parse metadata from {paper_dir}"}
+    if info is None or "error" in info:
+        detail = info.get("error") if info else "unknown error"
+        return {"error": f"could not parse metadata from {paper_dir}: {detail}"}
     return info
 
 
@@ -226,7 +236,7 @@ def search_keyword(med_db, keyword, topic=None):
     for meta_path in sorted(search_root.rglob("metadata.json")):
         paper_dir = meta_path.parent
         info, _ = _paper_metadata(paper_dir)
-        if info is None:
+        if info is None or "error" in info:
             continue
 
         title = str(info.get("title", "")).lower()
@@ -242,15 +252,17 @@ def search_keyword(med_db, keyword, topic=None):
 
         abstract_path = paper_dir / "abstract.txt"
         abstract = ""
+        abstract_lower = ""
         if abstract_path.is_file():
             try:
-                abstract = abstract_path.read_text(encoding="utf-8").lower()
+                abstract = abstract_path.read_text(encoding="utf-8")
+                abstract_lower = abstract.lower()
             except OSError:
                 pass
-        if keyword_lower in abstract:
+        if keyword_lower in abstract_lower:
             match_field.append("abstract")
             if not match_snippet:
-                idx = abstract.index(keyword_lower)
+                idx = abstract_lower.index(keyword_lower)
                 start = max(0, idx - 40)
                 end = min(len(abstract), idx + len(keyword_lower) + 40)
                 match_snippet = ("..." if start > 0 else "") + abstract[start:end] + ("..." if end < len(abstract) else "")

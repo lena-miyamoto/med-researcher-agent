@@ -8,6 +8,7 @@ med-db-validate.py.
 import html as _html
 import json
 import re
+import time
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -48,6 +49,31 @@ def slugify(text, fallback="record", max_words=10, max_length=80):
 # ---------------------------------------------------------------------------
 
 
+def _fetch_url(url, label, timeout=60, retries=2, retry_delay=0.25):
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    last_error = None
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                raw = response.read()
+                charset = response.headers.get_content_charset("utf-8")
+                try:
+                    return raw.decode(charset)
+                except UnicodeDecodeError:
+                    return raw.decode(charset, errors="replace")
+        except urllib.error.HTTPError as exc:
+            last_error = exc
+            if exc.code < 500 or attempt == retries:
+                break
+        except (urllib.error.URLError, OSError) as exc:
+            last_error = exc
+            if attempt == retries:
+                break
+        if retry_delay > 0:
+            time.sleep(retry_delay * (2 ** attempt))
+    raise RuntimeError(f"error fetching {label}: {last_error}")
+
+
 def fetch_pubmed(endpoint, params, timeout=60):
     """GET *endpoint* from PubMed E-utilities, return decoded UTF-8 body.
 
@@ -55,12 +81,7 @@ def fetch_pubmed(endpoint, params, timeout=60):
     catch and recover (e.g. fall back to an "unavailable" message).
     """
     url = f"{EUTILS_BASE}/{endpoint}?{urllib.parse.urlencode(params)}"
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            return response.read().decode("utf-8")
-    except (urllib.error.URLError, OSError) as exc:
-        raise RuntimeError(f"error fetching PubMed {endpoint}: {exc}") from exc
+    return _fetch_url(url, f"PubMed {endpoint}", timeout=timeout)
 
 
 def fetch_europe_pmc(module, params, timeout=60):
@@ -69,12 +90,7 @@ def fetch_europe_pmc(module, params, timeout=60):
     Raises ``RuntimeError`` on network / HTTP errors.
     """
     url = f"{EUROPE_PMC_BASE}/{module}?{urllib.parse.urlencode(params)}"
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            return response.read().decode("utf-8")
-    except (urllib.error.URLError, OSError) as exc:
-        raise RuntimeError(f"error fetching Europe PMC {module}: {exc}") from exc
+    return _fetch_url(url, f"Europe PMC {module}", timeout=timeout)
 
 
 # ---------------------------------------------------------------------------

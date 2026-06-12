@@ -561,6 +561,33 @@ class TestValidateIndex:
         med_db_validate.validate_index(tmp_path, issues)
         assert issues == []
 
+    def test_index_paths_tolerate_missing_backticks(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        searches_dir = tmp_path / "searches" / "endometriosis"
+        searches_dir.mkdir(parents=True)
+        (searches_dir / "pubmed-test.json").write_text("{}")
+        index = tmp_path / "INDEX.md"
+        index.write_text("""# med-db Index
+
+## Searches
+
+| File | Source | Query | Purpose | Accessed |
+|------|--------|-------|---------|----------|
+| searches/endometriosis/pubmed-test.json | PubMed | test | test | 2026-01-01 |
+
+## Papers
+
+## Fulltext
+
+## Guidelines
+
+## Web Sources
+""")
+        issues = []
+        med_db_validate.validate_index(tmp_path, issues)
+        assert not any("search index" in issue for issue in issues)
+
     def test_index_references_missing_file(self, tmp_path):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
             (tmp_path / name).mkdir()

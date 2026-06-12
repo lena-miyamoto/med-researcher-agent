@@ -257,6 +257,14 @@ class TestReadPaperMetadata:
         (d / "metadata.json").write_text("not json")
         result = mq.read_paper_metadata(str(d))
         assert "error" in result
+        assert "invalid metadata json" in result["error"]
+
+    def test_unrecognized_metadata(self, tmp_path):
+        d = tmp_path / "papers" / "adhd" / "pmid-12345-test"
+        d.mkdir(parents=True)
+        (d / "metadata.json").write_text(json.dumps({"unexpected": "shape"}))
+        result = mq.read_paper_metadata(str(d))
+        assert "unrecognized metadata format" in result["error"]
 
 
 # ---------------------------------------------------------------------------
@@ -276,6 +284,7 @@ class TestSearchKeyword:
         matches = mq.search_keyword(tmp_path, "lisdexamfetamine")
         assert len(matches) == 1
         assert matches[0]["match_field"] == "abstract"
+        assert "ADHD" in matches[0]["match_snippet"]
 
     def test_match_in_both(self, tmp_path):
         _make_paper(tmp_path, "papers/adhd/pmid-11111-effect", title="Lisdexamfetamine Study", abstract="lisdexamfetamine improved outcomes.")

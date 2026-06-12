@@ -88,6 +88,14 @@ def ensure_med_db_structure(med_db):
         (med_db / name).mkdir(parents=True, exist_ok=True)
 
 
+def validate_topic_slug(topic):
+    if not topic or topic in {".", ".."} or "/" in topic or "\\" in topic:
+        raise ValueError(f"invalid topic slug: {topic!r}")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", topic):
+        raise ValueError(f"invalid topic slug: {topic!r}; expected kebab-case ASCII")
+    return topic
+
+
 def build_common_params(args):
     params = {"db": "pubmed"}
     if args.email:
@@ -695,6 +703,12 @@ def run_validator(med_db):
     return result.returncode
 
 
+def copy2_verified(source, destination):
+    shutil.copy2(source, destination)
+    if source.stat().st_size != destination.stat().st_size:
+        raise OSError(f"copy size mismatch: {source} -> {destination}")
+
+
 # ---------------------------------------------------------------------------
 # Migration from old flat structure
 # ---------------------------------------------------------------------------
@@ -724,9 +738,9 @@ def migrate_flat_to_topic(med_db, dry_run=False):
                 continue
             topic_dir.mkdir(parents=True, exist_ok=True)
             try:
-                shutil.copy2(meta_path, topic_dir / "metadata.json")
+                copy2_verified(meta_path, topic_dir / "metadata.json")
                 if abstract_path.is_file():
-                    shutil.copy2(abstract_path, topic_dir / "abstract.txt")
+                    copy2_verified(abstract_path, topic_dir / "abstract.txt")
                 else:
                     (topic_dir / "abstract.txt").write_text(
                         "Abstract not found in old flat abstracts/ directory.\n", encoding="utf-8"
@@ -749,7 +763,7 @@ def migrate_flat_to_topic(med_db, dry_run=False):
                 continue
             dest_dir.mkdir(parents=True, exist_ok=True)
             try:
-                shutil.copy2(search_path, dest_file)
+                copy2_verified(search_path, dest_file)
                 migrated += 1
             except OSError as exc:
                 errors += 1
@@ -769,7 +783,7 @@ def migrate_flat_to_topic(med_db, dry_run=False):
                 continue
             dest_dir.mkdir(parents=True, exist_ok=True)
             try:
-                shutil.copy2(web_path, dest_file)
+                copy2_verified(web_path, dest_file)
                 migrated += 1
             except OSError as exc:
                 errors += 1
@@ -897,7 +911,7 @@ def main():
     med_db.mkdir(parents=True, exist_ok=True)
     ensure_med_db_structure(med_db)
 
-    topic = args.topic_slug or slugify(args.topic, fallback=DEFAULT_TOPIC)
+    topic = validate_topic_slug(args.topic_slug or slugify(args.topic, fallback=DEFAULT_TOPIC))
 
     search_file = None
     search_updates = {}

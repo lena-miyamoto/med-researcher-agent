@@ -64,6 +64,20 @@ EUROPE_PMC_SEARCH = json.dumps({
 
 
 # ---------------------------------------------------------------------------
+# _extract_abstract_medline
+# ---------------------------------------------------------------------------
+
+class TestExtractAbstractMedline:
+    def test_plain_text_single_newline_after_heading(self):
+        raw = "1. Citation\n\nAbstract\nThis abstract uses one newline after the heading.\n"
+        assert ml._extract_abstract_medline(raw) == "This abstract uses one newline after the heading."
+
+    def test_plain_text_cuts_known_sections(self):
+        raw = "Abstract\n\nMain abstract.\n\nMeSH terms\nTerm A\n"
+        assert ml._extract_abstract_medline(raw) == "Main abstract."
+
+
+# ---------------------------------------------------------------------------
 # lookup_pmids
 # ---------------------------------------------------------------------------
 

@@ -982,6 +982,19 @@ class TestParseArgs:
                 med_db.parse_args()
 
 
+class TestValidateTopicSlug:
+    def test_accepts_kebab_case(self):
+        assert med_db.validate_topic_slug("weight-loss") == "weight-loss"
+
+    def test_rejects_path_separators(self):
+        with pytest.raises(ValueError):
+            med_db.validate_topic_slug("../adhd")
+
+    def test_rejects_non_slug_text(self):
+        with pytest.raises(ValueError):
+            med_db.validate_topic_slug("ADHD")
+
+
 # ---------------------------------------------------------------------------
 # migrate_flat_to_topic
 # ---------------------------------------------------------------------------
@@ -1068,6 +1081,20 @@ class TestMigrateFlatToTopic:
         med_db.ensure_med_db_structure(tmp_path)
         exit_code = med_db.migrate_flat_to_topic(tmp_path)
         assert exit_code == 0
+
+    def test_copy_size_mismatch_is_error(self, tmp_path, monkeypatch):
+        med_db.ensure_med_db_structure(tmp_path)
+        old_meta = tmp_path / "metadata"
+        old_meta.mkdir()
+        (tmp_path / "abstracts").mkdir()
+        (old_meta / "pmid-12345-test.json").write_text('{"result":{"uids":["12345"]}}')
+
+        def fake_copy(source, destination):
+            Path(destination).write_text("x")
+
+        monkeypatch.setattr(med_db.shutil, "copy2", fake_copy)
+
+        assert med_db.migrate_flat_to_topic(tmp_path) == 1
 
 
 # ---------------------------------------------------------------------------

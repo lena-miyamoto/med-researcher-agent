@@ -1,11 +1,35 @@
 """Tests for utils.py — shared helpers used across med-db scripts."""
 
 import json
+import urllib.error
 from pathlib import Path
 
 import pytest
 
 import utils
+
+
+class _FakeHeaders:
+    def __init__(self, charset="utf-8"):
+        self.charset = charset
+
+    def get_content_charset(self, default="utf-8"):
+        return self.charset or default
+
+
+class _FakeResponse:
+    def __init__(self, body, charset="utf-8"):
+        self.body = body
+        self.headers = _FakeHeaders(charset)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        return False
+
+    def read(self):
+        return self.body
 
 
 # ---------------------------------------------------------------------------
@@ -100,6 +124,42 @@ class TestFetchPubmed:
         # We verify the constant is non-empty — the actual header is set
         # inside the function, tested implicitly by integration.
         assert len(utils.USER_AGENT) > 20
+
+    def test_retries_transient_failure(self, monkeypatch):
+        calls = []
+
+        def fake_urlopen(request, timeout):
+            calls.append((request, timeout))
+            if len(calls) == 1:
+                raise urllib.error.URLError("temporary reset")
+            return _FakeResponse(b'{"ok": true}')
+
+        monkeypatch.setattr(utils.urllib.request, "urlopen", fake_urlopen)
+        monkeypatch.setattr(utils.time, "sleep", lambda delay: None)
+
+        assert utils.fetch_pubmed("esearch.fcgi", {}, timeout=5) == '{"ok": true}'
+        assert len(calls) == 2
+
+    def test_decodes_declared_charset(self, monkeypatch):
+        def fake_urlopen(request, timeout):
+            return _FakeResponse("café".encode("iso-8859-1"), charset="iso-8859-1")
+
+        monkeypatch.setattr(utils.urllib.request, "urlopen", fake_urlopen)
+
+        assert utils.fetch_pubmed("esearch.fcgi", {}, timeout=5) == "café"
+
+    def test_does_not_retry_client_http_error(self, monkeypatch):
+        calls = []
+
+        def fake_urlopen(request, timeout):
+            calls.append(request)
+            raise urllib.error.HTTPError(request.full_url, 404, "not found", {}, None)
+
+        monkeypatch.setattr(utils.urllib.request, "urlopen", fake_urlopen)
+
+        with pytest.raises(RuntimeError):
+            utils.fetch_pubmed("missing.fcgi", {}, timeout=5)
+        assert len(calls) == 1
 
 
 class TestFetchEuropePmc:
