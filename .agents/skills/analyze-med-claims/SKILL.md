@@ -11,8 +11,6 @@ Cross-harness source of truth for analyzing medical claims against the scientifi
 
 Human lives may depend on the accuracy of these analyses. Every claim must be tested against the best available evidence, not just the first study found. Confirmation bias — searching only for supporting evidence — is a patient-safety risk and is prohibited by this procedure.
 
-**Absence of evidence is not evidence of absence.** If no adequate studies exist on a claim, the verdict is "no evidence" — never "refuted." A claim is only refuted when high-quality evidence actively contradicts it.
-
 ## When to Use
 
 - A text file or inline text contains one or more medical, nutritional, or health claims.

@@ -17,6 +17,14 @@ This repo contains reusable medical research agent configuration and the local M
 ## Medical DB (`./med-db/`)
 
 - Use for medical, nutritional, or endometriosis literature collection and evidence summaries.
+
+### Bootstrap after fresh checkout
+
+- `./med-db/` is gitignored and does **not** ship with the repo. After `git clone`, the directory does not exist.
+- **Do not create `med-db/` or its subdirectories by hand.** The tooling auto-creates the full directory tree (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`) and an initial `index.json` on the first archival run. No manual setup step is needed.
+- To bootstrap: run any `uv run med-db ...` archival command (e.g. `uv run med-db --pmid 12345678 --validate`). The tooling calls `ensure_med_db_structure()` and `sync_index()` automatically — every subdirectory and a valid `index.json` are created as a side effect.
+- To verify the bootstrap was correct: `uv run med-db-validate --med-db med-db`. An empty archive (0 entries per category) passes validation as long as all five directories and `index.json` exist.
+- Query tools (`med-db-query`, `med-db-lookup`) are read-only and do **not** bootstrap — they will report "directory not found" if `med-db/` is missing. When you see that, run an archival command first.
 - Canonical PubMed archival command: `uv run med-db --query '...' --archive-first N --validate`.
 - Canonical Europe PMC archival command: `uv run med-db --source europe-pmc --query '...' --archive-first N --validate`.
 - Canonical Europe PMC record command: `uv run med-db --source europe-pmc --epmc-record MED:35350465 --validate`.
@@ -39,9 +47,6 @@ This repo contains reusable medical research agent configuration and the local M
 - Both lookup and query scripts default to JSON output. Use `--format text` for human-readable output.
 - Supported web discovery sources: `google-scholar`, `doaj`, `open-science-directory`, `free-medical-journals`, `openmd`, `trip-database`.
 - Use Google Scholar and the supported open-access web discovery sources in this workflow; archive reproducible query pages when available, otherwise archive source landing pages with the saved query text under `web/`; use PubMed and Europe PMC for structured machine-readable record archival.
-- Skill procedure lives in `.agents/skills/<name>/SKILL.md`; wrappers in `.github/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md`.
-- Agent behavior lives in `.agents/agents/<name>.md`; wrappers in `.github/agents/<name>.agent.md` and `.claude/agents/<name>.md`.
-- Repo-wide onboarding for GitHub Copilot lives in `.github/copilot-instructions.md`.
 - **Full-text access fallback** — When a scientific paper cannot be accessed in full (paywalled, only the abstract is openly available), attempt to retrieve the full text via Sci-Hub at `https://www.sci-hub.st/` using the paper's DOI. Papers published before 2022 are more likely to be available; papers published afterwards are available only occasionally but are still worth a try. Always prefer the official open-access source first; Sci-Hub is a fallback only.
 
 ## Medical DB structure (`./med-db/`)
