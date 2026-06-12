@@ -1,0 +1,12 @@
+[project]
+name = "med-researcher-agent"
+version = "0.1.0"
+description = "Reusable medical research agent configuration for both GitHub Copilot and Claude Code."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]

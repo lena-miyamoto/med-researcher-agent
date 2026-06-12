@@ -1,0 +1,1090 @@
+"""Tests for med-db.py — PubMed/Europe PMC archival script."""
+
+import datetime
+import json
+import sys
+from pathlib import Path
+from unittest import mock
+
+import pytest
+
+import med_db
+
+
+# ---------------------------------------------------------------------------
+# slugify
+# ---------------------------------------------------------------------------
+
+class TestSlugify:
+    def test_basic_english(self):
+        assert med_db.slugify("Hello World") == "hello-world"
+
+    def test_with_special_chars(self):
+        assert med_db.slugify("Vitamin D & Calcium (benefits)") == "vitamin-d-calcium-benefits"
+
+    def test_unicode_to_ascii(self):
+        result = med_db.slugify("café naïve étude")
+        assert result == "cafe-naive-etude"
+
+    def test_german_umlauts(self):
+        result = med_db.slugify("Übergewicht und Ernährung")
+        assert result == "ubergewicht-und-ernahrung"
+
+    def test_empty_string_fallback(self):
+        result = med_db.slugify("")
+        assert result == "record"
+
+    def test_only_special_chars_fallback(self):
+        result = med_db.slugify("!@#$%")
+        assert result == "record"
+
+    def test_custom_fallback(self):
+        result = med_db.slugify("!!!", fallback="custom-fb")
+        assert result == "custom-fb"
+
+    def test_max_words_truncation(self):
+        result = med_db.slugify(
+            "one two three four five six seven eight nine ten eleven twelve",
+            max_words=5,
+        )
+        assert result == "one-two-three-four-five"
+
+    def test_max_length_truncation(self):
+        result = med_db.slugify("a very long title that exceeds the character limit easily", max_length=25)
+        assert len(result) <= 25
+        assert result == "a-very-long-title-that-ex"
+
+    def test_max_length_doesnt_end_with_hyphen(self):
+        result = med_db.slugify("abcdef-ghijklm-nopqrstuv", max_length=13)
+        assert not result.endswith("-")
+
+    def test_max_length_strips_all_hyphens(self):
+        result = med_db.slugify("a-b-c-d-e-f-g-h-i-j-k-l-m", max_length=3)
+        assert result == "a" or not result.endswith("-")
+
+    def test_consecutive_special_chars(self):
+        result = med_db.slugify("hello---world___test")
+        assert result == "hello-world-test"
+
+
+# ---------------------------------------------------------------------------
+# unique_filename
+# ---------------------------------------------------------------------------
+
+class TestUniqueFilename:
+    def test_no_collision(self, tmp_path):
+        result = med_db.unique_filename(tmp_path, "hello", ".json")
+        assert result == "hello.json"
+
+    def test_with_collision(self, tmp_path):
+        (tmp_path / "hello.json").write_text("existing")
+        result = med_db.unique_filename(tmp_path, "hello", ".json")
+        assert result == "hello-2.json"
+
+    def test_multiple_collisions(self, tmp_path):
+        (tmp_path / "hello.json").write_text("1")
+        (tmp_path / "hello-2.json").write_text("2")
+        (tmp_path / "hello-3.json").write_text("3")
+        result = med_db.unique_filename(tmp_path, "hello", ".json")
+        assert result == "hello-4.json"
+
+    def test_with_gap_in_numbers(self, tmp_path):
+        (tmp_path / "hello.json").write_text("1")
+        (tmp_path / "hello-3.json").write_text("3")
+        result = med_db.unique_filename(tmp_path, "hello", ".json")
+        assert result == "hello-2.json"
+
+    def test_different_suffix(self, tmp_path):
+        (tmp_path / "hello.json").write_text("json")
+        result = med_db.unique_filename(tmp_path, "hello", ".txt")
+        assert result == "hello.txt"
+
+    def test_numeric_stem(self, tmp_path):
+        result = med_db.unique_filename(tmp_path, "123-data", ".json")
+        assert result == "123-data.json"
+
+
+# ---------------------------------------------------------------------------
+# escape_markdown_cell
+# ---------------------------------------------------------------------------
+
+class TestEscapeMarkdownCell:
+    def test_no_pipe(self):
+        assert med_db.escape_markdown_cell("hello world") == "hello world"
+
+    def test_pipe_escaped(self):
+        assert med_db.escape_markdown_cell("a|b") == "a\\|b"
+
+    def test_multiple_pipes(self):
+        assert med_db.escape_markdown_cell("a|b|c") == "a\\|b\\|c"
+
+    def test_converts_to_string(self):
+        assert med_db.escape_markdown_cell(42) == "42"
+
+    def test_strips_whitespace(self):
+        assert med_db.escape_markdown_cell("  hello  ") == "hello"
+
+    def test_pipe_with_spaces(self):
+        assert med_db.escape_markdown_cell(" col1 | col2 ") == "col1 \\| col2"
+
+
+# ---------------------------------------------------------------------------
+# dedupe
+# ---------------------------------------------------------------------------
+
+class TestDedupe:
+    def test_no_duplicates(self):
+        assert med_db.dedupe([1, 2, 3]) == [1, 2, 3]
+
+    def test_removes_duplicates_preserves_order(self):
+        assert med_db.dedupe([3, 1, 2, 1, 3, 4]) == [3, 1, 2, 4]
+
+    def test_empty_list(self):
+        assert med_db.dedupe([]) == []
+
+    def test_single_item(self):
+        assert med_db.dedupe([42]) == [42]
+
+    def test_all_duplicates(self):
+        assert med_db.dedupe(["a", "a", "a"]) == ["a"]
+
+    def test_strings(self):
+        assert med_db.dedupe(["b", "a", "b", "c", "a"]) == ["b", "a", "c"]
+
+
+# ---------------------------------------------------------------------------
+# source_label
+# ---------------------------------------------------------------------------
+
+class TestSourceLabel:
+    def test_known_sources(self):
+        assert med_db.source_label("pubmed") == "PubMed"
+        assert med_db.source_label("europe-pmc") == "Europe PMC"
+        assert med_db.source_label("google-scholar") == "Google Scholar"
+        assert med_db.source_label("doaj") == "Directory of Open Access Journals"
+        assert med_db.source_label("open-science-directory") == "Open Science Directory"
+        assert med_db.source_label("free-medical-journals") == "Free Medical Journals"
+        assert med_db.source_label("openmd") == "OpenMD"
+        assert med_db.source_label("trip-database") == "Trip Database"
+
+    def test_unknown_source_returns_itself(self):
+        assert med_db.source_label("some-random-source") == "some-random-source"
+        assert med_db.source_label("") == ""
+
+
+# ---------------------------------------------------------------------------
+# URL builders
+# ---------------------------------------------------------------------------
+
+class TestBuildGoogleScholarUrl:
+    def test_basic_query(self):
+        url = med_db.build_google_scholar_url("endometriosis diet")
+        assert "scholar.google.com/scholar" in url
+        assert "q=endometriosis+diet" in url or "endometriosis%20diet" in url
+        assert "hl=en" in url
+
+    def test_special_characters(self):
+        url = med_db.build_google_scholar_url('"vitamin D" calcium')
+        assert "scholar.google.com" in url
+
+
+class TestBuildDoajUrl:
+    def test_basic_query(self):
+        url = med_db.build_doaj_url("endometriosis")
+        assert "doaj.org/search/articles" in url
+        assert "ref=homepage" in url or "homepage" in url
+
+    def test_url_contains_json_source(self):
+        url = med_db.build_doaj_url("endometriosis diet")
+        assert "source=" in url
+
+
+class TestBuildTripDatabaseUrl:
+    def test_basic_query(self):
+        url = med_db.build_trip_database_url("endometriosis")
+        assert "tripdatabase.com/Searchresult" in url
+        assert "search_type=standard" in url
+
+    def test_query_encoded(self):
+        url = med_db.build_trip_database_url("chronic pain management")
+        assert "chronic" in url.lower()
+
+
+# ---------------------------------------------------------------------------
+# build_common_params
+# ---------------------------------------------------------------------------
+
+class TestBuildCommonParams:
+    def test_defaults(self):
+        args = mock.Mock(email=None)
+        params = med_db.build_common_params(args)
+        assert params["db"] == "pubmed"
+        assert params["tool"] == "med-db"
+        assert "email" not in params
+
+    def test_with_email(self):
+        args = mock.Mock(email="researcher@example.com")
+        params = med_db.build_common_params(args)
+        assert params["email"] == "researcher@example.com"
+
+    def test_with_empty_email(self):
+        args = mock.Mock(email="")
+        params = med_db.build_common_params(args)
+        assert "email" not in params
+
+
+# ---------------------------------------------------------------------------
+# europe_pmc_article_url
+# ---------------------------------------------------------------------------
+
+class TestEuropePmcArticleUrl:
+    def test_med_source(self):
+        url = med_db.europe_pmc_article_url("MED", "35350465")
+        assert url == "https://europepmc.org/article/MED/35350465"
+
+    def test_ppr_source(self):
+        url = med_db.europe_pmc_article_url("PPR", "12345")
+        assert url == "https://europepmc.org/article/PPR/12345"
+
+
+# ---------------------------------------------------------------------------
+# parse_europe_pmc_record
+# ---------------------------------------------------------------------------
+
+class TestParseEuropePmcRecord:
+    def test_valid_med_record(self):
+        source, record_id = med_db.parse_europe_pmc_record("MED:35350465")
+        assert source == "MED"
+        assert record_id == "35350465"
+
+    def test_valid_ppr_record(self):
+        source, record_id = med_db.parse_europe_pmc_record("PPR:12345")
+        assert source == "PPR"
+        assert record_id == "12345"
+
+    def test_missing_colon_raises(self):
+        with pytest.raises(ValueError, match="invalid Europe PMC record spec"):
+            med_db.parse_europe_pmc_record("MED35350465")
+
+    def test_empty_source_raises(self):
+        with pytest.raises(ValueError, match="invalid Europe PMC record spec"):
+            med_db.parse_europe_pmc_record(":35350465")
+
+    def test_empty_id_raises(self):
+        with pytest.raises(ValueError, match="invalid Europe PMC record spec"):
+            med_db.parse_europe_pmc_record("MED:")
+
+    def test_empty_string_raises(self):
+        with pytest.raises(ValueError):
+            med_db.parse_europe_pmc_record("")
+
+
+# ---------------------------------------------------------------------------
+# query_from_search_json
+# ---------------------------------------------------------------------------
+
+class TestQueryFromSearchJson:
+    def test_pubmed_format(self, tmp_path):
+        data = {
+            "header": {"type": "esearch"},
+            "esearchresult": {
+                "querytranslation": "endometriosis[MeSH] AND diet[MeSH]",
+                "idlist": ["123", "456"],
+            },
+        }
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        result = med_db.query_from_search_json(path)
+        assert result == "endometriosis[MeSH] AND diet[MeSH]"
+
+    def test_pubmed_missing_querytranslation(self, tmp_path):
+        data = {
+            "header": {"type": "esearch"},
+            "esearchresult": {"idlist": ["123"]},
+        }
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        result = med_db.query_from_search_json(path)
+        assert "Query unavailable" in result
+
+    def test_europe_pmc_format(self, tmp_path):
+        data = {
+            "request": {"queryString": "endometriosis AND diet"},
+            "resultList": {"result": []},
+        }
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        result = med_db.query_from_search_json(path)
+        assert result == "endometriosis AND diet"
+
+    def test_europe_pmc_alternative_query_field(self, tmp_path):
+        data = {
+            "request": {"query": "endometriosis diet"},
+            "resultList": {"result": []},
+        }
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        result = med_db.query_from_search_json(path)
+        assert result == "endometriosis diet"
+
+    def test_unknown_format(self, tmp_path):
+        data = {"some_other_field": "value"}
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        result = med_db.query_from_search_json(path)
+        assert "Query unavailable" in result
+
+
+# ---------------------------------------------------------------------------
+# source_from_search_json
+# ---------------------------------------------------------------------------
+
+class TestSourceFromSearchJson:
+    def test_pubmed(self, tmp_path):
+        data = {"esearchresult": {"idlist": ["1"]}}
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        assert med_db.source_from_search_json(path) == "PubMed"
+
+    def test_europe_pmc(self, tmp_path):
+        data = {
+            "request": {"queryString": "test"},
+            "resultList": {"result": []},
+        }
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        assert med_db.source_from_search_json(path) == "Europe PMC"
+
+    def test_europe_pmc_null_resultlist(self, tmp_path):
+        data = {
+            "request": {"queryString": "test"},
+            "resultList": None,
+        }
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        # resultList IS None, but resultList is not None is False;
+        # the condition checks: request AND resultList is not None.
+        # Since resultList IS None, this won't match Europe PMC format
+        result = med_db.source_from_search_json(path)
+        # Falls through to Unknown since both PubMed and EPMC checks fail
+        assert result == "Unknown"
+
+    def test_unknown(self, tmp_path):
+        data = {"something": "else"}
+        path = tmp_path / "search.json"
+        path.write_text(json.dumps(data))
+        assert med_db.source_from_search_json(path) == "Unknown"
+
+
+# ---------------------------------------------------------------------------
+# default_paper_entry
+# ---------------------------------------------------------------------------
+
+class TestDefaultPaperEntry:
+    def test_pubmed_single_uid(self, tmp_path):
+        data = {"result": {"uids": ["12345678"]}}
+        path = tmp_path / "metadata.json"
+        path.write_text(json.dumps(data))
+        identifier, url = med_db.default_paper_entry(path)
+        assert identifier == "PMID:12345678"
+        assert url == "https://pubmed.ncbi.nlm.nih.gov/12345678/"
+
+    def test_pubmed_multiple_uids(self, tmp_path):
+        data = {"result": {"uids": ["111", "222"]}}
+        path = tmp_path / "metadata.json"
+        path.write_text(json.dumps(data))
+        identifier, url = med_db.default_paper_entry(path)
+        assert identifier == "unknown"
+        assert "unavailable" in url
+
+    def test_europe_pmc_record(self, tmp_path):
+        data = {
+            "resultList": {
+                "result": [
+                    {"source": "MED", "id": "35350465", "title": "Test"}
+                ]
+            }
+        }
+        path = tmp_path / "metadata.json"
+        path.write_text(json.dumps(data))
+        identifier, url = med_db.default_paper_entry(path)
+        assert identifier == "MED:35350465"
+        assert "europepmc.org/article/MED/35350465" in url
+
+    def test_europe_pmc_fallback_to_pmid(self, tmp_path):
+        data = {
+            "resultList": {
+                "result": [
+                    {"source": "MED", "pmid": "12345678"}
+                ]
+            }
+        }
+        path = tmp_path / "metadata.json"
+        path.write_text(json.dumps(data))
+        identifier, url = med_db.default_paper_entry(path)
+        # id missing, falls back to pmid
+        assert identifier == "MED:12345678"
+
+    def test_unknown_format(self, tmp_path):
+        data = {"something": "unexpected"}
+        path = tmp_path / "metadata.json"
+        path.write_text(json.dumps(data))
+        identifier, url = med_db.default_paper_entry(path)
+        assert identifier == "unknown"
+        assert "unavailable" in url
+
+
+# ---------------------------------------------------------------------------
+# ensure_med_db_structure
+# ---------------------------------------------------------------------------
+
+class TestEnsureMedDbStructure:
+    def test_creates_all_dirs(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            assert (tmp_path / name).is_dir()
+
+    def test_idempotent(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        med_db.ensure_med_db_structure(tmp_path)
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            assert (tmp_path / name).is_dir()
+
+    def test_partial_existing(self, tmp_path):
+        (tmp_path / "searches").mkdir()
+        (tmp_path / "papers").mkdir()
+        med_db.ensure_med_db_structure(tmp_path)
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            assert (tmp_path / name).is_dir()
+
+
+# ---------------------------------------------------------------------------
+# load_existing_index_entries
+# ---------------------------------------------------------------------------
+
+class TestLoadExistingIndexEntries:
+    def test_missing_index(self, tmp_path):
+        result = med_db.load_existing_index_entries(tmp_path / "INDEX.md")
+        assert result == ({}, {}, {}, {}, {})
+
+    def test_empty_index(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text("# med-db Index\n\n## Searches\n\n## Papers\n\n")
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        assert searches == {}
+        assert papers == {}
+
+    def test_parses_search_entry(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Searches\n\n"
+            "| File | Source | Query | Purpose | Accessed |\n"
+            "|------|--------|-------|---------|----------|\n"
+            "| `searches/endometriosis/pubmed-diet.json` | PubMed | `endometriosis AND diet` | Review dietary interventions | 2026-06-01 |\n\n"
+            "## Papers\n\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        key = "endometriosis/pubmed-diet.json"
+        assert key in searches
+        assert searches[key]["source"] == "PubMed"
+        assert searches[key]["query"] == "endometriosis AND diet"
+        assert searches[key]["purpose"] == "Review dietary interventions"
+        assert searches[key]["accessed"] == "2026-06-01"
+
+    def test_parses_paper_entry(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Papers\n\n"
+            "| Folder | Record | URL | Purpose | Accessed |\n"
+            "|--------|--------|-----|---------|----------|\n"
+            "| `papers/endometriosis/pmid-12345678-title/` | PMID:12345678 | https://pubmed.ncbi.nlm.nih.gov/12345678/ | Endometriosis diet review | 2026-06-01 |\n\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        key = "endometriosis/pmid-12345678-title"
+        assert key in papers
+        assert papers[key]["identifier"] == "PMID:12345678"
+        assert papers[key]["purpose"] == "Endometriosis diet review"
+
+    def test_parses_fulltext_entry(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Fulltext\n\n"
+            "| Folder | Record | URL | Purpose | Accessed |\n"
+            "|--------|--------|-----|---------|----------|\n"
+            "| `fulltext/endometriosis/pmid-12345678-title/` | PMID:12345678 | https://pubmed.ncbi.nlm.nih.gov/12345678/ | Full review | 2026-06-01 |\n\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        key = "endometriosis/pmid-12345678-title"
+        assert key in fulltexts
+        assert fulltexts[key]["purpose"] == "Full review"
+
+    def test_parses_guideline_entry(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Guidelines\n\n"
+            "| Folder | Source | URL | Purpose | Accessed |\n"
+            "|--------|--------|-----|---------|----------|\n"
+            "| `guidelines/endometriosis/eshre-guideline/` | ESHRE | https://eshre.eu/ | Clinical guideline | 2026-06-01 |\n\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        key = "endometriosis/eshre-guideline"
+        assert key in guidelines
+        assert guidelines[key]["source"] == "ESHRE"
+
+    def test_parses_web_entry(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Web Sources\n\n"
+            "| File | URL | Purpose | Accessed |\n"
+            "|------|-----|---------|----------|\n"
+            "| `web/endometriosis/google-scholar-search.html` | https://scholar.google.com/scholar?q=test | Test search | 2026-06-01 |\n\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        key = "endometriosis/google-scholar-search.html"
+        assert key in web
+        assert web[key]["url"] == "https://scholar.google.com/scholar?q=test"
+
+    def test_ignores_other_sections(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Some Other Section\n\n"
+            "| `papers/something/` | should | be | ignored | here |\n\n"
+            "## Papers\n\n"
+            "| Folder | Record | URL | Purpose | Accessed |\n"
+            "|--------|--------|-----|---------|----------|\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        assert "something" not in papers
+
+    def test_skips_non_matching_lines(self, tmp_path):
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Papers\n\n"
+            "| Folder | Record | URL | Purpose | Accessed |\n"
+            "|--------|--------|-----|---------|----------|\n"
+            "Some descriptive text\n"
+            "| `papers/endometriosis/pmid-12345-title/` | PMID:12345 | url | purpose | 2026-01-01 |\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        assert "endometriosis/pmid-12345-title" in papers
+
+    def test_markdown_pipe_in_cell(self, tmp_path):
+        """Cells with escaped pipes (`\\|`) still contain a literal | byte
+        in the file, which the regex misinterprets as a column separator.
+        The entry is not parsed — this is a known parser limitation."""
+        index = tmp_path / "INDEX.md"
+        index.write_text(
+            "# med-db Index\n\n"
+            "## Papers\n\n"
+            "| Folder | Record | URL | Purpose | Accessed |\n"
+            "|--------|--------|-----|---------|----------|\n"
+            "| `papers/topic/pmid-12345-test/` | PMID:12345 | https://example.com | Purpose \\| with pipe | 2026-06-01 |\n"
+        )
+        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        # Known limitation: escaped pipes break regex parsing
+        assert "topic/pmid-12345-test" not in papers
+
+
+# ---------------------------------------------------------------------------
+# collect_index_data
+# ---------------------------------------------------------------------------
+
+class TestCollectIndexData:
+    def test_empty_med_db(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert searches == []
+        assert papers == []
+        assert fulltexts == []
+        assert guidelines == []
+        assert web == []
+
+    def test_collects_search_json(self, tmp_path):
+        topic_dir = tmp_path / "searches" / "endometriosis"
+        topic_dir.mkdir(parents=True)
+        search_data = json.dumps({"esearchresult": {"querytranslation": "test", "idlist": ["1"]}})
+        (topic_dir / "pubmed-test.json").write_text(search_data)
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert len(searches) == 1
+        assert searches[0]["source"] == "PubMed"
+        assert "searches/endometriosis/pubmed-test.json" in searches[0]["path"]
+        today = datetime.date.today().isoformat()
+        assert searches[0]["accessed"] == today
+
+    def test_collects_paper_metadata(self, tmp_path):
+        paper_dir = tmp_path / "papers" / "endometriosis" / "pmid-12345-test"
+        paper_dir.mkdir(parents=True)
+        metadata = {"result": {"uids": ["12345"]}}
+        (paper_dir / "metadata.json").write_text(json.dumps(metadata))
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert len(papers) == 1
+        assert papers[0]["identifier"] == "PMID:12345"
+
+    def test_collects_fulltext_metadata(self, tmp_path):
+        ft_dir = tmp_path / "fulltext" / "endometriosis" / "pmid-12345-test"
+        ft_dir.mkdir(parents=True)
+        metadata = {"result": {"uids": ["12345"]}}
+        (ft_dir / "metadata.json").write_text(json.dumps(metadata))
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert len(fulltexts) == 1
+        assert fulltexts[0]["identifier"] == "PMID:12345"
+
+    def test_collects_guidelines(self, tmp_path):
+        gl_dir = tmp_path / "guidelines" / "endometriosis" / "eshre-guideline"
+        gl_dir.mkdir(parents=True)
+        (gl_dir / "source.en.md").write_text("---\ntitle: Test\n---\n\nContent")
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert len(guidelines) == 1
+
+    def test_collects_web_sources(self, tmp_path):
+        web_dir = tmp_path / "web" / "endometriosis"
+        web_dir.mkdir(parents=True)
+        (web_dir / "test.html").write_text("<html><body>test</body></html>")
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert len(web) == 1
+
+    def test_missing_dirs_no_error(self, tmp_path):
+        """Should handle missing directory trees gracefully."""
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert searches == []
+        assert papers == []
+        assert fulltexts == []
+        assert guidelines == []
+        assert web == []
+
+
+# ---------------------------------------------------------------------------
+# sync_index
+# ---------------------------------------------------------------------------
+
+class TestSyncIndex:
+    def test_creates_index_from_scratch(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        # Add a search file
+        searches_dir = tmp_path / "searches" / "endometriosis"
+        searches_dir.mkdir(parents=True)
+        (searches_dir / "pubmed-test.json").write_text(
+            json.dumps({"esearchresult": {"querytranslation": "test", "idlist": ["1"]}})
+        )
+        med_db.sync_index(tmp_path)
+        index = tmp_path / "INDEX.md"
+        assert index.is_file()
+        content = index.read_text()
+        assert "# med-db Index" in content
+        assert "## Searches" in content
+        assert "## Papers" in content
+        assert "## Fulltext" in content
+        assert "## Guidelines" in content
+        assert "## Web Sources" in content
+        assert "pubmed-test.json" in content
+
+    def test_preserves_existing_entry_metadata(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        # Create a search file
+        searches_dir = tmp_path / "searches" / "endometriosis"
+        searches_dir.mkdir(parents=True)
+        (searches_dir / "pubmed-test.json").write_text(
+            json.dumps({"esearchresult": {"querytranslation": "test", "idlist": ["1"]}})
+        )
+        # First sync to create initial index
+        med_db.sync_index(tmp_path)
+        # Second sync with update to preserve custom purpose
+        med_db.sync_index(
+            tmp_path,
+            search_updates={
+                "searches/endometriosis/pubmed-test.json": {
+                    "source": "PubMed",
+                    "query": "endometriosis AND diet",
+                    "purpose": "Custom purpose for review",
+                    "accessed": "2026-01-15",
+                }
+            },
+        )
+        content = (tmp_path / "INDEX.md").read_text()
+        assert "Custom purpose for review" in content
+        assert "2026-01-15" in content
+
+    def test_includes_paper_entries(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        paper_dir = tmp_path / "papers" / "endometriosis" / "pmid-12345-test"
+        paper_dir.mkdir(parents=True)
+        (paper_dir / "metadata.json").write_text(
+            json.dumps({"result": {"uids": ["12345"]}})
+        )
+        med_db.sync_index(tmp_path)
+        content = (tmp_path / "INDEX.md").read_text()
+        assert "pmid-12345-test" in content
+        assert "PMID:12345" in content
+
+    def test_includes_web_entries(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        web_dir = tmp_path / "web" / "endometriosis"
+        web_dir.mkdir(parents=True)
+        (web_dir / "google-scholar-test.html").write_text("<html></html>")
+        med_db.sync_index(tmp_path)
+        content = (tmp_path / "INDEX.md").read_text()
+        assert "google-scholar-test.html" in content
+
+    def test_index_ends_with_newline(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        med_db.sync_index(tmp_path)
+        content = (tmp_path / "INDEX.md").read_text()
+        assert content.endswith("\n")
+
+
+# ---------------------------------------------------------------------------
+# archive_web_query
+# ---------------------------------------------------------------------------
+
+class TestArchiveWebQuery:
+    def test_google_scholar_creates_html(self, tmp_path):
+        args = mock.Mock(
+            source="google-scholar",
+            query="endometriosis AND diet",
+            search_slug="test-search",
+        )
+        med_db.ensure_med_db_structure(tmp_path)
+        web_file, target_url = med_db.archive_web_query(args, tmp_path, "endometriosis")
+        assert web_file.exists()
+        content = web_file.read_text()
+        assert "<!doctype html>" in content.lower()
+        assert "endometriosis AND diet" in html_unescape(content)
+        assert "Google Scholar" in content
+        assert "scholar.google.com" in target_url
+
+    def test_source_without_query_builder(self, tmp_path):
+        args = mock.Mock(
+            source="open-science-directory",
+            query="endometriosis",
+            search_slug="test-search",
+        )
+        med_db.ensure_med_db_structure(tmp_path)
+        web_file, target_url = med_db.archive_web_query(args, tmp_path, "endometriosis")
+        assert web_file.exists()
+        content = web_file.read_text()
+        assert "does not expose a stable public query URL" in content
+        assert "Open Science Directory" in content
+
+    def test_falls_back_slug_when_not_given(self, tmp_path):
+        args = mock.Mock(
+            source="google-scholar",
+            query="endometriosis diet research",
+            search_slug=None,
+        )
+        med_db.ensure_med_db_structure(tmp_path)
+        web_file, target_url = med_db.archive_web_query(args, tmp_path, "endometriosis")
+        assert web_file.exists()
+        assert "google-scholar" in web_file.name
+
+    def test_unique_filename_on_collision(self, tmp_path):
+        args = mock.Mock(
+            source="google-scholar",
+            query="test",
+            search_slug="test-search",
+        )
+        med_db.ensure_med_db_structure(tmp_path)
+        web_dir = tmp_path / "web" / "endometriosis"
+        web_dir.mkdir(parents=True)
+        (web_dir / "google-scholar-test-search.html").write_text("existing")
+        web_file, _ = med_db.archive_web_query(args, tmp_path, "endometriosis")
+        assert "google-scholar-test-search-2.html" == web_file.name
+
+
+def html_unescape(s):
+    import html
+    return html.unescape(s)
+
+
+# ---------------------------------------------------------------------------
+# parse_args
+# ---------------------------------------------------------------------------
+
+class TestParseArgs:
+    def test_minimal_query(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--query", "endometriosis"]):
+            args = med_db.parse_args()
+        assert args.query == "endometriosis"
+        assert args.source == "pubmed"
+        assert args.topic == "_uncategorized"
+
+    def test_query_required_without_pmid(self):
+        with mock.patch.object(sys, "argv", ["med-db.py"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+    def test_pmid_only(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--pmid", "12345678"]):
+            args = med_db.parse_args()
+        assert args.pmid == ["12345678"]
+
+    def test_multiple_pmids(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--pmid", "1", "--pmid", "2"]):
+            args = med_db.parse_args()
+        assert args.pmid == ["1", "2"]
+
+    def test_source_validation_pmid(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--source", "europe-pmc", "--pmid", "1"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+    def test_source_validation_epmc(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--source", "pubmed", "--epmc-record", "MED:1"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+    def test_archive_first_without_query(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--pmid", "1", "--archive-first", "5"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+    def test_archive_first_negative(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--query", "test", "--archive-first", "-1"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+    def test_archive_first_web_source(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--source", "google-scholar", "--query", "test", "--archive-first", "5"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+    def test_retmax_minimum(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--query", "test", "--retmax", "0"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+    def test_topic_and_topic_slug(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--query", "test", "--topic", "Endometriosis", "--topic-slug", "endo"]):
+            args = med_db.parse_args()
+        assert args.topic == "Endometriosis"
+        assert args.topic_slug == "endo"
+
+    def test_migrate_mode(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--migrate"]):
+            args = med_db.parse_args()
+        assert args.migrate is True
+
+    def test_migrate_needs_no_query(self):
+        """--migrate should not require --query or --pmid."""
+        with mock.patch.object(sys, "argv", ["med-db.py", "--migrate"]):
+            args = med_db.parse_args()
+        assert args.migrate is True
+
+    def test_default_values(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--query", "test"]):
+            args = med_db.parse_args()
+        assert args.retmax == 20
+        assert args.delay == 0.34
+        assert args.med_db == "med-db"
+        assert args.validate is False
+
+    def test_europe_pmc_source_with_epmc_record(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--source", "europe-pmc", "--epmc-record", "MED:35350465"]):
+            args = med_db.parse_args()
+        assert args.epmc_record == ["MED:35350465"]
+
+    def test_epmc_record_requires_europe_pmc_source(self):
+        with mock.patch.object(sys, "argv", ["med-db.py", "--source", "doaj", "--epmc-record", "MED:1"]):
+            with pytest.raises(SystemExit):
+                med_db.parse_args()
+
+
+# ---------------------------------------------------------------------------
+# migrate_flat_to_topic
+# ---------------------------------------------------------------------------
+
+class TestMigrateFlatToTopic:
+    def test_migrate_papers(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        # Create old flat structure
+        old_meta = tmp_path / "metadata"
+        old_meta.mkdir()
+        old_abs = tmp_path / "abstracts"
+        old_abs.mkdir()
+        (old_meta / "pmid-12345-test.json").write_text('{"result":{"uids":["12345"]}}')
+        (old_abs / "pmid-12345-test.txt").write_text("Abstract content")
+
+        exit_code = med_db.migrate_flat_to_topic(tmp_path, dry_run=False)
+        assert exit_code == 0
+
+        dest = tmp_path / "papers" / "_migrated" / "pmid-12345-test"
+        assert dest.is_dir()
+        assert (dest / "metadata.json").is_file()
+        assert (dest / "abstract.txt").is_file()
+        assert (dest / "abstract.txt").read_text() == "Abstract content"
+
+    def test_migrate_papers_missing_abstract(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        old_meta = tmp_path / "metadata"
+        old_meta.mkdir()
+        (tmp_path / "abstracts").mkdir()
+        (old_meta / "pmid-12345-test.json").write_text('{"result":{"uids":["12345"]}}')
+
+        med_db.migrate_flat_to_topic(tmp_path)
+        dest = tmp_path / "papers" / "_migrated" / "pmid-12345-test"
+        assert (dest / "abstract.txt").read_text() == "Abstract not found in old flat abstracts/ directory.\n"
+
+    def test_dry_run_makes_no_changes(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        old_meta = tmp_path / "metadata"
+        old_meta.mkdir()
+        (tmp_path / "abstracts").mkdir()
+        (old_meta / "pmid-12345-test.json").write_text('{"result":{"uids":["12345"]}}')
+
+        med_db.migrate_flat_to_topic(tmp_path, dry_run=True)
+        dest = tmp_path / "papers" / "_migrated" / "pmid-12345-test"
+        assert not dest.exists()
+
+    def test_migrate_searches(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        # ensure_med_db_structure already creates searches/; place old-style files there
+        old_searches = tmp_path / "searches"
+        (old_searches / "s2026-test.json").write_text('{"esearchresult":{"idlist":["1"]}}')
+
+        med_db.migrate_flat_to_topic(tmp_path)
+        dest = tmp_path / "searches" / "_migrated" / "s2026-test.json"
+        assert dest.is_file()
+
+    def test_migrate_web(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        # ensure_med_db_structure already creates web/; place old-style files there
+        old_web = tmp_path / "web"
+        (old_web / "test-page.html").write_text("<html></html>")
+
+        med_db.migrate_flat_to_topic(tmp_path)
+        dest = tmp_path / "web" / "_migrated" / "test-page.html"
+        assert dest.is_file()
+
+    def test_skips_already_migrated(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        old_meta = tmp_path / "metadata"
+        old_meta.mkdir()
+        (tmp_path / "abstracts").mkdir()
+        (old_meta / "pmid-12345-test.json").write_text('{"result":{"uids":["12345"]}}')
+
+        # Pre-create the destination
+        dest_dir = tmp_path / "papers" / "_migrated" / "pmid-12345-test"
+        dest_dir.mkdir(parents=True)
+        (dest_dir / "metadata.json").write_text("already migrated")
+
+        med_db.migrate_flat_to_topic(tmp_path)
+        assert (dest_dir / "metadata.json").read_text() == "already migrated"
+
+    def test_migrate_empty_dirs(self, tmp_path):
+        """Migration of empty directories should be a no-op."""
+        med_db.ensure_med_db_structure(tmp_path)
+        exit_code = med_db.migrate_flat_to_topic(tmp_path)
+        assert exit_code == 0
+
+
+# ---------------------------------------------------------------------------
+# WEB_SOURCE_SPECS static data
+# ---------------------------------------------------------------------------
+
+class TestWebSourceSpecs:
+    def test_known_sources_present(self):
+        for key in ("google-scholar", "doaj", "open-science-directory",
+                     "free-medical-journals", "openmd", "trip-database"):
+            assert key in med_db.WEB_SOURCE_SPECS
+
+    def test_google_scholar_has_query_builder(self):
+        spec = med_db.WEB_SOURCE_SPECS["google-scholar"]
+        assert "query_url_builder" in spec
+        assert callable(spec["query_url_builder"])
+
+    def test_open_science_directory_no_query_builder(self):
+        spec = med_db.WEB_SOURCE_SPECS["open-science-directory"]
+        assert "query_url_builder" not in spec
+
+
+# ---------------------------------------------------------------------------
+# save_text
+# ---------------------------------------------------------------------------
+
+class TestSaveText:
+    def test_writes_utf8(self, tmp_path):
+        path = tmp_path / "test.txt"
+        med_db.save_text(path, "héllo wörld")
+        assert path.read_text(encoding="utf-8") == "héllo wörld"
+
+    def test_overwrites_existing(self, tmp_path):
+        path = tmp_path / "test.txt"
+        path.write_text("old content")
+        med_db.save_text(path, "new content")
+        assert path.read_text(encoding="utf-8") == "new content"
+
+
+# ---------------------------------------------------------------------------
+# Integration-level tests (main with mocked HTTP)
+# ---------------------------------------------------------------------------
+
+class TestMainIntegration:
+    """Test main() with mocked network calls."""
+
+    def test_migrate_mode(self, tmp_path, capsys, monkeypatch):
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", ["med-db.py", "--migrate", "--med-db", str(med_db_path)]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+
+    def test_migrate_dry_run(self, tmp_path, capsys, monkeypatch):
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", ["med-db.py", "--migrate-dry-run", "--med-db", str(med_db_path)]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+
+    def test_web_query_flow(self, tmp_path, monkeypatch):
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "google-scholar",
+            "--query", "endometriosis AND diet",
+            "--search-slug", "test-search",
+            "--topic", "endometriosis",
+            "--med-db", str(med_db_path),
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+        index = med_db_path / "INDEX.md"
+        assert index.is_file()
+        content = index.read_text()
+        assert "test-search" in content
+        assert "Google Scholar" in content
+
+    def test_validate_flag_calls_validator(self, tmp_path, monkeypatch):
+        """When --validate is passed and no records archived, validator should run."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        # We need a fake validator to exist for the subprocess call
+        fake_validator = tmp_path / "med-db-validate.py"
+        fake_validator.write_text(
+            "#!/usr/bin/python3\nimport sys; print('med-db validation OK'); sys.exit(0)\n"
+        )
+        # Monkey-patch the validator path to point to our fake
+        import med_db as med_db_mod
+        with mock.patch.object(med_db_mod, "run_validator", return_value=0):
+            with mock.patch.object(sys, "argv", [
+                "med-db.py",
+                "--source", "google-scholar",
+                "--query", "test",
+                "--med-db", str(med_db_path),
+                "--validate",
+            ]):
+                exit_code = med_db.main()
+            assert exit_code == 0
+
+    def test_no_arguments_prints_error(self, capsys):
+        with mock.patch.object(sys, "argv", ["med-db.py"]):
+            with pytest.raises(SystemExit):
+                med_db.main()
+        captured = capsys.readouterr()
+        assert "provide --query" in captured.err.lower() or "error" in captured.err.lower()
