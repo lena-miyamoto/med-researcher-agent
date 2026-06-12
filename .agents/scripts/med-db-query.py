@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """Query the local med-db archive.
 
 Provides CLI access to inspect the med-db filesystem structure: list topics,
@@ -139,9 +138,21 @@ def list_topic_papers(med_db, topic):
         meta_file = paper_dir / "metadata.json"
         if not meta_file.is_file():
             continue
-        ident, url = utils.default_paper_entry(meta_file)
         info, _ = _paper_metadata(paper_dir)
-        title = info.get("title", "Unknown title") if info and "error" not in info else "Unknown title"
+        if info and "error" not in info:
+            title = info.get("title", "Unknown title")
+            if info.get("source") == "pubmed" and info.get("pmid"):
+                ident = f"PMID:{info['pmid']}"
+                url = f"https://pubmed.ncbi.nlm.nih.gov/{info['pmid']}/"
+            elif info.get("source") == "europe-pmc" and info.get("epmc_id"):
+                ident = info["epmc_id"]
+                source_name, rid = info["epmc_id"].split(":", 1)
+                url = utils.europe_pmc_article_url(source_name, rid)
+            else:
+                ident, url = utils.default_paper_entry(meta_file)
+        else:
+            ident, url = utils.default_paper_entry(meta_file)
+            title = "Unknown title"
         papers.append({
             "folder": str(paper_dir.relative_to(med_db)),
             "identifier": ident,

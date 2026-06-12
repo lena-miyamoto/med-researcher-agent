@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import argparse
 import json
 import re
@@ -161,12 +160,16 @@ def validate_web(root, issues):
 
 
 def validate_index(root, issues):
-    index_path = root / "INDEX.md"
+    index_path = root / "index.json"
     if not index_path.is_file():
-        issues.append(f"missing INDEX.md: {index_path}")
+        issues.append(f"missing index.json: {index_path}")
         return
 
-    content = read_text(index_path)
+    try:
+        data = json.loads(read_text(index_path))
+    except (json.JSONDecodeError, OSError) as exc:
+        issues.append(f"invalid index.json: {exc}")
+        return
 
     # Collect actual filesystem entries
     actual_searches = sorted(
@@ -175,34 +178,31 @@ def validate_index(root, issues):
         if (root / "searches").is_dir()
     )
     actual_paper_dirs = sorted(
-        str(p.relative_to(root))
+        str(p.parent.relative_to(root))
         for p in (root / "papers").rglob("metadata.json")
         if (root / "papers").is_dir()
     )
-    actual_paper_dirs = [d.rsplit("/", 1)[0] for d in actual_paper_dirs]
     actual_fulltext_dirs = sorted(
-        str(p.relative_to(root))
+        str(p.parent.relative_to(root))
         for p in (root / "fulltext").rglob("metadata.json")
         if (root / "fulltext").is_dir()
     )
-    actual_fulltext_dirs = [d.rsplit("/", 1)[0] for d in actual_fulltext_dirs]
     actual_guideline_dirs = sorted(
-        str(p.relative_to(root))
+        str(p.parent.relative_to(root))
         for p in (root / "guidelines").rglob("source.*.md")
         if (root / "guidelines").is_dir()
     )
-    actual_guideline_dirs = [d.rsplit("/", 1)[0] for d in actual_guideline_dirs]
     actual_web = sorted(
         str(p.relative_to(root))
         for p in (root / "web").rglob("*.html")
         if (root / "web").is_dir()
     )
 
-    index_searches = _index_paths(content, "searches", file_suffix=".json")
-    index_papers = _index_paths(content, "papers", directory=True)
-    index_fulltext = _index_paths(content, "fulltext", directory=True)
-    index_guidelines = _index_paths(content, "guidelines", directory=True)
-    index_web = _index_paths(content, "web", file_suffix=".html")
+    index_searches = _index_paths(data, "searches")
+    index_papers = _index_paths(data, "papers")
+    index_fulltext = _index_paths(data, "fulltext")
+    index_guidelines = _index_paths(data, "guidelines")
+    index_web = _index_paths(data, "web")
 
     for label, indexed, on_disk in (
         ("search index", index_searches, actual_searches),
@@ -219,17 +219,8 @@ def validate_index(root, issues):
             issues.append(f"{label} is missing existing entry: {item}")
 
 
-def _index_paths(content, prefix, file_suffix=None, directory=False):
-    paths = set()
-    pattern = re.compile(rf"\|\s*`?({re.escape(prefix)}/[^`|]+?)`?\s*\|")
-    for match in pattern.finditer(content):
-        path = match.group(1).strip()
-        if directory:
-            path = path.rstrip("/")
-        if file_suffix and not path.endswith(file_suffix):
-            continue
-        paths.add(path)
-    return sorted(paths)
+def _index_paths(data, key):
+    return sorted(entry["path"] for entry in data.get(key, []))
 
 
 def validate_legacy_dirs(root, warnings):
@@ -292,4 +283,8 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except KeyboardInterrupt:
+        print("cancelled", file=sys.stderr)
+        raise SystemExit(130)

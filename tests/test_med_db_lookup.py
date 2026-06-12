@@ -397,7 +397,7 @@ class TestResolveDoi:
                 return PUBMED_EFETCH
             raise AssertionError(f"unexpected: {endpoint}")
 
-        result = ml.resolve_doi("10.1111/jnc.13157", fetch_func=fake_fetch)
+        result = ml.resolve_doi("10.1111/jnc.13157", pubmed_fetch_func=fake_fetch)
         assert result is not None
         assert result["pmid"] == "25946513"
         assert result["doi"] == "10.1111/jnc.13157"
@@ -426,7 +426,7 @@ class TestResolveDoi:
                 },
             })
 
-        result = ml.resolve_doi("10.1111/jnc.13157", fetch_func=fake_fetch)
+        result = ml.resolve_doi("10.1111/jnc.13157", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch)
         assert result is not None
         assert result["source"] == "europe-pmc"
         assert result["pmid"] == "25946513"
@@ -441,7 +441,7 @@ class TestResolveDoi:
                 return empty_esearch
             return empty_epmc
 
-        result = ml.resolve_doi("10.9999/nonexistent", fetch_func=fake_fetch)
+        result = ml.resolve_doi("10.9999/nonexistent", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch)
         assert result is None
 
     def test_europe_pmc_fallback_empty_record_id(self):
@@ -462,7 +462,7 @@ class TestResolveDoi:
                 },
             })
 
-        result = ml.resolve_doi("10.9999/ghost", fetch_func=fake_fetch)
+        result = ml.resolve_doi("10.9999/ghost", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch)
         assert result is None
 
 

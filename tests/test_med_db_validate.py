@@ -496,7 +496,7 @@ class TestValidateIndex:
     def test_missing_index(self, tmp_path):
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
-        assert any("missing INDEX.md" in issue for issue in issues)
+        assert any("missing index.json" in issue for issue in issues)
 
     def test_index_matches_filesystem(self, tmp_path):
         # Create filesystem entries
@@ -524,82 +524,37 @@ class TestValidateIndex:
         (web_dir / "google-scholar-test.html").write_text("<html></html>")
 
         # Build a matching index
-        index = tmp_path / "INDEX.md"
-        index.write_text("""# med-db Index
-
-## Searches
-
-| File | Source | Query | Purpose | Accessed |
-|------|--------|-------|---------|----------|
-| `searches/endometriosis/pubmed-test.json` | PubMed | test | test | 2026-01-01 |
-
-## Papers
-
-| Folder | Record | URL | Purpose | Accessed |
-|--------|--------|-----|---------|----------|
-| `papers/endometriosis/pmid-12345-test/` | PMID:12345 | url | purpose | 2026-01-01 |
-
-## Fulltext
-
-| Folder | Record | URL | Purpose | Accessed |
-|--------|--------|-----|---------|----------|
-| `fulltext/endometriosis/pmid-12345-test/` | PMID:12345 | url | purpose | 2026-01-01 |
-
-## Guidelines
-
-| Folder | Source | URL | Purpose | Accessed |
-|--------|--------|-----|---------|----------|
-| `guidelines/endometriosis/eshre-guideline/` | ESHRE | url | purpose | 2026-01-01 |
-
-## Web Sources
-
-| File | URL | Purpose | Accessed |
-|------|-----|---------|----------|
-| `web/endometriosis/google-scholar-test.html` | url | purpose | 2026-01-01 |
-""")
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "searches": [
+                {"path": "searches/endometriosis/pubmed-test.json", "source": "PubMed", "query": "test", "purpose": "test", "accessed": "2026-01-01"}
+            ],
+            "papers": [
+                {"path": "papers/endometriosis/pmid-12345-test", "identifier": "PMID:12345", "url": "url", "purpose": "purpose", "accessed": "2026-01-01"}
+            ],
+            "fulltext": [
+                {"path": "fulltext/endometriosis/pmid-12345-test", "identifier": "PMID:12345", "url": "url", "purpose": "purpose", "accessed": "2026-01-01"}
+            ],
+            "guidelines": [
+                {"path": "guidelines/endometriosis/eshre-guideline", "source": "ESHRE", "url": "url", "purpose": "purpose", "accessed": "2026-01-01"}
+            ],
+            "web": [
+                {"path": "web/endometriosis/google-scholar-test.html", "url": "url", "purpose": "purpose", "accessed": "2026-01-01"}
+            ]
+        }))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
         assert issues == []
 
-    def test_index_paths_tolerate_missing_backticks(self, tmp_path):
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
-            (tmp_path / name).mkdir()
-        searches_dir = tmp_path / "searches" / "endometriosis"
-        searches_dir.mkdir(parents=True)
-        (searches_dir / "pubmed-test.json").write_text("{}")
-        index = tmp_path / "INDEX.md"
-        index.write_text("""# med-db Index
-
-## Searches
-
-| File | Source | Query | Purpose | Accessed |
-|------|--------|-------|---------|----------|
-| searches/endometriosis/pubmed-test.json | PubMed | test | test | 2026-01-01 |
-
-## Papers
-
-## Fulltext
-
-## Guidelines
-
-## Web Sources
-""")
-        issues = []
-        med_db_validate.validate_index(tmp_path, issues)
-        assert not any("search index" in issue for issue in issues)
-
     def test_index_references_missing_file(self, tmp_path):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
             (tmp_path / name).mkdir()
-        index = tmp_path / "INDEX.md"
-        index.write_text("""# med-db Index
-
-## Searches
-
-| File | Source | Query | Purpose | Accessed |
-|------|--------|-------|---------|----------|
-| `searches/endometriosis/nonexistent.json` | PubMed | test | test | 2026-01-01 |
-""")
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "searches": [
+                {"path": "searches/endometriosis/nonexistent.json", "source": "PubMed", "query": "test", "purpose": "test", "accessed": "2026-01-01"}
+            ]
+        }))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
         assert any("references missing file" in issue for issue in issues)
@@ -610,10 +565,8 @@ class TestValidateIndex:
         searches_dir = tmp_path / "searches" / "endometriosis"
         searches_dir.mkdir(parents=True)
         (searches_dir / "pubmed-test.json").write_text("{}")
-        index = tmp_path / "INDEX.md"
-        index.write_text("# med-db Index\n\n## Searches\n\n"
-                          "| File | Source | Query | Purpose | Accessed |\n"
-                          "|------|--------|-------|---------|----------|\n")
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({"searches": []}))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
         assert any("is missing existing entry" in issue for issue in issues)
@@ -621,11 +574,11 @@ class TestValidateIndex:
     def test_empty_index_sections(self, tmp_path):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
             (tmp_path / name).mkdir()
-        index = tmp_path / "INDEX.md"
-        index.write_text("# med-db Index\n")
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({}))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
-        # No tables → nothing parsed. All actual filesystem entries are "extra".
+        # No sections → nothing parsed. All actual filesystem entries are "extra".
         # Since we have no actual files in the empty dirs, issues should be empty.
         assert issues == []
 
@@ -649,14 +602,23 @@ class TestValidateIndex:
         web_dir.mkdir(parents=True)
         (web_dir / "w.html").write_text("<html></html>")
 
-        # Empty index
-        index = tmp_path / "INDEX.md"
-        index.write_text("# med-db Index\n\n## Searches\n\n## Papers\n\n## Fulltext\n\n## Guidelines\n\n## Web Sources\n\n")
+        # Empty index — all sections present but empty arrays
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({"searches": [], "papers": [], "fulltext": [], "guidelines": [], "web": []}))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
         # All 5 sections should report missing existing entries
         assert len(issues) == 5
         assert all("is missing existing entry" in i for i in issues)
+
+    def test_invalid_json(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        index = tmp_path / "index.json"
+        index.write_text("not valid json {{{")
+        issues = []
+        med_db_validate.validate_index(tmp_path, issues)
+        assert any("invalid index.json" in issue for issue in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -712,8 +674,8 @@ class TestMain:
     def test_valid_minimal_structure(self, tmp_path, capsys):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
             (tmp_path / name).mkdir()
-        # Create an INDEX.md
-        (tmp_path / "INDEX.md").write_text("# med-db Index\n\n## Searches\n\n## Papers\n\n## Fulltext\n\n## Guidelines\n\n## Web Sources\n")
+        # Create an index.json
+        (tmp_path / "index.json").write_text(json.dumps({"searches": [], "papers": [], "fulltext": [], "guidelines": [], "web": []}))
         with mock.patch.object(sys, "argv", ["med-db-validate.py", "--med-db", str(tmp_path)]):
             exit_code = med_db_validate.main()
         assert exit_code == 0
@@ -734,22 +696,15 @@ class TestMain:
         papers_dir.mkdir(parents=True)
         (papers_dir / "metadata.json").write_text(json.dumps({"result": {"uids": ["1"]}}))
         (papers_dir / "abstract.txt").write_text("abstract")
-        # INDEX.md
-        index = tmp_path / "INDEX.md"
-        index.write_text("""# med-db Index
-
-## Searches
-
-| File | Source | Query | Purpose | Accessed |
-|------|--------|-------|---------|----------|
-| `searches/test/s.json` | PubMed | test | test | 2026-01-01 |
-
-## Papers
-
-| Folder | Record | URL | Purpose | Accessed |
-|--------|--------|-----|---------|----------|
-| `papers/test/pmid-1-x/` | PMID:1 | url | purpose | 2026-01-01 |
-""")
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "searches": [
+                {"path": "searches/test/s.json", "source": "PubMed", "query": "test", "purpose": "test", "accessed": "2026-01-01"}
+            ],
+            "papers": [
+                {"path": "papers/test/pmid-1-x", "identifier": "PMID:1", "url": "url", "purpose": "purpose", "accessed": "2026-01-01"}
+            ]
+        }))
         with mock.patch.object(sys, "argv", ["med-db-validate.py", "--med-db", str(tmp_path)]):
             exit_code = med_db_validate.main()
         assert exit_code == 0
@@ -761,7 +716,7 @@ class TestMain:
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
             (tmp_path / name).mkdir()
         (tmp_path / "metadata").mkdir()
-        (tmp_path / "INDEX.md").write_text("# med-db Index\n\n## Searches\n\n## Papers\n\n## Fulltext\n\n## Guidelines\n\n## Web Sources\n")
+        (tmp_path / "index.json").write_text(json.dumps({"searches": [], "papers": [], "fulltext": [], "guidelines": [], "web": []}))
         with mock.patch.object(sys, "argv", ["med-db-validate.py", "--med-db", str(tmp_path)]):
             exit_code = med_db_validate.main()
         assert exit_code == 0
@@ -777,4 +732,4 @@ class TestMain:
         # Only the required-dir errors should appear; no further validation
         assert "missing required directory" in captured.out
         # Should NOT see index validation errors (stops early)
-        assert "missing INDEX.md" not in captured.out
+        assert "missing index.json" not in captured.out

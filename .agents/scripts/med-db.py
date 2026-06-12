@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import argparse
 import datetime
 import html
@@ -47,9 +46,6 @@ def unique_filename(directory, stem, suffix):
             return candidate
         n += 1
 
-
-def escape_markdown_cell(text):
-    return str(text).replace("|", "\\|").strip()
 
 
 # ---------------------------------------------------------------------------
@@ -105,17 +101,15 @@ def build_common_params(args):
 
 
 def source_label(source_name):
-    labels = {
-        "pubmed": "PubMed",
-        "europe-pmc": "Europe PMC",
-        "google-scholar": "Google Scholar",
-        "doaj": "Directory of Open Access Journals",
-        "open-science-directory": "Open Science Directory",
-        "free-medical-journals": "Free Medical Journals",
-        "openmd": "OpenMD",
-        "trip-database": "Trip Database",
-    }
-    return labels.get(source_name, source_name)
+    # PubMed / Europe PMC are not web discovery sources; handle them directly.
+    if source_name == "pubmed":
+        return "PubMed"
+    if source_name == "europe-pmc":
+        return "Europe PMC"
+    spec = WEB_SOURCE_SPECS.get(source_name)
+    if spec:
+        return spec["label"]
+    return source_name
 
 
 def build_google_scholar_url(query):
@@ -183,101 +177,25 @@ WEB_SOURCE_SPECS = {
 
 
 # ---------------------------------------------------------------------------
-# INDEX.md generation
+# index.json generation
 # ---------------------------------------------------------------------------
 
 
 def load_existing_index_entries(index_path):
-    """Parse existing INDEX.md to preserve user-edited purposes and metadata."""
-    search_entries = {}
-    paper_entries = {}
-    fulltext_entries = {}
-    guideline_entries = {}
-    web_entries = {}
-
+    """Parse existing index.json to preserve user-edited purposes and metadata."""
     if not index_path.is_file():
-        return search_entries, paper_entries, fulltext_entries, guideline_entries, web_entries
+        return {}, {}, {}, {}, {}
 
-    current_section = None
-    for line in index_path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("## Searches"):
-            current_section = "searches"
-            continue
-        elif line.startswith("## Papers"):
-            current_section = "papers"
-            continue
-        elif line.startswith("## Fulltext"):
-            current_section = "fulltext"
-            continue
-        elif line.startswith("## Guidelines"):
-            current_section = "guidelines"
-            continue
-        elif line.startswith("## Web"):
-            current_section = "web"
-            continue
-        elif line.startswith("## "):
-            current_section = None
-            continue
+    try:
+        data = json.loads(index_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}, {}, {}, {}, {}
 
-        if current_section == "searches":
-            match = re.match(
-                r"^\| `searches/([^`]+\.json)` \| ([^|]+) \| `([^`]+)` \| ([^|]+) \| (.+) \|$",
-                line,
-            )
-            if match:
-                search_entries[f"searches/{match.group(1)}"] = {
-                    "source": match.group(2).strip(),
-                    "query": match.group(3),
-                    "purpose": match.group(4).strip(),
-                    "accessed": match.group(5).strip(),
-                }
-        elif current_section == "papers":
-            match = re.match(
-                r"^\| `papers/([^`]+)/` \| ([^|]+) \| ([^|]+) \| ([^|]+) \| (.+) \|$",
-                line,
-            )
-            if match:
-                paper_entries[f"papers/{match.group(1)}"] = {
-                    "identifier": match.group(2).strip(),
-                    "url": match.group(3).strip(),
-                    "purpose": match.group(4).strip(),
-                    "accessed": match.group(5).strip(),
-                }
-        elif current_section == "fulltext":
-            match = re.match(
-                r"^\| `fulltext/([^`]+)/` \| ([^|]+) \| ([^|]+) \| ([^|]+) \| (.+) \|$",
-                line,
-            )
-            if match:
-                fulltext_entries[f"fulltext/{match.group(1)}"] = {
-                    "identifier": match.group(2).strip(),
-                    "url": match.group(3).strip(),
-                    "purpose": match.group(4).strip(),
-                    "accessed": match.group(5).strip(),
-                }
-        elif current_section == "guidelines":
-            match = re.match(
-                r"^\| `guidelines/([^`]+)/` \| ([^|]+) \| ([^|]+) \| ([^|]+) \| (.+) \|$",
-                line,
-            )
-            if match:
-                guideline_entries[f"guidelines/{match.group(1)}"] = {
-                    "source": match.group(2).strip(),
-                    "url": match.group(3).strip(),
-                    "purpose": match.group(4).strip(),
-                    "accessed": match.group(5).strip(),
-                }
-        elif current_section == "web":
-            match = re.match(
-                r"^\| `web/([^`]+\.html)` \| ([^|]+) \| ([^|]+) \| (.+) \|$",
-                line,
-            )
-            if match:
-                web_entries[f"web/{match.group(1)}"] = {
-                    "url": match.group(2).strip(),
-                    "purpose": match.group(3).strip(),
-                    "accessed": match.group(4).strip(),
-                }
+    search_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("searches", [])}
+    paper_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("papers", [])}
+    fulltext_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("fulltext", [])}
+    guideline_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("guidelines", [])}
+    web_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("web", [])}
 
     return search_entries, paper_entries, fulltext_entries, guideline_entries, web_entries
 
@@ -301,7 +219,7 @@ def source_from_search_json(path):
 
 
 def collect_index_data(med_db):
-    """Walk the filesystem and collect entries for INDEX.md."""
+    """Walk the filesystem and collect entries for index.json."""
     today = datetime.date.today().isoformat()
     searches = []
     papers = []
@@ -388,8 +306,8 @@ def collect_index_data(med_db):
 
 
 def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates=None, guideline_updates=None, web_updates=None):
-    """Generate INDEX.md from filesystem, merging in user-provided metadata."""
-    index_path = med_db / "INDEX.md"
+    """Generate index.json from filesystem, merging in user-provided metadata."""
+    index_path = med_db / "index.json"
     existing_searches, existing_papers, existing_fulltexts, existing_guidelines, existing_web = load_existing_index_entries(index_path)
 
     if search_updates:
@@ -405,117 +323,23 @@ def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates
 
     fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web = collect_index_data(med_db)
 
-    today = datetime.date.today().isoformat()
-    lines = [
-        "# med-db Index",
-        "",
-        "Archive root: `med-db/`",
-        "",
-        "Every archived search, paper, full-text capture, guideline, and web source must be listed here.",
-        "",
-    ]
+    def _merge(fs_list, existing_dict):
+        result = []
+        for item in fs_list:
+            entry = existing_dict.get(item["path"], {})
+            merged = dict(item)
+            merged.update({k: v for k, v in entry.items() if k in merged})
+            result.append(merged)
+        return result
 
-    # Searches table
-    lines.extend([
-        "## Searches",
-        "",
-        "| File | Source | Query | Purpose | Accessed |",
-        "|------|--------|-------|---------|----------|",
-    ])
-    for s in fs_searches:
-        entry = existing_searches.get(s["path"], {})
-        source_name = entry.get("source") or s["source"]
-        query = entry.get("query") or s["query"]
-        purpose = entry.get("purpose") or s["purpose"]
-        accessed = entry.get("accessed") or s["accessed"]
-        lines.append(
-            f"| `{s['path']}` | {escape_markdown_cell(source_name)} | `{escape_markdown_cell(query)}` | {escape_markdown_cell(purpose)} | {escape_markdown_cell(accessed)} |"
-        )
-
-    # Papers table
-    lines.extend([
-        "",
-        "## Papers",
-        "",
-        "| Folder | Record | URL | Purpose | Accessed |",
-        "|--------|--------|-----|---------|----------|",
-    ])
-    for p in fs_papers:
-        entry = existing_papers.get(p["path"], {})
-        identifier = entry.get("identifier") or p["identifier"]
-        url = entry.get("url") or p["url"]
-        purpose = entry.get("purpose") or p["purpose"]
-        accessed = entry.get("accessed") or p["accessed"]
-        lines.append(
-            f"| `{p['path']}/` | {escape_markdown_cell(identifier)} | {escape_markdown_cell(url)} | {escape_markdown_cell(purpose)} | {escape_markdown_cell(accessed)} |"
-        )
-
-    # Fulltext table
-    lines.extend([
-        "",
-        "## Fulltext",
-        "",
-        "| Folder | Record | URL | Purpose | Accessed |",
-        "|--------|--------|-----|---------|----------|",
-    ])
-    for f in fs_fulltexts:
-        entry = existing_fulltexts.get(f["path"], {})
-        identifier = entry.get("identifier") or f["identifier"]
-        url = entry.get("url") or f["url"]
-        purpose = entry.get("purpose") or f["purpose"]
-        accessed = entry.get("accessed") or f["accessed"]
-        lines.append(
-            f"| `{f['path']}/` | {escape_markdown_cell(identifier)} | {escape_markdown_cell(url)} | {escape_markdown_cell(purpose)} | {escape_markdown_cell(accessed)} |"
-        )
-
-    # Guidelines table
-    lines.extend([
-        "",
-        "## Guidelines",
-        "",
-        "| Folder | Source | URL | Purpose | Accessed |",
-        "|--------|--------|-----|---------|----------|",
-    ])
-    for g in fs_guidelines:
-        entry = existing_guidelines.get(g["path"], {})
-        source = entry.get("source") or g["source"]
-        url = entry.get("url") or g["url"]
-        purpose = entry.get("purpose") or g["purpose"]
-        accessed = entry.get("accessed") or g["accessed"]
-        lines.append(
-            f"| `{g['path']}/` | {escape_markdown_cell(source)} | {escape_markdown_cell(url)} | {escape_markdown_cell(purpose)} | {escape_markdown_cell(accessed)} |"
-        )
-
-    # Web table
-    lines.extend([
-        "",
-        "## Web Sources",
-        "",
-        "| File | URL | Purpose | Accessed |",
-        "|------|-----|---------|----------|",
-    ])
-    for w in fs_web:
-        entry = existing_web.get(w["path"], {})
-        url = entry.get("url") or w["url"]
-        purpose = entry.get("purpose") or w["purpose"]
-        accessed = entry.get("accessed") or w["accessed"]
-        lines.append(
-            f"| `{w['path']}` | {escape_markdown_cell(url)} | {escape_markdown_cell(purpose)} | {escape_markdown_cell(accessed)} |"
-        )
-
-    lines.extend([
-        "",
-        "---",
-        "",
-        "## Usage Notes",
-        "",
-        "- Check `INDEX.md` and `searches/` before creating new searches.",
-        "- For cited papers, read both `metadata.json` and `abstract.txt` in the paper folder before summarizing.",
-        "- Distinguish study types when evidence conflicts: RCT, systematic review, meta-analysis, cohort, case report, in-vitro, and animal model are not interchangeable.",
-        "- When new records are archived, keep `metadata.json` and `abstract.txt` in sync within each paper folder.",
-        "- Use Google Scholar and other web discovery sources in this workflow; archive reproducible query pages when available.",
-    ])
-    index_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    index_data = {
+        "searches": _merge(fs_searches, existing_searches),
+        "papers": _merge(fs_papers, existing_papers),
+        "fulltext": _merge(fs_fulltexts, existing_fulltexts),
+        "guidelines": _merge(fs_guidelines, existing_guidelines),
+        "web": _merge(fs_web, existing_web),
+    }
+    index_path.write_text(json.dumps(index_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -691,16 +515,21 @@ def dedupe(values):
 
 
 def run_validator(med_db):
-    validator = Path(__file__).with_name("med-db-validate.py")
-    if not validator.is_file():
-        print(f"validator script not found: {validator}", file=sys.stderr)
+    # Use the canonical uv run entry point as required by AGENTS.md.
+    # subprocess.run is necessary here because the validator must run in a
+    # separate process — it imports med_db_validate as its own main module,
+    # and calling it in-process would re-execute med-db.py's own main().
+    try:
+        subprocess.run(
+            ["uv", "run", "med-db-validate", "--med-db", str(med_db)],
+            check=True,
+        )
+        return 0
+    except FileNotFoundError:
+        print("validator not available (uv not found)", file=sys.stderr)
         return 1
-
-    result = subprocess.run(
-        [sys.executable, str(validator), "--med-db", str(med_db)],
-        check=False,
-    )
-    return result.returncode
+    except subprocess.CalledProcessError:
+        return 1
 
 
 def copy2_verified(source, destination):
@@ -971,7 +800,6 @@ def main():
         if index < len(epmc_records) - 1 and args.delay > 0:
             time.sleep(args.delay)
 
-    # FIXED: use keyword arguments so web_updates lands in the correct parameter
     sync_index(med_db, search_updates=search_updates, paper_updates=paper_updates, web_updates=web_updates)
 
     if search_file:

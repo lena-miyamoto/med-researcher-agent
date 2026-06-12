@@ -105,30 +105,6 @@ class TestUniqueFilename:
 
 
 # ---------------------------------------------------------------------------
-# escape_markdown_cell
-# ---------------------------------------------------------------------------
-
-class TestEscapeMarkdownCell:
-    def test_no_pipe(self):
-        assert med_db.escape_markdown_cell("hello world") == "hello world"
-
-    def test_pipe_escaped(self):
-        assert med_db.escape_markdown_cell("a|b") == "a\\|b"
-
-    def test_multiple_pipes(self):
-        assert med_db.escape_markdown_cell("a|b|c") == "a\\|b\\|c"
-
-    def test_converts_to_string(self):
-        assert med_db.escape_markdown_cell(42) == "42"
-
-    def test_strips_whitespace(self):
-        assert med_db.escape_markdown_cell("  hello  ") == "hello"
-
-    def test_pipe_with_spaces(self):
-        assert med_db.escape_markdown_cell(" col1 | col2 ") == "col1 \\| col2"
-
-
-# ---------------------------------------------------------------------------
 # dedupe
 # ---------------------------------------------------------------------------
 
@@ -464,26 +440,23 @@ class TestEnsureMedDbStructure:
 
 class TestLoadExistingIndexEntries:
     def test_missing_index(self, tmp_path):
-        result = med_db.load_existing_index_entries(tmp_path / "INDEX.md")
+        result = med_db.load_existing_index_entries(tmp_path / "index.json")
         assert result == ({}, {}, {}, {}, {})
 
     def test_empty_index(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text("# med-db Index\n\n## Searches\n\n## Papers\n\n")
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({"searches": [], "papers": []}))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         assert searches == {}
         assert papers == {}
 
     def test_parses_search_entry(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Searches\n\n"
-            "| File | Source | Query | Purpose | Accessed |\n"
-            "|------|--------|-------|---------|----------|\n"
-            "| `searches/endometriosis/pubmed-diet.json` | PubMed | `endometriosis AND diet` | Review dietary interventions | 2026-06-01 |\n\n"
-            "## Papers\n\n"
-        )
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "searches": [
+                {"path": "searches/endometriosis/pubmed-diet.json", "source": "PubMed", "query": "endometriosis AND diet", "purpose": "Review dietary interventions", "accessed": "2026-06-01"}
+            ]
+        }))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         key = "searches/endometriosis/pubmed-diet.json"
         assert key in searches
@@ -493,14 +466,12 @@ class TestLoadExistingIndexEntries:
         assert searches[key]["accessed"] == "2026-06-01"
 
     def test_parses_paper_entry(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Papers\n\n"
-            "| Folder | Record | URL | Purpose | Accessed |\n"
-            "|--------|--------|-----|---------|----------|\n"
-            "| `papers/endometriosis/pmid-12345678-title/` | PMID:12345678 | https://pubmed.ncbi.nlm.nih.gov/12345678/ | Endometriosis diet review | 2026-06-01 |\n\n"
-        )
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "papers": [
+                {"path": "papers/endometriosis/pmid-12345678-title", "identifier": "PMID:12345678", "url": "https://pubmed.ncbi.nlm.nih.gov/12345678/", "purpose": "Endometriosis diet review", "accessed": "2026-06-01"}
+            ]
+        }))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         key = "papers/endometriosis/pmid-12345678-title"
         assert key in papers
@@ -508,88 +479,72 @@ class TestLoadExistingIndexEntries:
         assert papers[key]["purpose"] == "Endometriosis diet review"
 
     def test_parses_fulltext_entry(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Fulltext\n\n"
-            "| Folder | Record | URL | Purpose | Accessed |\n"
-            "|--------|--------|-----|---------|----------|\n"
-            "| `fulltext/endometriosis/pmid-12345678-title/` | PMID:12345678 | https://pubmed.ncbi.nlm.nih.gov/12345678/ | Full review | 2026-06-01 |\n\n"
-        )
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "fulltext": [
+                {"path": "fulltext/endometriosis/pmid-12345678-title", "identifier": "PMID:12345678", "url": "https://pubmed.ncbi.nlm.nih.gov/12345678/", "purpose": "Full review", "accessed": "2026-06-01"}
+            ]
+        }))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         key = "fulltext/endometriosis/pmid-12345678-title"
         assert key in fulltexts
         assert fulltexts[key]["purpose"] == "Full review"
 
     def test_parses_guideline_entry(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Guidelines\n\n"
-            "| Folder | Source | URL | Purpose | Accessed |\n"
-            "|--------|--------|-----|---------|----------|\n"
-            "| `guidelines/endometriosis/eshre-guideline/` | ESHRE | https://eshre.eu/ | Clinical guideline | 2026-06-01 |\n\n"
-        )
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "guidelines": [
+                {"path": "guidelines/endometriosis/eshre-guideline", "source": "ESHRE", "url": "https://eshre.eu/", "purpose": "Clinical guideline", "accessed": "2026-06-01"}
+            ]
+        }))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         key = "guidelines/endometriosis/eshre-guideline"
         assert key in guidelines
         assert guidelines[key]["source"] == "ESHRE"
 
     def test_parses_web_entry(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Web Sources\n\n"
-            "| File | URL | Purpose | Accessed |\n"
-            "|------|-----|---------|----------|\n"
-            "| `web/endometriosis/google-scholar-search.html` | https://scholar.google.com/scholar?q=test | Test search | 2026-06-01 |\n\n"
-        )
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "web": [
+                {"path": "web/endometriosis/google-scholar-search.html", "url": "https://scholar.google.com/scholar?q=test", "purpose": "Test search", "accessed": "2026-06-01"}
+            ]
+        }))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         key = "web/endometriosis/google-scholar-search.html"
         assert key in web
         assert web[key]["url"] == "https://scholar.google.com/scholar?q=test"
 
-    def test_ignores_other_sections(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Some Other Section\n\n"
-            "| `papers/something/` | should | be | ignored | here |\n\n"
-            "## Papers\n\n"
-            "| Folder | Record | URL | Purpose | Accessed |\n"
-            "|--------|--------|-----|---------|----------|\n"
-        )
+    def test_ignores_unknown_keys(self, tmp_path):
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "some_other_key": [
+                {"path": "papers/something/"}
+            ],
+            "papers": []
+        }))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         assert "papers/something" not in papers
+        assert papers == {}
 
-    def test_skips_non_matching_lines(self, tmp_path):
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Papers\n\n"
-            "| Folder | Record | URL | Purpose | Accessed |\n"
-            "|--------|--------|-----|---------|----------|\n"
-            "Some descriptive text\n"
-            "| `papers/endometriosis/pmid-12345-title/` | PMID:12345 | url | purpose | 2026-01-01 |\n"
-        )
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        assert "papers/endometriosis/pmid-12345-title" in papers
+    def test_handles_invalid_json(self, tmp_path):
+        index = tmp_path / "index.json"
+        index.write_text("not valid json {{{")
+        result = med_db.load_existing_index_entries(index)
+        assert result == ({}, {}, {}, {}, {})
 
-    def test_markdown_pipe_in_cell(self, tmp_path):
-        """Cells with escaped pipes (`\\|`) still contain a literal | byte
-        in the file, which the regex misinterprets as a column separator.
-        The entry is not parsed — this is a known parser limitation."""
-        index = tmp_path / "INDEX.md"
-        index.write_text(
-            "# med-db Index\n\n"
-            "## Papers\n\n"
-            "| Folder | Record | URL | Purpose | Accessed |\n"
-            "|--------|--------|-----|---------|----------|\n"
-            "| `papers/topic/pmid-12345-test/` | PMID:12345 | https://example.com | Purpose \\| with pipe | 2026-06-01 |\n"
-        )
+    def test_pipe_in_cell_no_longer_a_problem(self, tmp_path):
+        """Pipes in cell values are trivially handled in JSON — no escaping issues."""
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "papers": [
+                {"path": "papers/topic/pmid-12345-test", "identifier": "PMID:12345", "url": "https://example.com", "purpose": "Purpose | with pipe", "accessed": "2026-06-01"}
+            ]
+        }))
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        # Known limitation: escaped pipes break regex parsing
-        assert "papers/topic/pmid-12345-test" not in papers
+        # JSON handles pipes natively — no parsing ambiguity
+        key = "papers/topic/pmid-12345-test"
+        assert key in papers
+        assert papers[key]["purpose"] == "Purpose | with pipe"
 
 
 # ---------------------------------------------------------------------------
@@ -683,16 +638,15 @@ class TestSyncIndex:
             json.dumps({"esearchresult": {"querytranslation": "test", "idlist": ["1"]}})
         )
         med_db.sync_index(tmp_path)
-        index = tmp_path / "INDEX.md"
+        index = tmp_path / "index.json"
         assert index.is_file()
-        content = index.read_text()
-        assert "# med-db Index" in content
-        assert "## Searches" in content
-        assert "## Papers" in content
-        assert "## Fulltext" in content
-        assert "## Guidelines" in content
-        assert "## Web Sources" in content
-        assert "pubmed-test.json" in content
+        data = json.loads(index.read_text())
+        assert "searches" in data
+        assert "papers" in data
+        assert "fulltext" in data
+        assert "guidelines" in data
+        assert "web" in data
+        assert any("pubmed-test.json" in s["path"] for s in data["searches"])
 
     def test_preserves_existing_entry_metadata(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
@@ -716,9 +670,10 @@ class TestSyncIndex:
                 }
             },
         )
-        content = (tmp_path / "INDEX.md").read_text()
-        assert "Custom purpose for review" in content
-        assert "2026-01-15" in content
+        data = json.loads((tmp_path / "index.json").read_text())
+        search = next(s for s in data["searches"] if "pubmed-test.json" in s["path"])
+        assert search["purpose"] == "Custom purpose for review"
+        assert search["accessed"] == "2026-01-15"
 
     def test_includes_paper_entries(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
@@ -728,9 +683,9 @@ class TestSyncIndex:
             json.dumps({"result": {"uids": ["12345"]}})
         )
         med_db.sync_index(tmp_path)
-        content = (tmp_path / "INDEX.md").read_text()
-        assert "pmid-12345-test" in content
-        assert "PMID:12345" in content
+        data = json.loads((tmp_path / "index.json").read_text())
+        assert any("pmid-12345-test" in p["path"] for p in data["papers"])
+        assert any("PMID:12345" in p["identifier"] for p in data["papers"])
 
     def test_includes_web_entries(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
@@ -738,17 +693,17 @@ class TestSyncIndex:
         web_dir.mkdir(parents=True)
         (web_dir / "google-scholar-test.html").write_text("<html></html>")
         med_db.sync_index(tmp_path)
-        content = (tmp_path / "INDEX.md").read_text()
-        assert "google-scholar-test.html" in content
+        data = json.loads((tmp_path / "index.json").read_text())
+        assert any("google-scholar-test.html" in w["path"] for w in data["web"])
 
     def test_index_ends_with_newline(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
         med_db.sync_index(tmp_path)
-        content = (tmp_path / "INDEX.md").read_text()
+        content = (tmp_path / "index.json").read_text()
         assert content.endswith("\n")
 
     def test_round_trip_preserves_custom_metadata(self, tmp_path):
-        """After sync_index writes custom metadata to INDEX.md, a second
+        """After sync_index writes custom metadata to index.json, a second
         sync_index (without explicit updates) must preserve it by reading
         it back from the file."""
         med_db.ensure_med_db_structure(tmp_path)
@@ -769,11 +724,12 @@ class TestSyncIndex:
                 }
             },
         )
-        # Second sync WITHOUT updates — metadata should be recovered from INDEX.md
+        # Second sync WITHOUT updates — metadata should be recovered from index.json
         med_db.sync_index(tmp_path)
-        content = (tmp_path / "INDEX.md").read_text()
-        assert "Custom purpose that must survive" in content
-        assert "2026-01-15" in content
+        data = json.loads((tmp_path / "index.json").read_text())
+        search = next(s for s in data["searches"] if "pubmed-test.json" in s["path"])
+        assert search["purpose"] == "Custom purpose that must survive"
+        assert search["accessed"] == "2026-01-15"
 
     def test_includes_guideline_entries(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
@@ -781,8 +737,8 @@ class TestSyncIndex:
         gl_dir.mkdir(parents=True)
         (gl_dir / "source.en.md").write_text("---\ntitle: Test\n---\n\nContent")
         med_db.sync_index(tmp_path)
-        content = (tmp_path / "INDEX.md").read_text()
-        assert "eshre-guideline" in content
+        data = json.loads((tmp_path / "index.json").read_text())
+        assert any("eshre-guideline" in g["path"] for g in data["guidelines"])
 
     def test_preserves_guideline_custom_metadata(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
@@ -800,11 +756,12 @@ class TestSyncIndex:
                 }
             },
         )
-        content = (tmp_path / "INDEX.md").read_text()
-        assert "ESHRE" in content
-        assert "eshre.eu" in content
-        assert "Clinical practice guideline" in content
-        assert "2026-01-15" in content
+        data = json.loads((tmp_path / "index.json").read_text())
+        gl = next(g for g in data["guidelines"] if "eshre-guideline" in g["path"])
+        assert gl["source"] == "ESHRE"
+        assert "eshre.eu" in gl["url"]
+        assert gl["purpose"] == "Clinical practice guideline"
+        assert gl["accessed"] == "2026-01-15"
 
     def test_preserves_web_custom_metadata(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
@@ -821,9 +778,10 @@ class TestSyncIndex:
                 }
             },
         )
-        content = (tmp_path / "INDEX.md").read_text()
-        assert "Custom web search" in content
-        assert "2026-02-01" in content
+        data = json.loads((tmp_path / "index.json").read_text())
+        web = next(w for w in data["web"] if "google-scholar-test.html" in w["path"])
+        assert web["purpose"] == "Custom web search"
+        assert web["accessed"] == "2026-02-01"
 
 
 # ---------------------------------------------------------------------------
@@ -1168,15 +1126,14 @@ class TestMainIntegration:
         ]):
             exit_code = med_db.main()
         assert exit_code == 0
-        index = med_db_path / "INDEX.md"
+        index = med_db_path / "index.json"
         assert index.is_file()
-        content = index.read_text()
-        assert "test-search" in content
-        assert "Google Scholar" in content
+        data = json.loads(index.read_text())
+        assert any("test-search" in w["path"] for w in data["web"])
         # REGRESSION: the web query URL must appear in the index —
         # the old positional-arg bug would lose it and show
         # "URL unavailable; review and refine." instead.
-        assert "scholar.google.com" in content
+        assert any("scholar.google.com" in w["url"] for w in data["web"])
 
     def test_web_url_survives_round_trip_sync(self, tmp_path, monkeypatch):
         """REGRESSION: sync_index was called with web_updates in the positional
@@ -1197,8 +1154,8 @@ class TestMainIntegration:
             exit_code = med_db.main()
         assert exit_code == 0
 
-        first_content = (med_db_path / "INDEX.md").read_text()
-        assert "scholar.google.com" in first_content
+        first_data = json.loads((med_db_path / "index.json").read_text())
+        assert any("scholar.google.com" in w["url"] for w in first_data["web"])
 
         # Second run — archive another web query in the same topic to
         # trigger a second sync_index call (which exercises the round-trip
@@ -1214,12 +1171,12 @@ class TestMainIntegration:
             exit_code = med_db.main()
         assert exit_code == 0
 
-        second_content = (med_db_path / "INDEX.md").read_text()
+        second_data = json.loads((med_db_path / "index.json").read_text())
         # The first entry's URL must still be present after the round-trip
-        assert "scholar.google.com" in second_content
+        assert any("scholar.google.com" in w["url"] for w in second_data["web"])
         # And both web files should be listed
-        assert "roundtrip-test" in second_content
-        assert "roundtrip-test-2" in second_content
+        assert any("roundtrip-test" in w["path"] for w in second_data["web"])
+        assert any("roundtrip-test-2" in w["path"] for w in second_data["web"])
 
     def test_validate_flag_calls_validator(self, tmp_path, monkeypatch):
         """When --validate is passed and no records archived, validator should run."""

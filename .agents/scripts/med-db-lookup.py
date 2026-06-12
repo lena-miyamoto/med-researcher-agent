@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """Lightweight external lookup — PubMed, Europe PMC, DOI resolution.
 
 Fetches structured paper data (title, abstract, authors, DOI) by PMID,
@@ -207,7 +206,7 @@ def lookup_epmc_records(record_specs, fetch_func=None, delay=0):
     return results
 
 
-def resolve_doi(doi, email=None, fetch_func=None):
+def resolve_doi(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None):
     """Resolve a DOI to its PubMed record.
 
     Tries PubMed E-utilities first, then falls back to Europe PMC.
@@ -215,30 +214,29 @@ def resolve_doi(doi, email=None, fetch_func=None):
     Args:
         doi: DOI string (e.g. "10.1000/xyz").
         email: optional NCBI contact email.
-        fetch_func: callable(module, params) -> str returning raw API text.
-                    When None, uses real fetch_pubmed / fetch_europe_pmc.
+        pubmed_fetch_func: callable(endpoint, params) -> str for PubMed.
+        epmc_fetch_func: callable(module, params) -> str for Europe PMC.
+            When None, uses the real fetch_pubmed / fetch_europe_pmc.
 
     Returns:
         dict with keys: source, pmid, doi, title, abstract, authors,
         journal, publication_date, url, or None if not found.
     """
-    if fetch_func is None:
-        pubmed_fetch = fetch_pubmed
-        epmc_fetch = fetch_europe_pmc
-    else:
-        pubmed_fetch = fetch_func
-        epmc_fetch = fetch_func
+    if pubmed_fetch_func is None:
+        pubmed_fetch_func = fetch_pubmed
+    if epmc_fetch_func is None:
+        epmc_fetch_func = fetch_europe_pmc
 
     # Try PubMed esearch with [doi] term
     try:
         params = {"db": "pubmed", "retmode": "json", "term": f"{doi}[doi]", "tool": "med-db-lookup"}
         if email:
             params["email"] = email
-        raw = pubmed_fetch("esearch.fcgi", params)
+        raw = pubmed_fetch_func("esearch.fcgi", params)
         data = json.loads(raw)
         idlist = data.get("esearchresult", {}).get("idlist", [])
         if idlist:
-            results = lookup_pmids([idlist[0]], email=email, fetch_func=pubmed_fetch)
+            results = lookup_pmids([idlist[0]], email=email, fetch_func=pubmed_fetch_func)
             if results and "error" not in results[0]:
                 return results[0]
     except RuntimeError:
@@ -247,7 +245,7 @@ def resolve_doi(doi, email=None, fetch_func=None):
     # Fall back to Europe PMC
     try:
         params = {"query": f"{doi}", "resultType": "core", "format": "json", "pageSize": "1"}
-        raw = epmc_fetch("search", params)
+        raw = epmc_fetch_func("search", params)
         data = json.loads(raw)
         hits = data.get("resultList", {}).get("result", [])
         if hits:
@@ -255,7 +253,7 @@ def resolve_doi(doi, email=None, fetch_func=None):
             source_name = str(record.get("source") or "MED")
             record_id = str(record.get("id") or record.get("pmid") or "")
             if record_id:
-                results = lookup_epmc_records([f"{source_name}:{record_id}"], fetch_func=epmc_fetch)
+                results = lookup_epmc_records([f"{source_name}:{record_id}"], fetch_func=epmc_fetch_func)
                 if results and "error" not in results[0]:
                     return results[0]
     except RuntimeError:
