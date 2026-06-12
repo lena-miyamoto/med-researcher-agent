@@ -485,7 +485,7 @@ class TestLoadExistingIndexEntries:
             "## Papers\n\n"
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        key = "endometriosis/pubmed-diet.json"
+        key = "searches/endometriosis/pubmed-diet.json"
         assert key in searches
         assert searches[key]["source"] == "PubMed"
         assert searches[key]["query"] == "endometriosis AND diet"
@@ -502,7 +502,7 @@ class TestLoadExistingIndexEntries:
             "| `papers/endometriosis/pmid-12345678-title/` | PMID:12345678 | https://pubmed.ncbi.nlm.nih.gov/12345678/ | Endometriosis diet review | 2026-06-01 |\n\n"
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        key = "endometriosis/pmid-12345678-title"
+        key = "papers/endometriosis/pmid-12345678-title"
         assert key in papers
         assert papers[key]["identifier"] == "PMID:12345678"
         assert papers[key]["purpose"] == "Endometriosis diet review"
@@ -517,7 +517,7 @@ class TestLoadExistingIndexEntries:
             "| `fulltext/endometriosis/pmid-12345678-title/` | PMID:12345678 | https://pubmed.ncbi.nlm.nih.gov/12345678/ | Full review | 2026-06-01 |\n\n"
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        key = "endometriosis/pmid-12345678-title"
+        key = "fulltext/endometriosis/pmid-12345678-title"
         assert key in fulltexts
         assert fulltexts[key]["purpose"] == "Full review"
 
@@ -531,7 +531,7 @@ class TestLoadExistingIndexEntries:
             "| `guidelines/endometriosis/eshre-guideline/` | ESHRE | https://eshre.eu/ | Clinical guideline | 2026-06-01 |\n\n"
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        key = "endometriosis/eshre-guideline"
+        key = "guidelines/endometriosis/eshre-guideline"
         assert key in guidelines
         assert guidelines[key]["source"] == "ESHRE"
 
@@ -545,7 +545,7 @@ class TestLoadExistingIndexEntries:
             "| `web/endometriosis/google-scholar-search.html` | https://scholar.google.com/scholar?q=test | Test search | 2026-06-01 |\n\n"
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        key = "endometriosis/google-scholar-search.html"
+        key = "web/endometriosis/google-scholar-search.html"
         assert key in web
         assert web[key]["url"] == "https://scholar.google.com/scholar?q=test"
 
@@ -560,7 +560,7 @@ class TestLoadExistingIndexEntries:
             "|--------|--------|-----|---------|----------|\n"
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        assert "something" not in papers
+        assert "papers/something" not in papers
 
     def test_skips_non_matching_lines(self, tmp_path):
         index = tmp_path / "INDEX.md"
@@ -573,7 +573,7 @@ class TestLoadExistingIndexEntries:
             "| `papers/endometriosis/pmid-12345-title/` | PMID:12345 | url | purpose | 2026-01-01 |\n"
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
-        assert "endometriosis/pmid-12345-title" in papers
+        assert "papers/endometriosis/pmid-12345-title" in papers
 
     def test_markdown_pipe_in_cell(self, tmp_path):
         """Cells with escaped pipes (`\\|`) still contain a literal | byte
@@ -589,7 +589,7 @@ class TestLoadExistingIndexEntries:
         )
         searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
         # Known limitation: escaped pipes break regex parsing
-        assert "topic/pmid-12345-test" not in papers
+        assert "papers/topic/pmid-12345-test" not in papers
 
 
 # ---------------------------------------------------------------------------
@@ -640,6 +640,15 @@ class TestCollectIndexData:
         gl_dir = tmp_path / "guidelines" / "endometriosis" / "eshre-guideline"
         gl_dir.mkdir(parents=True)
         (gl_dir / "source.en.md").write_text("---\ntitle: Test\n---\n\nContent")
+        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        assert len(guidelines) == 1
+
+    def test_guideline_deduplication_multilingual(self, tmp_path):
+        """Guideline folder with multiple language sources should only appear once."""
+        gl_dir = tmp_path / "guidelines" / "endometriosis" / "eshre-guideline"
+        gl_dir.mkdir(parents=True)
+        (gl_dir / "source.en.md").write_text("---\ntitle: EN\n---\n\nContent")
+        (gl_dir / "source.de.md").write_text("---\ntitle: DE\n---\n\nInhalt")
         searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
         assert len(guidelines) == 1
 
@@ -738,6 +747,84 @@ class TestSyncIndex:
         content = (tmp_path / "INDEX.md").read_text()
         assert content.endswith("\n")
 
+    def test_round_trip_preserves_custom_metadata(self, tmp_path):
+        """After sync_index writes custom metadata to INDEX.md, a second
+        sync_index (without explicit updates) must preserve it by reading
+        it back from the file."""
+        med_db.ensure_med_db_structure(tmp_path)
+        searches_dir = tmp_path / "searches" / "endometriosis"
+        searches_dir.mkdir(parents=True)
+        (searches_dir / "pubmed-test.json").write_text(
+            json.dumps({"esearchresult": {"querytranslation": "test", "idlist": ["1"]}})
+        )
+        # First sync with explicit custom metadata
+        med_db.sync_index(
+            tmp_path,
+            search_updates={
+                "searches/endometriosis/pubmed-test.json": {
+                    "source": "PubMed",
+                    "query": "endometriosis AND diet",
+                    "purpose": "Custom purpose that must survive",
+                    "accessed": "2026-01-15",
+                }
+            },
+        )
+        # Second sync WITHOUT updates — metadata should be recovered from INDEX.md
+        med_db.sync_index(tmp_path)
+        content = (tmp_path / "INDEX.md").read_text()
+        assert "Custom purpose that must survive" in content
+        assert "2026-01-15" in content
+
+    def test_includes_guideline_entries(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        gl_dir = tmp_path / "guidelines" / "endometriosis" / "eshre-guideline"
+        gl_dir.mkdir(parents=True)
+        (gl_dir / "source.en.md").write_text("---\ntitle: Test\n---\n\nContent")
+        med_db.sync_index(tmp_path)
+        content = (tmp_path / "INDEX.md").read_text()
+        assert "eshre-guideline" in content
+
+    def test_preserves_guideline_custom_metadata(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        gl_dir = tmp_path / "guidelines" / "endometriosis" / "eshre-guideline"
+        gl_dir.mkdir(parents=True)
+        (gl_dir / "source.en.md").write_text("---\ntitle: Test\n---\n\nContent")
+        med_db.sync_index(
+            tmp_path,
+            guideline_updates={
+                "guidelines/endometriosis/eshre-guideline": {
+                    "source": "ESHRE",
+                    "url": "https://eshre.eu/guideline",
+                    "purpose": "Clinical practice guideline",
+                    "accessed": "2026-01-15",
+                }
+            },
+        )
+        content = (tmp_path / "INDEX.md").read_text()
+        assert "ESHRE" in content
+        assert "eshre.eu" in content
+        assert "Clinical practice guideline" in content
+        assert "2026-01-15" in content
+
+    def test_preserves_web_custom_metadata(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        web_dir = tmp_path / "web" / "endometriosis"
+        web_dir.mkdir(parents=True)
+        (web_dir / "google-scholar-test.html").write_text("<html></html>")
+        med_db.sync_index(
+            tmp_path,
+            web_updates={
+                "web/endometriosis/google-scholar-test.html": {
+                    "url": "https://scholar.google.com/scholar?q=test",
+                    "purpose": "Custom web search",
+                    "accessed": "2026-02-01",
+                }
+            },
+        )
+        content = (tmp_path / "INDEX.md").read_text()
+        assert "Custom web search" in content
+        assert "2026-02-01" in content
+
 
 # ---------------------------------------------------------------------------
 # archive_web_query
@@ -812,7 +899,7 @@ class TestParseArgs:
             args = med_db.parse_args()
         assert args.query == "endometriosis"
         assert args.source == "pubmed"
-        assert args.topic == "_uncategorized"
+        assert args.topic == "uncategorized"
 
     def test_query_required_without_pmid(self):
         with mock.patch.object(sys, "argv", ["med-db.py"]):
@@ -1059,6 +1146,53 @@ class TestMainIntegration:
         content = index.read_text()
         assert "test-search" in content
         assert "Google Scholar" in content
+        # REGRESSION: the web query URL must appear in the index —
+        # the old positional-arg bug would lose it and show
+        # "URL unavailable; review and refine." instead.
+        assert "scholar.google.com" in content
+
+    def test_web_url_survives_round_trip_sync(self, tmp_path, monkeypatch):
+        """REGRESSION: sync_index was called with web_updates in the positional
+        slot for fulltext_updates.  A second sync_index (e.g. on a subsequent
+        run) must preserve the web entry's URL that was set on the first run."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+
+        # First run — archive a web query
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "google-scholar",
+            "--query", "endometriosis AND diet",
+            "--search-slug", "roundtrip-test",
+            "--topic", "endometriosis",
+            "--med-db", str(med_db_path),
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+
+        first_content = (med_db_path / "INDEX.md").read_text()
+        assert "scholar.google.com" in first_content
+
+        # Second run — archive another web query in the same topic to
+        # trigger a second sync_index call (which exercises the round-trip
+        # preservation path through load_existing_index_entries).
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "google-scholar",
+            "--query", "endometriosis exercise",
+            "--search-slug", "roundtrip-test-2",
+            "--topic", "endometriosis",
+            "--med-db", str(med_db_path),
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+
+        second_content = (med_db_path / "INDEX.md").read_text()
+        # The first entry's URL must still be present after the round-trip
+        assert "scholar.google.com" in second_content
+        # And both web files should be listed
+        assert "roundtrip-test" in second_content
+        assert "roundtrip-test-2" in second_content
 
     def test_validate_flag_calls_validator(self, tmp_path, monkeypatch):
         """When --validate is passed and no records archived, validator should run."""

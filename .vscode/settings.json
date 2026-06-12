@@ -222,8 +222,10 @@
     "Invoke-Expression": false,
 
     // ── Project-specific allow-list ──
-    "/^python3? .agents/scripts/med-db.py .+$/": true,
-    "/^python3? .agents/scripts/med-db-validate.py .+$/": true
+    "/^uv run med-db(?:\\s+.*)?$/": true,
+    "/^uv run med-db-lookup(?:\\s+.*)?$/": true,
+    "/^uv run med-db-query(?:\\s+.*)?$/": true,
+    "/^uv run med-db-validate(?:\\s+.*)?$/": true
   },
   "chat.tools.terminal.blockDetectedFileWrites": "all",
   "[markdown]": {

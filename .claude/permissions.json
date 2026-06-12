@@ -23,9 +23,13 @@
       "^https://aura.abdn.ac.uk(/|$)"
     ],
     "Bash": [
-      "^python3? .agents/scripts/med-db(-validate)?.py(\\s|$)",
+      "^uv run med-db(\\s|$)",
+      "^uv run med-db-validate(\\s|$)",
+      "^uv run med-db-lookup(\\s|$)",
+      "^uv run med-db-query(\\s|$)",
+      "^uv run test(\\s|$)",
       "^python3? -m json.tool(\\s|$)",
-      "html2text"
+      "^html2text(\\s|$)"
     ]
   }
 }

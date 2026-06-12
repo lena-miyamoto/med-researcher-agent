@@ -5,11 +5,11 @@ import re
 import sys
 from pathlib import Path
 
+import utils
 
-def slugify(text):
-    text = str(text).lower()
-    text = re.sub(r"[^a-z0-9]+", "-", text).strip("-")
-    return text or "record"
+
+# Re-export canonical slugify (replaces the old divergent copy)
+slugify = utils.slugify
 
 
 def parse_args():
@@ -22,12 +22,6 @@ def parse_args():
         help="Target med-db directory. Defaults to ./med-db.",
     )
     return parser.parse_args()
-
-
-def collect_files(directory, pattern):
-    if not directory.exists():
-        return []
-    return sorted(path.name for path in directory.glob(pattern) if path.is_file())
 
 
 def read_text(path):
@@ -88,13 +82,8 @@ def validate_papers(root, issues):
     if not papers_dir.is_dir():
         return
 
-    for paper_dir in sorted(papers_dir.rglob("*")):
-        if not paper_dir.is_dir():
-            continue
-        # Only validate leaf paper directories (those containing metadata.json)
-        meta_file = paper_dir / "metadata.json"
-        if not meta_file.is_file():
-            continue
+    for meta_file in sorted(papers_dir.rglob("metadata.json")):
+        paper_dir = meta_file.parent
 
         abstract_file = paper_dir / "abstract.txt"
         if not abstract_file.is_file():

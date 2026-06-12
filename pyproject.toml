@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "med-researcher-agent"
 version = "0.1.0"
@@ -5,6 +9,19 @@ description = "Reusable medical research agent configuration for both GitHub Cop
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[project.scripts]
+med-db = "entrypoints:med_db"
+med-db-validate = "entrypoints:med_db_validate"
+med-db-lookup = "entrypoints:med_db_lookup"
+med-db-query = "entrypoints:med_db_query"
+test = "entrypoints:test"
+
+[tool.setuptools]
+py-modules = ["entrypoints"]
+
+[tool.setuptools.package-dir]
+"" = ".agents/scripts"
 
 [dependency-groups]
 dev = [

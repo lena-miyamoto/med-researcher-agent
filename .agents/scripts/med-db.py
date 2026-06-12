@@ -8,40 +8,30 @@ import shutil
 import subprocess
 import sys
 import time
-import unicodedata
-import urllib.error
 import urllib.parse
-import urllib.request
 from pathlib import Path
 
+import utils
 
-EUTILS_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-EUROPE_PMC_BASE = "https://www.ebi.ac.uk/europepmc/webservices/rest"
+# ---------------------------------------------------------------------------
+# Web-source URL bases (only used in this module)
+# ---------------------------------------------------------------------------
+
 GOOGLE_SCHOLAR_BASE = "https://scholar.google.com/scholar"
 DOAJ_ARTICLES_BASE = "https://doaj.org/search/articles"
 OPEN_SCIENCE_DIRECTORY_BASE = "https://opensciencedirectory.net/"
 FREE_MEDICAL_JOURNALS_BASE = "http://www.freemedicaljournals.com/"
 OPENMD_BASE = "https://openmd.com/"
 TRIP_DATABASE_BASE = "https://www.tripdatabase.com/Searchresult"
-USER_AGENT = (
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
-)
+
 DEFAULT_SEARCH_PURPOSE = "Archived via med-db.py; review and refine purpose."
 DEFAULT_PAPER_PURPOSE = "Archived via med-db.py; review and refine purpose."
 DEFAULT_WEB_PURPOSE = "Archived web source; review and refine purpose."
-DEFAULT_TOPIC = "_uncategorized"
+DEFAULT_TOPIC = "uncategorized"
 
 
-def slugify(text, fallback="record", max_words=10, max_length=80):
-    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9]+", "-", text).strip("-")
-    if not text:
-        return fallback
-    words = [word for word in text.split("-") if word]
-    text = "-".join(words[:max_words])
-    return text[:max_length].rstrip("-") or fallback
+# Re-export canonical slugify for convenience (tests reference it via med_db.slugify)
+slugify = utils.slugify
 
 
 def unique_filename(directory, stem, suffix):
@@ -62,26 +52,31 @@ def escape_markdown_cell(text):
     return str(text).replace("|", "\\|").strip()
 
 
-def fetch_text(endpoint, params, timeout=60):
-    url = f"{EUTILS_BASE}/{endpoint}?{urllib.parse.urlencode(params)}"
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+# ---------------------------------------------------------------------------
+# Thin fetch wrappers — delegate to utils, convert RuntimeError → SystemExit
+# for CLI use
+# ---------------------------------------------------------------------------
+
+
+def _fetch_text(endpoint, params, timeout=60):
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            return response.read().decode("utf-8")
-    except (urllib.error.URLError, OSError) as exc:
-        print(f"error fetching {url}: {exc}", file=sys.stderr)
+        return utils.fetch_pubmed(endpoint, params, timeout)
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
         raise SystemExit(1)
 
 
-def fetch_europe_pmc_text(module, params, timeout=60):
-    url = f"{EUROPE_PMC_BASE}/{module}?{urllib.parse.urlencode(params)}"
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+def _fetch_europe_pmc_text(module, params, timeout=60):
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            return response.read().decode("utf-8")
-    except (urllib.error.URLError, OSError) as exc:
-        print(f"error fetching {url}: {exc}", file=sys.stderr)
+        return utils.fetch_europe_pmc(module, params, timeout)
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
         raise SystemExit(1)
+
+
+# Re-export shared helpers (referenced by other modules and tests)
+europe_pmc_article_url = utils.europe_pmc_article_url
+default_paper_entry = utils.default_paper_entry
 
 
 def save_text(path, content):
@@ -115,10 +110,6 @@ def source_label(source_name):
     return labels.get(source_name, source_name)
 
 
-def europe_pmc_article_url(source_name, record_id):
-    return f"https://europepmc.org/article/{source_name}/{record_id}"
-
-
 def build_google_scholar_url(query):
     return f"{GOOGLE_SCHOLAR_BASE}?{urllib.parse.urlencode({'q': query, 'hl': 'en'})}"
 
@@ -142,7 +133,8 @@ def build_doaj_url(query):
 
 
 def build_trip_database_url(query):
-    return f"{TRIP_DATABASE_BASE}?{urllib.parse.urlencode({'criteria': query, 'search_type': 'standard'})}"
+    params = {"criteria": query, "search_type": "standard"}
+    return f"{TRIP_DATABASE_BASE}?{urllib.parse.urlencode(params)}"
 
 
 WEB_SOURCE_SPECS = {
@@ -186,6 +178,7 @@ WEB_SOURCE_SPECS = {
 # INDEX.md generation
 # ---------------------------------------------------------------------------
 
+
 def load_existing_index_entries(index_path):
     """Parse existing INDEX.md to preserve user-edited purposes and metadata."""
     search_entries = {}
@@ -224,7 +217,7 @@ def load_existing_index_entries(index_path):
                 line,
             )
             if match:
-                search_entries[match.group(1)] = {
+                search_entries[f"searches/{match.group(1)}"] = {
                     "source": match.group(2).strip(),
                     "query": match.group(3),
                     "purpose": match.group(4).strip(),
@@ -236,7 +229,7 @@ def load_existing_index_entries(index_path):
                 line,
             )
             if match:
-                paper_entries[match.group(1)] = {
+                paper_entries[f"papers/{match.group(1)}"] = {
                     "identifier": match.group(2).strip(),
                     "url": match.group(3).strip(),
                     "purpose": match.group(4).strip(),
@@ -248,7 +241,7 @@ def load_existing_index_entries(index_path):
                 line,
             )
             if match:
-                fulltext_entries[match.group(1)] = {
+                fulltext_entries[f"fulltext/{match.group(1)}"] = {
                     "identifier": match.group(2).strip(),
                     "url": match.group(3).strip(),
                     "purpose": match.group(4).strip(),
@@ -260,7 +253,7 @@ def load_existing_index_entries(index_path):
                 line,
             )
             if match:
-                guideline_entries[match.group(1)] = {
+                guideline_entries[f"guidelines/{match.group(1)}"] = {
                     "source": match.group(2).strip(),
                     "url": match.group(3).strip(),
                     "purpose": match.group(4).strip(),
@@ -272,7 +265,7 @@ def load_existing_index_entries(index_path):
                 line,
             )
             if match:
-                web_entries[match.group(1)] = {
+                web_entries[f"web/{match.group(1)}"] = {
                     "url": match.group(2).strip(),
                     "purpose": match.group(3).strip(),
                     "accessed": match.group(4).strip(),
@@ -297,25 +290,6 @@ def source_from_search_json(path):
     if data.get("request") and data.get("resultList") is not None:
         return "Europe PMC"
     return "Unknown"
-
-
-def default_paper_entry(path):
-    data = json.loads(path.read_text(encoding="utf-8"))
-    pubmed_result = data.get("result", {})
-    if isinstance(pubmed_result, dict) and "uids" in pubmed_result:
-        uids = pubmed_result.get("uids", [])
-        if len(uids) == 1:
-            pmid = str(uids[0])
-            return f"PMID:{pmid}", f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
-
-    europe_pmc_results = data.get("resultList", {}).get("result", [])
-    if europe_pmc_results:
-        record = europe_pmc_results[0]
-        source_name = str(record.get("source") or "EPMC")
-        record_id = str(record.get("id") or record.get("pmid") or "unknown")
-        return f"{source_name}:{record_id}", europe_pmc_article_url(source_name, record_id)
-
-    return "unknown", "URL unavailable; review and refine."
 
 
 def collect_index_data(med_db):
@@ -375,9 +349,13 @@ def collect_index_data(med_db):
     # Guidelines
     guidelines_dir = med_db / "guidelines"
     if guidelines_dir.is_dir():
+        seen_dirs = set()
         for source_path in sorted(guidelines_dir.rglob("source.*.md")):
             guideline_dir = source_path.parent
             rel_dir = str(guideline_dir.relative_to(med_db))
+            if rel_dir in seen_dirs:
+                continue
+            seen_dirs.add(rel_dir)
             guidelines.append({
                 "path": rel_dir,
                 "source": "Review and refine source.",
@@ -536,6 +514,7 @@ def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates
 # Archive operations
 # ---------------------------------------------------------------------------
 
+
 def archive_search(args, med_db, topic):
     topic_dir = med_db / "searches" / topic
     topic_dir.mkdir(parents=True, exist_ok=True)
@@ -546,7 +525,7 @@ def archive_search(args, med_db, topic):
             "format": "json",
             "pageSize": str(args.retmax),
         }
-        raw_search = fetch_europe_pmc_text("search", params)
+        raw_search = _fetch_europe_pmc_text("search", params)
         parsed_search = json.loads(raw_search)
         search_slug = args.search_slug or slugify(args.query, fallback="europe-pmc-search")
         filename = unique_filename(topic_dir, f"europe-pmc-{search_slug}", ".json")
@@ -566,7 +545,7 @@ def archive_search(args, med_db, topic):
         "term": args.query,
         "retmax": str(args.retmax),
     })
-    raw_search = fetch_text("esearch.fcgi", params)
+    raw_search = _fetch_text("esearch.fcgi", params)
     parsed_search = json.loads(raw_search)
     search_slug = args.search_slug or slugify(args.query, fallback="pubmed-search")
     filename = unique_filename(topic_dir, f"pubmed-{search_slug}", ".json")
@@ -578,7 +557,7 @@ def archive_search(args, med_db, topic):
 def archive_pmid(args, med_db, pmid, topic):
     params = build_common_params(args)
     params.update({"retmode": "json", "id": str(pmid)})
-    raw_summary = fetch_text("esummary.fcgi", params)
+    raw_summary = _fetch_text("esummary.fcgi", params)
     parsed_summary = json.loads(raw_summary)
     record = parsed_summary.get("result", {}).get(str(pmid), {})
     title = record.get("title") or f"pmid-{pmid}"
@@ -601,7 +580,7 @@ def archive_pmid(args, med_db, pmid, topic):
         "rettype": "abstract",
         "retmode": "text",
     })
-    raw_abstract = fetch_text("efetch.fcgi", params)
+    raw_abstract = _fetch_text("efetch.fcgi", params)
     save_text(abstract_file, raw_abstract)
 
     return metadata_file, abstract_file, title, f"PMID:{pmid}", f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
@@ -622,7 +601,7 @@ def archive_europe_pmc_record(med_db, record_spec, topic):
         "format": "json",
         "pageSize": "1",
     }
-    raw_record = fetch_europe_pmc_text("search", params)
+    raw_record = _fetch_europe_pmc_text("search", params)
     parsed_record = json.loads(raw_record)
     results = parsed_record.get("resultList", {}).get("result", [])
     if not results:
@@ -720,6 +699,7 @@ def run_validator(med_db):
 # Migration from old flat structure
 # ---------------------------------------------------------------------------
 
+
 def migrate_flat_to_topic(med_db, dry_run=False):
     """Migrate old flat metadata/ + abstracts/ into papers/_migrated/ and
     searches/*.json into searches/_migrated/.  Does not delete originals."""
@@ -808,6 +788,7 @@ def migrate_flat_to_topic(med_db, dry_run=False):
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Archive PubMed or Europe PMC searches, structured literature records, and source-specific web discovery queries into the local med-db schema.",
@@ -822,7 +803,7 @@ def parse_args():
     parser.add_argument("--search-slug", help="Optional slug for the saved search file.")
     parser.add_argument(
         "--topic",
-        help="Medical topic for grouping output (e.g. endometriosis, weight-loss, adhd). Defaults to '_uncategorized'.",
+        help="Medical topic for grouping output (e.g. endometriosis, weight-loss, adhd). Defaults to 'uncategorized'.",
         default=DEFAULT_TOPIC,
     )
     parser.add_argument(
@@ -976,7 +957,8 @@ def main():
         if index < len(epmc_records) - 1 and args.delay > 0:
             time.sleep(args.delay)
 
-    sync_index(med_db, search_updates, paper_updates, web_updates)
+    # FIXED: use keyword arguments so web_updates lands in the correct parameter
+    sync_index(med_db, search_updates=search_updates, paper_updates=paper_updates, web_updates=web_updates)
 
     if search_file:
         print(f"saved search: {search_file}")

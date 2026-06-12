@@ -30,6 +30,30 @@ class TestSlugify:
     def test_number(self):
         assert med_db_validate.slugify(35350465) == "35350465"
 
+    def test_nfkd_normalization_non_ascii(self):
+        """REGRESSION: the validator's old slugify lacked NFKD normalisation,
+        so Umlauts/accents were replaced with hyphens instead of being
+        transliterated to ASCII.  The canonical utils.slugify now handles
+        this correctly."""
+        # ü → u, ß → ss, é → e (NFKD transliteration)
+        assert med_db_validate.slugify("Käse-Törtchen") == "kase-tortchen"
+        # The old variant would have produced "k-se-t-rtchen"
+
+    def test_validator_slugify_matches_canonical(self):
+        """The validator must use the same slugify as the archiver to avoid
+        false 'id mismatch' errors when validating folder names."""
+        import utils
+        test_cases = [
+            ("Hello World", "record", 10, 80),
+            ("Café Étude", "record", 10, 80),
+            ("Übergewicht Ernährung", "record", 10, 80),
+            ("!!!", "custom-fallback", 10, 80),
+            (35350465, "record", 10, 80),
+        ]
+        for text, fallback, max_words, max_length in test_cases:
+            assert med_db_validate.slugify(text, fallback, max_words, max_length) == \
+                   utils.slugify(text, fallback, max_words, max_length)
+
 
 # ---------------------------------------------------------------------------
 # parse_args
@@ -45,35 +69,6 @@ class TestParseArgs:
         with mock.patch.object(sys, "argv", ["med-db-validate.py", "--med-db", "/tmp/test-db"]):
             args = med_db_validate.parse_args()
         assert args.med_db == "/tmp/test-db"
-
-
-# ---------------------------------------------------------------------------
-# collect_files
-# ---------------------------------------------------------------------------
-
-class TestCollectFiles:
-    def test_collects_matching_files(self, tmp_path):
-        (tmp_path / "a.json").write_text("{}")
-        (tmp_path / "b.json").write_text("{}")
-        (tmp_path / "c.txt").write_text("text")
-        result = med_db_validate.collect_files(tmp_path, "*.json")
-        assert result == ["a.json", "b.json"]
-
-    def test_missing_directory(self, tmp_path):
-        result = med_db_validate.collect_files(tmp_path / "nonexistent", "*.json")
-        assert result == []
-
-    def test_no_matching_files(self, tmp_path):
-        (tmp_path / "a.txt").write_text("text")
-        result = med_db_validate.collect_files(tmp_path, "*.json")
-        assert result == []
-
-    def test_sorted_output(self, tmp_path):
-        (tmp_path / "z.json").write_text("{}")
-        (tmp_path / "a.json").write_text("{}")
-        (tmp_path / "m.json").write_text("{}")
-        result = med_db_validate.collect_files(tmp_path, "*.json")
-        assert result == ["a.json", "m.json", "z.json"]
 
 
 # ---------------------------------------------------------------------------

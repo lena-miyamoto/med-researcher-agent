@@ -15,6 +15,10 @@ def _load_module(name: str, filename: str):
 
 
 def pytest_configure():
-    """Load med_db and med_db_validate as importable modules."""
+    """Load med_db, med_db_validate, med_db_lookup, med_db_query, and utils
+    as importable modules."""
     _load_module("med_db", "med-db.py")
     _load_module("med_db_validate", "med-db-validate.py")
+    _load_module("med_db_lookup", "med-db-lookup.py")
+    _load_module("med_db_query", "med-db-query.py")
+    _load_module("utils", "utils.py")
