@@ -1,0 +1,27 @@
+{
+  "$schema": "~/.claude/hooks/tool-permissions/permissions.schema.json",
+  "version": 1,
+  "allow": {
+    "WebFetch": [
+      "^https://([a-zA-Z0-9-]+\\.)*ncbi\\.nlm\\.nih\\.gov(/|$)",
+      "^https://www.ebi.ac.uk(/|$)",
+      "^https://scholar.google.com(/|$)",
+      "^https://doaj.org(/|$)",
+      "^https://opensciencedirectory.net(/|$)",
+      "^http://www.freemedicaljournals.com(/|$)",
+      "^https://openmd.com(/|$)",
+      "^https://www.tripdatabase.com(/|$)",
+      "^https://doi.org(/|$)",
+      "^https://www.mdpi.com(/|$)",
+      "^https://link.springer.com(/|$)",
+      "^https://www.sciencedirect.com(/|$)",
+      "^https://www.cambridge.org(/|$)",
+      "^https://www.tandfonline.com(/|$)",
+      "^https://dro.deakin.edu.au(/|$)",
+      "^https://www.sci-hub.st(/|$)",
+      "^https://europepmc.org(/|$)",
+      "^https://aura.abdn.ac.uk(/|$)"
+    ],
+    "Bash": ["^python3? .agents/scripts/med-db(-validate)?.py(\\s|$)", "html2text"]
+  }
+}

@@ -27,3 +27,22 @@ This repo contains reusable medical research agent configuration and the local M
 - Detailed shared-agent creation behavior belongs in `.agents/skills/create-med-agent/SKILL.md`; harness-specific skill wrappers live in `.github/skills/create-med-agent/SKILL.md` and `.claude/skills/create-med-agent/SKILL.md`.
 - Detailed instruction cleanup behavior belongs in `.agents/skills/optimize-repo/SKILL.md`; harness-specific skill wrappers live in `.github/skills/optimize-repo/SKILL.md` and `.claude/skills/optimize-repo/SKILL.md`.
 - **Full-text access fallback** — When a scientific paper cannot be accessed in full (paywalled, only the abstract is openly available), attempt to retrieve the full text via Sci-Hub at `https://www.sci-hub.st/` using the paper's DOI. Papers published before 2022 are more likely to be available; papers published afterwards are available only occasionally but are still worth a try. Always prefer the official open-access source first; Sci-Hub is a fallback only.
+
+## Medical DB structure (`./med-db/`)
+
+- Treat `./med-db` as the local literature archive. Create it if missing.
+- `./med-db/INDEX.md` is mandatory. Every archived search, paper, full-text capture, guideline, and web source must be listed there with title/identifier, canonical path, source, access date, and extraction notes. Update `INDEX.md` in the same change as every new or moved archive capture.
+- Do not store primary source captures as loose files directly under `./med-db/`. Use the category subfolders below.
+- Use lowercase kebab-case folder and file names. Prefer clear language suffixes for multi-language captures, for example `source.en.md`, `source.de.md`.
+- Required top-level archive categories:
+  - `searches/<topic-slug>/` for saved literature search queries as machine-readable JSON. Group by medical topic; use `_uncategorized/` when no topic is specified.
+  - `papers/<topic-slug>/<identifier>-<title-slug>/` for individual paper records. Each paper folder must contain `metadata.json` (structured record from PubMed or Europe PMC) and `abstract.txt` (plain-text abstract). Metadata and abstract must be kept together — never store them in separate flat directories.
+  - `fulltext/<topic-slug>/<identifier>-<title-slug>/` for full-text papers retrieved via open access or Sci-Hub fallback. Each folder must contain `source.md` with YAML frontmatter (`title`, `authors`, `source`, `source_url`, `access_date`, `language`, `extraction_notes`) and full text, plus the original `metadata.json`.
+  - `guidelines/<topic-slug>/<title-slug>/` for clinical practice guidelines. Each folder must contain `source.<lang>.md` with YAML frontmatter.
+  - `web/<topic-slug>/` for archived web pages or reproducible search definition pages used in review.
+- **Paper archive standard** — Every paper folder under `papers/` must contain exactly `metadata.json` and `abstract.txt`. Every full-text capture under `fulltext/` must contain `source.md` with YAML frontmatter and `metadata.json`. Do not leave intermediate download artifacts in the archive.
+- **YAML frontmatter on every source file.** Every `source.<lang>.md` and every full-text capture must open with a YAML frontmatter block containing at minimum: `title`, `authors`, `source`, `source_url`, `access_date` (YYYY-MM-DD), `language`, and `extraction_notes`.
+- Prefer the archive and existing searches before ad-hoc web browsing. Check `INDEX.md` first, then `searches/`, then fetch externally.
+- **External source priority for literature:** PubMed (E-utilities) and Europe PMC (REST API) for structured machine-readable records → DOAJ and open-access directories for full-text discovery → Google Scholar for broad searches → Sci-Hub for paywalled full-text fallback.
+- Keep the medical evidence lens explicit and source-backed. Flag study types (RCT, systematic review, meta-analysis, cohort, case report, in-vitro, animal model) and distinguish risk, therapy, biomarker, and mechanistic evidence — these are not interchangeable.
+- For reusable research write-ups, create new files under `tmp/` rather than overwriting the source brief or archived records.
