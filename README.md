@@ -2,7 +2,8 @@
 
 Reusable medical research agent configuration for both GitHub Copilot and Claude Code.
 
-The repository includes a local `med-db/` workflow for archiving structured literature from PubMed, Europe PMC, and web discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Journals, OpenMD, Trip Database).
+The repository includes a local `med-db/` workflow for archiving structured literature from PubMed, Europe PMC, and web
+discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Journals, OpenMD, Trip Database).
 
 ## Skill Surfaces
 
@@ -15,11 +16,13 @@ These are the main user-facing entry points in this repository.
 | `create-med-agent`   | Add a new shared agent with `.agents` as the source of truth plus `.github` and `.claude` wrappers.            |
 | `optimize-repo`      | Audit and clean up repo customization files for consistency and source-of-truth hygiene.                       |
 
-All skills are defined under `.agents/skills/` and surfaced through thin `.github/skills/` and `.claude/skills/` wrappers.
+All skills are defined under `.agents/skills/` and surfaced through thin `.github/skills/` and `.claude/skills/`
+wrappers.
 
 ## Setup and Tests
 
-The project uses [uv](https://docs.astral.sh/uv/) for Python dependency management and repo-standard command execution. `uv` is required for running skills and repo tooling in this repository.
+The project uses [uv](https://docs.astral.sh/uv/) for Python dependency management and repo-standard command execution.
+`uv` is required for running skills and repo tooling in this repository.
 
 ### Installing uv
 

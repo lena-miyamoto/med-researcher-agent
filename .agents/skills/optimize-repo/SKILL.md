@@ -1,76 +1,153 @@
 ---
 name: optimize-repo
-description: 'Optimize this repo''s instruction, skill, and agent files: cut redundancy, restore source-of-truth ownership, keep Copilot and Claude surfaces aligned. Use when cleaning up customization files in this workspace.'
+description: >
+             Optimize this repo''s instruction, skill, and agent files: cut redundancy, restore source-of-truth
+             ownership, keep Copilot and Claude surfaces aligned. Use when cleaning up customization files in this
+             workspace.
 argument-hint: 'Scope to optimize; report-only or apply fixes'
 user-invocable: true
 ---
 
 # Optimize Repo
 
-Cross-harness source of truth for optimizing this repo's customization and instruction files. Also the audit path: run report-only for findings without edits.
+Cross-harness source of truth for cleaning up this repo's customization files after agents produce verbose, duplicated,
+or drifted instructions. Use this as the audit path in report-only mode and as the cleanup playbook in apply-fixes mode.
 
 ## When to Use
 
 - Clean up or audit instruction files, skills, or agents.
 - Re-verify any repo `*.md` for verbosity, repetition, padded explanation.
 - Targets: redundancy, stale routing, harness drift, source-of-truth violations.
+- Restore the current repo structure after cheaper or less careful models copy long rules into the wrong files.
+
+## Current Structure
+
+| Surface | Owner / Shape |
+|---------|---------------|
+| Repo workflow, command contract, bootstrap, command table | `AGENTS.md`; keep compact and table-first. |
+| Copilot entrypoint | `.github/copilot-instructions.md`; thin pointer to `AGENTS.md` and Copilot wrappers. |
+| Claude entrypoint | `CLAUDE.md`; thin pointer to `AGENTS.md` and Claude wrappers. |
+| Shared skills | `.agents/skills/<name>/SKILL.md`; owns actual procedure. |
+| Copilot skill wrappers | `.github/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
+| Claude skill wrappers | `.claude/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
+| Shared agent behavior | `.agents/agents/<name>.md`; role, routing, and repo-specific behavior. |
+| Copilot agent wrappers | `.github/agents/<name>.agent.md`; harness metadata plus pointer. |
+| Claude agent wrappers | `.claude/agents/<name>.md`; harness metadata plus pointer. |
+| Human onboarding | `README.md`; install/bootstrap/command examples, not policy detail. |
+
+## Reference Ownership
+
+Skills and docs must point to these owner files instead of restating their rules.
+
+| Domain | Owner |
+|--------|-------|
+| Archive layout, naming, frontmatter, required tools | `AGENTS.md` (Medical DB section) |
+| Command invocation contract (`uv run ...` only) | `AGENTS.md` (Shared section) |
+| Bootstrap after fresh checkout | `AGENTS.md` (Medical DB section) |
+| Canonical markdown lint command (`uv run lint-md`) | `AGENTS.md` (Shared section) |
+| Markdown lint config | `.pymarkdown.yaml` |
+| Evidence hierarchy, quality standards, search protocol | `.agents/agents/med-researcher.md` |
+| Harms/safety search, counter-evidence requirements | `.agents/agents/med-researcher.md` |
+| Research output format | `.agents/agents/med-researcher.md` |
+| Shared Python utilities | `.agents/scripts/utils.py` |
 
 ## Procedure
 
-1. Mode: review-only (report) or cleanup (smallest edits that restore ownership and cut repetition).
+1. Mode: review-only (report) or cleanup (smallest edits that restore ownership and cut repetition). If the user asked
+   for a plan only, do not edit.
 2. Respect repo ignore boundaries before any audit or edit:
    - Treat all files and folders excluded by `.gitignore` as out of scope for this skill.
    - Do not read, audit, edit, move, delete, or regenerate ignored paths.
    - If a requested cleanup would require touching an ignored path, stop and report that it is intentionally excluded.
-3. Re-verify every in-scope `*.md` for writing quality:
-   - Cut verbosity and repetition.
-   - Compress explanation when meaning survives.
-   - Tighten wording even when structure is fine.
-4. Anchor on boundaries from `AGENTS.md` and `.github/copilot-instructions.md`:
-   - Shared procedure: `.agents/skills/<name>/SKILL.md`.
-   - `.github/skills`, `.claude/skills`: thin wrappers.
-   - Repo-wide workflow: `AGENTS.md`.
-   - Harness routing: `CLAUDE.md`, `.github/copilot-instructions.md`.
-   - Agents: short, role-focused.
-5. Audit before editing:
-   - Duplicated procedure across shared skills and wrappers.
-   - Stale paths or source-of-truth references.
-   - Agent wrappers drifted beyond needed harness differences.
-   - Repo docs restating routing owned elsewhere.
-6. Narrowest useful fix:
-   - Delete over rewrite.
-   - Update references over adding explanation.
-   - One owner per stable rule.
-   - Keep discovery-critical frontmatter; shrink only duplicated body.
+3. Capture the current state before editing:
+   - Check `git status --short`.
+   - Count relevant instruction lines with `wc -l AGENTS.md README.md .agents/skills/*/SKILL.md
+   .github/skills/*/SKILL.md .claude/skills/*/SKILL.md .agents/agents/* .github/agents/* .claude/agents/*`.
+   - Read changed files before patching; assume user/formatter edits are intentional unless they break the task.
+4. Audit against the structure above:
+   - `AGENTS.md` should stay under about 120 lines and keep command reference as a table.
+   - Wrapper files should stay about 10 lines: frontmatter, heading, pointer.
+   - Shared skills should contain input parsing, delegated calls, procedure, validation, and output only.
+   - Agent files should be one focused role; evidence and safety rules stay in the shared agent file.
+   - `README.md` should explain onboarding and use tables for command examples; avoid becoming a second policy surface.
+5. Repair messy instructions in this order:
+   - Restore source-of-truth ownership first; move or delete restated policy before wordsmithing.
+   - Replace copied rules with short pointers such as `Follow AGENTS.md (Medical DB section).` or `Follow
+   .agents/agents/med-researcher.md.`
+   - Delete padded explanation when a command, table row, or owner-doc pointer carries the meaning.
+   - Convert command lists to tables when agents need to scan operation → command quickly.
+   - Keep command examples in `AGENTS.md` and README synchronized in spirit, but do not duplicate every policy note.
+6. Keep discovery-critical frontmatter concise:
+   - Skill descriptions should identify when to invoke the skill, not explain policy.
+   - Argument hints should show input shape only.
+   - If a wrapper needs policy text to be correct, the shared skill or reference owner is probably missing a pointer.
 7. Re-check after edits:
-   - Names, descriptions, argument hints aligned.
+   - Names, descriptions, and argument hints aligned across `.agents`, `.github`, and `.claude` surfaces.
    - Wrapper bodies still point at the right shared file.
+   - Paired agents differ only where the harness requires different metadata/tools.
    - Repo docs advertise only surfaces worth exposing.
+
+## Redundancy Patterns
+
+After cleanup, grep for these patterns in all repo `*.md` files (excluding wrappers and this audit list). Remaining
+matches must only appear in the listed owner files.
+
+`uv run med-db`, `uv run med-db-validate`, `uv run med-db-lookup`, `uv run med-db-query`, `uv run test`, `uv run
+lint-md`
+→ `AGENTS.md` only (README may show examples).
+
+`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`, `metadata.json`, `abstract.txt`, `source.md`, `YAML
+frontmatter`, `bootstrap`, `gitignored`
+→ `AGENTS.md` only.
+
+Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research Output Format
+→ `.agents/agents/med-researcher.md` only.
+
+`Sci-Hub`
+→ `AGENTS.md` and `.agents/agents/med-researcher.md` only. Do not duplicate elsewhere.
+
+`DocCheck Flexicon`
+→ `.agents/agents/med-researcher.md` only.
+
+`.pymarkdown.yaml`
+→ Config file. `AGENTS.md` may reference the lint command.
+
+## Preferred Shapes
+
+- Use tables for command matrices, routing maps, source-of-truth maps, source priority, and platform/mirror status.
+- Use bullets for short behavior rules and validation checks.
+- Do not nest bullets deeper than one level unless the existing file already requires it for readability.
+- Avoid long prose in wrappers, entrypoints, and `AGENTS.md`; these are high-load files that every agent sees.
+- Preserve non-ASCII already used for German terms, arrows, and source names; do not add decorative symbols.
 
 ## Writing Rules
 
+- Match the repo's direct procedural tone.
+- Never sacrifice meaning or expressiveness for shorter prose.
 - Strict source-of-truth ownership.
 - Anything excluded by `.gitignore` is out of scope and must remain untouched.
 - Skill wrappers and agent wrappers stay short unless a harness difference requires more.
 - Preserve keyword-rich frontmatter for discovery.
-- Match the repo's direct procedural tone.
 - Prefer brevity and clarity over grammatical smoothness in every repo `*.md`.
 - Drop repetitive phrasing and padding when the meaning carries tighter.
-- Never sacrifice meaning or expressiveness for shorter prose.
 - Don't replace duplication with a new documentation layer.
 
 ## Validation
 
-1. Markdown/frontmatter diagnostics on every changed file.
-2. Confirm no file or folder excluded by `.gitignore` was touched.
-3. Grep for stale paths, outdated source-of-truth references, old duplicated phrases.
-4. Re-read each changed `*.md` for verbosity and repetition; tighten until no obvious padding remains.
-5. Shared skill files hold the procedure; wrappers stay minimal.
-6. Agent wrappers aligned except for needed harness differences.
-7. Routing/README changes match actual file layout.
+1. Run Markdown/frontmatter diagnostics on every changed file.
+2. Run `git diff --check`.
+3. Confirm no file or folder excluded by `.gitignore` was touched.
+4. Re-run the redundancy-pattern grep and account for every remaining match.
+5. Compare paired skill wrappers: `.github/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md` should match
+except for deliberate harness differences.
+6. Re-read changed `*.md` for padding, repeated phrases, stale owner references, and accidental second sources of truth.
+7. Confirm `AGENTS.md` is compact and command tables remain tables.
+8. After completing edits to any `*.md` file, run `uv run lint-md`.
+9. If any `*.py` file changed, run `uv run test`.
 
 ## Output
 
 - Files optimized.
 - Files audited, unchanged.
-- Remaining inconsistencies left intentionally.
+- Validation performed, including `uv run lint-md` for Markdown edits and whether `uv run test` was needed.
+- Remaining inconsistencies left intentionally, with reason.

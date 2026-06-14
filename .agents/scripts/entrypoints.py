@@ -41,6 +41,47 @@ def med_db_query():
     return _load_script("med_db_query", "med-db-query.py").main()
 
 
+def lint_md():
+    """Run pymarkdownlnt on repo markdown files.
+
+    Falls back to scanning AGENTS.md, README.md, CLAUDE.md, .agents, .github,
+    and .claude when no paths are given.  Pass --fix to auto-fix violations.
+    """
+    import subprocess
+
+    args = sys.argv[1:]
+    fix_mode = False
+    if "--fix" in args:
+        args.remove("--fix")
+        fix_mode = True
+
+    if not args:
+        args = [
+            "AGENTS.md",
+            "README.md",
+            "CLAUDE.md",
+            ".agents",
+            ".github",
+            ".claude",
+        ]
+
+    base_cmd = ["pymarkdownlnt", "--config", ".pymarkdown.yaml"]
+
+    if fix_mode:
+        subprocess.run([*base_cmd, "fix", "-r", *args], check=False)
+        # Always scan afterward so the user sees remaining violations.
+        # pymarkdownlnt fix is silent when it finds nothing to fix (e.g.
+        # only violations whose autofix hasn't shipped yet or rules without
+        # autofix support), which makes --fix look like a no-op.
+        return subprocess.run(
+            [*base_cmd, "scan", "-r", *args], check=False
+        ).returncode
+
+    return subprocess.run(
+        [*base_cmd, "scan", "-r", *args], check=False
+    ).returncode
+
+
 def test():
     try:
         from pytest import main as pytest_main

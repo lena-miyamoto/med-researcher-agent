@@ -15,6 +15,7 @@ med-db = "entrypoints:med_db"
 med-db-validate = "entrypoints:med_db_validate"
 med-db-lookup = "entrypoints:med_db_lookup"
 med-db-query = "entrypoints:med_db_query"
+lint-md = "entrypoints:lint_md"
 test = "entrypoints:test"
 
 [tool.setuptools]
@@ -25,5 +26,6 @@ py-modules = ["entrypoints"]
 
 [dependency-groups]
 dev = [
+    "pymarkdownlnt>=0.9.38",
     "pytest>=9.0.3",
 ]
