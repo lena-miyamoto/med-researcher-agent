@@ -14,10 +14,20 @@ These are the main user-facing entry points in this repository.
 | `analyze-med-claims` | Verify medical claims against the scientific literature and produce structured evidence reports with verdicts. |
 | `create-med-skill`   | Add a new shared skill with `.agents` as the source of truth plus `.github` and `.claude` wrappers.            |
 | `create-med-agent`   | Add a new shared agent with `.agents` as the source of truth plus `.github` and `.claude` wrappers.            |
+| `create-workout-routine` | Build a scientifically sound, personalized workout routine. Collects training details, presents split options, and dispatches the fitness-coach agent to design the full program. |
+| `create-diet-plan` | Build an evidence-based, personalized dietary plan. Collects nutrition details, screens for disordered eating, presents dietary approach options, and dispatches the dietologist agent to design the full plan. |
 | `optimize-repo`      | Audit and clean up repo customization files for consistency and source-of-truth hygiene.                       |
 
 All skills are defined under `.agents/skills/` and surfaced through thin `.github/skills/` and `.claude/skills/`
 wrappers.
+
+### Agents
+
+| Agent              | What it does                                                                                       |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| `med-researcher`   | Medical and dietological research specialist with mandatory evidence-quality and safety standards. |
+| `fitness-coach`    | Science-backed, compassionate fitness coach for workout design, exercise selection, and programming advice. |
+| `dietologist`      | Evidence-based nutrition specialist for dietary planning, meal composition, supplementation assessment, and dietary pattern guidance. |
 
 ## Setup and Tests
 
@@ -79,7 +89,11 @@ uv run test          # re-run the full suite
 - `CLAUDE.md`: Claude-specific routing.
 - `.github/copilot-instructions.md`: Copilot-specific routing.
 - `.agents/agents/med-researcher.md`: shared med-researcher role and output rules.
+- `.agents/agents/fitness-coach.md`: shared fitness-coach persona, programming methodology, and safety rules.
+- `.agents/agents/dietologist.md`: shared dietologist persona, dietary methodology, supplementation policy, and safety rules.
 - `.github/agents/med-researcher.agent.md`, `.claude/agents/med-researcher.md`: thin med-researcher harness wrappers.
+- `.github/agents/fitness-coach.agent.md`, `.claude/agents/fitness-coach.md`: thin fitness-coach harness wrappers.
+- `.github/agents/dietologist.agent.md`, `.claude/agents/dietologist.md`: thin dietologist harness wrappers.
 - `.agents/skills/<name>/SKILL.md`: shared cross-harness skill procedures.
 - `.github/skills/`, `.claude/skills/`: thin harness wrappers pointing at the shared skill.
 - `.agents/scripts/`: local archive tooling used by both agents.
@@ -92,4 +106,6 @@ Start a session with the agent directly:
 
 ```bash
 claude --agent med-researcher
+claude --agent fitness-coach
+claude --agent dietologist
 ```
