@@ -11,21 +11,22 @@ user-invocable: true
 
 # Create Med Agent
 
-Cross-harness source of truth for creating new repo agents that work in both Copilot and Claude.
-
 ## When to Use
 
 - User wants a custom agent available in both Copilot and Claude.
-- New agent follows the repo convention: one shared agent instruction file plus thin harness wrappers.
+- Follow the architecture in `CLAUDE.md`: shared behavior in `.agents/agents/`, thin wrappers in `.github/agents/` and
+  `.claude/agents/`.
 - If the request is a skill, not an agent, stop and route to `create-med-skill`.
 
 ## Procedure
 
 1. Clarify contract: name, role, discovery description, trigger phrases, invocation mode (user-invocable, subagent-only,
    or both), minimal tool set, argument hint, model constraints, handoff behavior.
-2. Use the same ownership pattern as skills: stable instructions live in `.agents/`, harness files are wrappers.
+2. Use the same ownership pattern as skills: stable instructions in `.agents/`, harness files are wrappers. See
+   `CLAUDE.md` and `AGENTS.md` for the full architecture.
 3. Write the shared agent instructions at `.agents/agents/<name>.md`: mirror discovery frontmatter where useful, then
-put the role, stable behavior, and output expectations here.
+put the role, stable behavior, and output expectations here. Don't restate the multi-agent architecture — `CLAUDE.md`
+covers that. Don't add "this file is the shared source of truth" boilerplate — it's implicit in where the file lives.
 4. Write the Copilot wrapper at `.github/agents/<name>.agent.md` with valid Copilot frontmatter and minimal Copilot tool
 aliases. Point the body at the shared agent file.
 5. Write the Claude wrapper at `.claude/agents/<name>.md` with Claude-compatible tools and model behavior. Point the
@@ -44,7 +45,8 @@ only when routing boundaries change.
 - One focused role per agent.
 - Smallest tool set that works.
 - Descriptions concrete and keyword-rich.
-- Shared agent behavior lives in `.agents/agents/<name>.md`.
+- Shared agent behavior lives in `.agents/agents/<name>.md`. Don't add "this file is the shared source of truth"
+  boilerplate — it's implicit in where the file lives.
 - Harness agent bodies are wrappers; do not duplicate stable role or output rules there.
 
 ## Validation

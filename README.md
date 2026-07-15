@@ -16,6 +16,7 @@ These are the main user-facing entry points in this repository.
 | `create-med-agent`   | Add a new shared agent with `.agents` as the source of truth plus `.github` and `.claude` wrappers.            |
 | `create-workout-routine` | Build a scientifically sound, personalized workout routine. Collects training details, presents split options, and dispatches the fitness-coach agent to design the full program. |
 | `create-diet-plan` | Build an evidence-based, personalized dietary plan. Collects nutrition details, screens for disordered eating, presents dietary approach options, and dispatches the dietologist agent to design the full plan. |
+| `start-therapy-session` | Start a live AI therapy session with the psychotherapist agent. Collects client intake, establishes informed consent, maintains a per-client session history file with compression. |
 | `optimize-repo`      | Audit and clean up repo customization files for consistency and source-of-truth hygiene.                       |
 
 All skills are defined under `.agents/skills/` and surfaced through thin `.github/skills/` and `.claude/skills/`
@@ -28,6 +29,7 @@ wrappers.
 | `med-researcher`   | Medical and dietological research specialist with mandatory evidence-quality and safety standards. |
 | `fitness-coach`    | Science-backed, compassionate fitness coach for workout design, exercise selection, and programming advice. |
 | `dietologist`      | Evidence-based nutrition specialist for dietary planning, meal composition, supplementation assessment, and dietary pattern guidance. |
+| `psychotherapist`  | AI psychotherapist grounded in Liberation and Critical Psychology. Therapeutic dialogue, DSM/ICD diagnosis, case formulation, psychoeducation, and technique selection across integrative modalities. Bilingual DE/EN. |
 
 ## Setup and Tests
 
@@ -91,9 +93,11 @@ uv run test          # re-run the full suite
 - `.agents/agents/med-researcher.md`: shared med-researcher role and output rules.
 - `.agents/agents/fitness-coach.md`: shared fitness-coach persona, programming methodology, and safety rules.
 - `.agents/agents/dietologist.md`: shared dietologist persona, dietary methodology, supplementation policy, and safety rules.
+- `.agents/agents/psychotherapist.md`: shared psychotherapist persona, clinical methodology, safety rules, and output format.
 - `.github/agents/med-researcher.agent.md`, `.claude/agents/med-researcher.md`: thin med-researcher harness wrappers.
 - `.github/agents/fitness-coach.agent.md`, `.claude/agents/fitness-coach.md`: thin fitness-coach harness wrappers.
 - `.github/agents/dietologist.agent.md`, `.claude/agents/dietologist.md`: thin dietologist harness wrappers.
+- `.github/agents/psychotherapist.agent.md`, `.claude/agents/psychotherapist.md`: thin psychotherapist harness wrappers.
 - `.agents/skills/<name>/SKILL.md`: shared cross-harness skill procedures.
 - `.github/skills/`, `.claude/skills/`: thin harness wrappers pointing at the shared skill.
 - `.agents/scripts/`: local archive tooling used by both agents.
@@ -108,4 +112,5 @@ Start a session with the agent directly:
 claude --agent med-researcher
 claude --agent fitness-coach
 claude --agent dietologist
+claude --agent psychotherapist
 ```

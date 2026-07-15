@@ -11,12 +11,11 @@ user-invocable: true
 
 # Create Med Skill
 
-Cross-harness source of truth for creating new repo skills that work in both Copilot and Claude.
-
 ## When to Use
 
 - User wants to add a skill available through both Copilot and Claude.
-- New skill follows the repo convention: one shared file plus thin harness wrappers.
+- Follow the architecture in `CLAUDE.md`: shared procedure in `.agents/skills/`, thin wrappers in `.github/skills/` and
+  `.claude/skills/`.
 - If the request is an agent, not a skill, stop and route to `create-med-agent`.
 
 ## Procedure
@@ -26,7 +25,9 @@ Cross-harness source of truth for creating new repo skills that work in both Cop
 2. Write the shared source of truth at `.agents/skills/<name>/SKILL.md`:
    - Frontmatter `name` matches folder; `description` is keyword-rich.
    - Body is self-contained. Use sections: `When to Use`, `Procedure`, `Writing Rules` (when needed), `Validation`,
-   `Output`.
+     `Output`.
+   - Don't restate the multi-agent architecture — `CLAUDE.md` covers that. Don't repeat "this skill does not duplicate"
+     — it's implicit in the repo pattern.
 3. Write the Copilot wrapper at `.github/skills/<name>/SKILL.md`: mirror discovery frontmatter, point body at the shared
 file.
 4. Write the Claude wrapper at `.claude/skills/<name>/SKILL.md`: same as Copilot wrapper.

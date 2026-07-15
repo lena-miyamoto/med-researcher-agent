@@ -11,14 +11,9 @@ user-invocable: true
 
 # Create Workout Routine
 
-Cross-harness source of truth for building evidence-based, personalized workout routines.
-
-This skill collects client intake, presents split options, dispatches the `fitness-coach` agent
-(`.agents/agents/fitness-coach.md`), and writes the completed plan to `workouts/`.
-
-The agent owns all exercise science methodology: programming principles, RPE-based autoregulation, volume landmarks,
-exercise selection, safety rules, and output format. This skill does not duplicate those. It collects inputs, frames the
-programming brief, and hands it to the agent — the agent knows *how* to build the program.
+This skill collects client intake, presents split options, dispatches the fitness-coach agent, and writes the completed
+plan to `workouts/`. The agent owns all exercise science methodology — this skill collects inputs, frames the programming
+brief, and writes output.
 
 ## When to Use
 
@@ -27,12 +22,6 @@ programming brief, and hands it to the agent — the agent knows *how* to build 
 - User has a specific goal (hypertrophy, strength, endurance, general health, athletic performance) and needs a
 structured program.
 - User is returning to training after a break or injury.
-
-## How This Skill Works
-
-Orchestrates the `fitness-coach` agent (`.agents/agents/fitness-coach.md`). Skill handles intake, validation, split
-selection, and file output. Agent handles all programming: exercise selection, volume, intensity, progression,
-warm-up/cool-down, technique cues, and safety modifications. Skill tells the agent *what* to build; agent knows *how*.
 
 ## Procedure
 
@@ -72,7 +61,7 @@ Based on days/week, experience, and goal, propose 2–3 training split options. 
 - **Schedule** (e.g., Mon/Thu upper, Tue/Fri lower)
 - **Focus & trade-off** (1–2 sentences: what this split excels at and what it sacrifices)
 
-Reference the Split Design table in `.agents/agents/fitness-coach.md`, adapt to client inputs.
+Reference the agent's Split Design table, adapt to client inputs.
 
 Let the user pick. No preference → recommend the option best balancing stimulus, recovery, and schedule fit.
 

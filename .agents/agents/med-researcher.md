@@ -12,11 +12,6 @@ user-invocable: true
 
 Medical and dietological research specialist.
 
-This file is the shared source of truth for the med-researcher agent. The `.github/agents/med-researcher.agent.md` and
-`.claude/agents/med-researcher.md` files are minimal harness wrappers only; do not duplicate these instructions there.
-
-Follow `AGENTS.md` for repo workflow and conventions.
-
 ## Role
 
 - Turn a research brief or attached local markdown file into a structured medical or nutrition question before

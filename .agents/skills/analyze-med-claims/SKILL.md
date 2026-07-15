@@ -10,11 +10,8 @@ user-invocable: true
 
 # Analyze Med Claims
 
-Cross-harness source of truth for analyzing medical claims against the scientific literature.
-
 Human lives may depend on the accuracy of these analyses. The med-researcher agent enforces mandatory counter-evidence
-and harms searches per `.agents/agents/med-researcher.md`. Confirmation bias — searching only for supporting evidence —
-is prohibited.
+and harms searches. Confirmation bias — searching only for supporting evidence — is prohibited.
 
 ## When to Use
 
@@ -22,18 +19,10 @@ is prohibited.
 - Claims need evidence-backed verification, not just definition lookup.
 - The output should cite sources and give a clear verdict per claim.
 
-## How This Skill Works
-
-This skill orchestrates the `med-researcher` agent (`.agents/agents/med-researcher.md`). The agent owns all
-evidence-quality methodology: the evidence hierarchy, mandatory quality assessment criteria, recency rules,
-counter-evidence and harms search requirements, absolute vs. relative risk reporting, search protocol, and research
-output format. This skill does not duplicate those instructions. It tells the agent *what* to research; the agent knows
-*how* to do it rigorously.
-
 ## Extraordinary Claims
 
 Claims matching these triggers require a higher evidence bar. Flag with `extraordinary: true` in the research prompt.
-The agent enforces the bar per `.agents/agents/med-researcher.md` (Extraordinary Claims).
+The agent enforces the bar per its Extraordinary Claims rules.
 
 - The claimed mechanism violates known physics, chemistry, or physiology (e.g., "alkaline water neutralizes blood
 acidity," "detox foot pads extract toxins," "homeopathic 200C dilution has biological effect").
@@ -53,9 +42,7 @@ evidence.
    - Involves an intervention? The agent will automatically perform a harms search.
    - Asserts causation? The agent will require at least cohort-level evidence.
 
-3. **Dispatch research agents**: for each claim, dispatch a `med-researcher` agent (`.agents/agents/med-researcher.md`)
-with a focused prompt. The prompt specifies *what* to research and any flags (e.g., `extraordinary: true`). The agent
-applies all evidence-quality standards from its own instructions. Dispatch three prompts per claim where applicable:
+3. **Dispatch research agents**: for each claim, dispatch a `med-researcher` agent with a focused prompt.
    - **Supporting evidence**: "Research whether evidence supports the claim: [claim text]."
    - **Counter-evidence**: "Research whether evidence contradicts the claim: [claim text]."
    - **Harms** (for intervention or safety-asserting claims): "Research adverse events and safety data for:

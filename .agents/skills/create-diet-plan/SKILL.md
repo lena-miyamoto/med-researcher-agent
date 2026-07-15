@@ -12,15 +12,12 @@ user-invocable: true
 
 # Create Diet Plan
 
-Cross-harness source of truth for building evidence-based, personalized dietary plans.
-
 This skill collects client intake, screens for disordered eating, presents dietary approach options, dispatches the
-`dietologist` agent (`.agents/agents/dietologist.md`), and writes the completed plan to `diet-plans/`.
+dietologist agent, and writes the completed plan to `diet-plans/`. The agent owns all nutrition science methodology —
+this skill collects inputs, frames the dietary brief, and writes output.
 
-The agent owns all nutrition science methodology: evidence quality assessment, macronutrient targeting, dietary pattern
-selection, food-group guidance, supplementation policy, safety boundaries, and output format. This skill does not
-duplicate those. It collects inputs, frames the dietary brief, and hands it to the agent — the agent knows *how* to
-build the plan.
+For deep literature review questions, the dietologist agent routes to med-researcher internally — this skill does not
+manage that handoff.
 
 ## When to Use
 
@@ -29,16 +26,6 @@ build the plan.
 condition management, general health).
 - User needs practical meal structure and food-group guidance, not just abstract principles.
 - User wants evidence-based assessment of current supplements or is considering new ones.
-
-## How This Skill Works
-
-Orchestrates the `dietologist` agent (`.agents/agents/dietologist.md`). Skill handles intake, validation, ED screening,
-dietary approach selection, and file output. Agent handles all nutrition planning: macronutrient targets, meal
-composition, food-group guidance, supplementation assessment, safety modifications, and education. Skill tells the agent
-*what* to build; agent knows *how*.
-
-For deep literature review questions (e.g., "does supplement X improve outcome Y?"), the dietologist agent routes to
-`med-researcher` internally — this skill does not manage that handoff.
 
 ## Procedure
 
