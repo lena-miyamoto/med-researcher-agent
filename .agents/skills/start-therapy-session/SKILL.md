@@ -1,10 +1,11 @@
 ---
 name: start-therapy-session
 description: >
-             Start a live therapy session with the AI psychotherapist agent. Maintains a compact per-client session
-             history file for continuity across sessions. Collects client intake, establishes informed consent, then
-             hands off to the psychotherapist agent for direct therapeutic dialogue. After the session, writes a
-             compressed session note to the history file.
+             Start a live therapy session with the AI psychotherapist agent (specialized in adult ADHD, ASD,
+             neurodevelopmental comorbidities, gender-affirming care for trans/NB adults, and sex/relationship
+             therapy). Maintains a compact per-client session history file for continuity across sessions. Collects
+             client intake, establishes informed consent, then hands off to the psychotherapist agent for direct
+             therapeutic dialogue. After the session, writes a compressed session note to the history file.
 argument-hint: "Optional: path to a session history file (continues previous work), or nothing for a new client"
 user-invocable: true
 ---
@@ -13,7 +14,9 @@ user-invocable: true
 
 This skill manages the client's session history file, collects intake, establishes informed consent, then dispatches the
 psychotherapist agent for direct therapeutic dialogue. After the session, it writes a compact session note and compresses
-the file. The agent owns all clinical methodology — this skill manages files and frames.
+the file. The agent (specialized in adult ADHD, ASD, neurodevelopmental comorbidities, gender-affirming
+care for trans/NB adults, and sex/relationship therapy) owns all clinical methodology — this skill manages
+files and frames.
 
 ## When to Use
 
@@ -26,6 +29,22 @@ This skill is **user-invocable only**. The psychotherapist agent does not sugges
 when to start a session.
 
 ## Procedure
+
+### Knowledge Base Bootstrap (First Use Per System)
+
+The psychotherapist agent requires a local knowledge base in `med-db/` (gitignored — not shipped with the repo)
+with three components: research evidence (7 topics), ICD-11 classification, and DSM-5-TR classification.
+
+Run the bootstrap check from `.agents/agents/psychotherapist.md` (Knowledge Base section, Mandatory Pre-Work
+Bootstrap Check). If any component is missing:
+
+- **Research evidence:** dispatch `med-researcher` agent with all three research briefs from `.agents/research-briefs/`.
+- **ICD-11:** `uv run med-db-download-icd11 --release 2026-01`
+- **DSM-5-TR:** `uv run med-db-setup-dsm5`
+
+Follow `.agents/agents/psychotherapist.md` (Knowledge Base section) for the full bootstrap procedure. If the
+client prefers to proceed without bootstrapping, note the limitation and continue — diagnostic assessment will
+use training knowledge rather than structured local reference data.
 
 ### 0. Resolve Client Identity and History File
 
@@ -186,6 +205,7 @@ client's history file. Prepend it below the YAML frontmatter (newest sessions at
 
 ```markdown
 ### Session [N]: [YYYY-MM-DD]
+
 - Presenting: [1-line reason]
 - Themes: [key themes — 3-6 bullet points]
 - Interventions: [modality:technique, e.g. "ACT:values clarification"]
@@ -208,24 +228,31 @@ clinically important information. The file is read into context at the start of 
 
 - **Remove filler.** Cut words that don't carry information: "the client discussed," "we explored," "it was noted that."
   Replace with direct, compact phrasing. "Discussed work stress — feels overwhelmed by new manager's expectations."
+
 - **Use sentence fragments.** Full grammatical sentences cost tokens. Bullet-point style is preferred throughout.
 - **Abbreviate consistently.** Establish abbreviations in the frontmatter and reuse: `CBT` (cognitive-behavioral
   therapy), `SI` (suicidal ideation), `SH` (self-harm), `RCT` (rational emotive behavior therapy), `GAD` (generalized
   anxiety disorder), `MDD` (major depressive disorder), `ACT` (acceptance and commitment therapy), `EMDR` (eye
   movement desensitization and reprocessing). Use standard clinical abbreviations only — never invent ambiguous ones.
+
 - **Merge redundant entries.** If the same theme appears across multiple sessions, consolidate rather than repeating:
   "Sessions 3–5: ongoing pattern of self-criticism after work conflicts." Don't lose the timeline — note when a theme
   first appeared and whether it's active or resolved.
+
 - **Keep verbatim quotes.** Client language is high-signal. Preserve short verbatim quotes that capture their voice,
   framing, or key metaphors. These are worth the tokens.
+
 - **Drop dead information.** Remove anything that is no longer clinically relevant: one-time events that were processed
   and closed, transient circumstances that resolved, topics the client explicitly said they were done with. If unsure,
   keep it — losing information is worse than spending tokens.
+
 - **Collapse old sessions.** Sessions older than 10 sessions ago can be compressed more aggressively: reduce to 1-2
   lines each ("S1: [date] — intake. Key themes: X, Y. Client uses [metaphor] for anxiety.") unless they contain
   information that is still clinically active.
+
 - **Frontmatter hygiene.** Keep the YAML frontmatter minimal: `client`, `slug`, `first_session`, `sessions`, and any
   standing abbreviations legend. Remove any frontmatter fields that have grown stale.
+
 - **No narrative.** The file is clinical documentation, not a story. Zero narrative connective tissue. Adjacent bullet
   points that belong together don't need transition sentences — proximity is enough.
 
@@ -249,6 +276,7 @@ Don't re-open therapeutic material. This is a door-closing message with warmth.
 - Session notes are written after the session, never during. Immersion is sacred.
 - Compression is mandatory after every session. Token efficiency is a clinical requirement — bloated history files
   degrade session quality by consuming context window.
+
 - Don't duplicate the agent's therapeutic methodology. This skill manages files and frames.
 - Match the client's language (DE/EN). Use standard German orthography per AGENTS.md.
 - Always write to `sessions/<client-slug>.md` — a single file per client, not per session.

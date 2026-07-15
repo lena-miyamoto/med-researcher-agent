@@ -9,57 +9,40 @@ This repo contains reusable medical research agent configuration and the local M
 > **Every repo Python tool must be run via `uv run <entry-point>` from the repository root.** This applies to Claude
 > Code, Copilot, and every subagent. No exceptions.
 
-**Forbidden — any of these will break:**
+**Forbidden:** `python3`, `python`, shebang, or direct-path invocation of any `.agents/scripts/*.py` file.
 
-- `python3 .agents/scripts/med-db.py ...`
-- `python .agents/scripts/med-db-query.py ...`
-- `.agents/scripts/med-db-validate.py ...` (direct script invocation)
-- `/home/.../med-researcher-agent/.agents/scripts/med-db.py ...` (absolute path)
-- Any equivalent `python`, `python3`, shebang, or direct-path invocation
-
-**Required — rewrite to:**
-
-- `uv run med-db ...`
-- `uv run med-db-validate ...`
-- `uv run med-db-lookup ...`
-- `uv run med-db-query ...`
-- `uv run test ...`
-- `uv run lint-md ...`
+**Required:** `uv run <entry-point>` from repo root — `med-db`, `med-db-validate`, `med-db-lookup`,
+`med-db-query`, `med-db-lookup-icd11`, `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-setup-dsm5`,
+`test`, `lint-md`.
 
 - **`uv run test`** after editing any `*.py` file. No other test invocation.
-- **`uv run lint-md`** after batch-editing tracked `*.md` files. Never run `uv run pymarkdownlnt` directly — only
-  `uv run lint-md` (or `--fix`), which wraps the linter with the correct config (`.pymarkdown.yaml`).
+- **`uv run lint-md`** after batch-editing tracked `*.md` files. Never `uv run pymarkdownlnt` directly — only
+  `uv run lint-md` (or `--fix`), which wraps the linter with correct config (`.pymarkdown.yaml`).
 
 ### Source-of-Truth Architecture
 
-- Keep cross-harness skill procedure in `.agents/skills/<name>/SKILL.md`; `.github/skills` and `.claude/skills` should
-stay as thin wrappers only.
-- Keep cross-harness agent behavior in `.agents/agents/<name>.md`; `.github/agents` and `.claude/agents` should stay as
-thin harness wrappers only.
-- **Shared utilities go in `.agents/scripts/utils.py`.** Extract helpers duplicated across at least two scripts;
-  don't pre-emptively generalize single-consumer code. Never copy-paste logic across scripts.
-- For German prose, use standard German orthography by default: write umlauts and `ß` normally instead of ASCII
-substitutions like `ae`, `oe`, `ue`, or `ss`, unless the user explicitly asks for ASCII or a technical constraint
-requires it.
+- Skills: `.agents/skills/<name>/SKILL.md` owns procedure; `.github/skills` and `.claude/skills` are thin wrappers.
+- Agents: `.agents/agents/<name>.md` owns behavior; `.github/agents` and `.claude/agents` are thin wrappers.
+- Shared utilities: `.agents/scripts/utils.py`. Extract helpers used by ≥2 scripts; don't pre-emptively generalize.
+- German prose: standard orthography (umlauts, `ß`), not ASCII substitutions, unless explicitly requested.
 
 ## Medical DB (`./med-db/`)
 
-- Use for medical, nutritional, or endometriosis literature collection and evidence summaries.
+Literature archive for medical, nutritional, or endometriosis research.
 
 ### Bootstrap after fresh checkout
 
-- `./med-db/` is gitignored — it does **not** ship with the repo. **Do not create it by hand.**
-- Run any `uv run med-db ...` archival command (e.g. `uv run med-db --pmid 12345678 --validate`). The tooling
-  auto-creates the full directory tree (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`) and
-  `index.json` on the first run — no manual setup.
-- Verify: `uv run med-db-validate --med-db med-db`. An empty archive (0 entries) passes if all five directories
+- `./med-db/` is gitignored — **do not create it by hand.** Run any archival command (e.g.
+  `uv run med-db --pmid 12345678 --validate`) and the tooling auto-creates the full tree
+  (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`) plus `index.json`.
+- Verify with `uv run med-db-validate --med-db med-db`. An empty archive passes if all five directories
   and `index.json` exist.
-- Query tools (`med-db-query`, `med-db-lookup`) are read-only and do **not** bootstrap — they report "directory
-  not found" if `med-db/` is missing. Run an archival command first.
+- Query tools (`med-db-query`, `med-db-lookup`) are read-only — they report "directory not found"
+  if `med-db/` is missing. Run an archival command first.
 
 ### Canonical Commands
 
-**Archival (`med-db`)**
+**Archival (`med-db`) and Validation (`med-db-validate`)**
 
 | Operation | Command |
 |---|---|
@@ -69,11 +52,6 @@ requires it.
 | Google Scholar search | `uv run med-db --source google-scholar --query '...' --search-slug '...' --validate` |
 | Web discovery (DOAJ etc.) | `uv run med-db --source doaj --query '...' --search-slug '...' --validate` |
 | PMID archival | `uv run med-db --pmid 12345678 --pmid 23456789 --validate` |
-
-**Validation (`med-db-validate`)**
-
-| Operation | Command |
-|---|---|
 | Validate archive | `uv run med-db-validate --med-db med-db` |
 
 **Lookup (`med-db-lookup`)**
@@ -98,40 +76,56 @@ requires it.
 | Extract PMIDs from search JSON | `uv run med-db-query --pmids-from-search searches/adhd/pubmed-search.json` |
 | Read paper metadata | `uv run med-db-query --read-metadata papers/adhd/pmid-12345-title-slug` |
 
-- Both lookup and query scripts default to JSON output. Use `--format text` for human-readable output.
+### Diagnostic Classification (Setup and Lookup)
+
+**Setup** (first use per system; local, no network after setup)
+
+| Operation | Command |
+|---|---|
+| Download ICD-11 (EN + DE) | `uv run med-db-download-icd11 --release 2026-01` |
+| Download ICD-11 (EN only) | `uv run med-db-download-icd11 --release 2026-01 --language en` |
+| Verify ICD-11 present | `uv run med-db-download-icd11 --release 2026-01 --language en --verify` |
+| Setup DSM-5-TR | `uv run med-db-setup-dsm5` |
+| Verify DSM-5-TR present | `uv run med-db-setup-dsm5 --verify-only` |
+
+**Lookup** (local, no network)
+
+| Operation | Command |
+|---|---|
+| ICD-11 code (EN) | `uv run med-db-lookup-icd11 --code 6A02` |
+| ICD-11 code (DE) | `uv run med-db-lookup-icd11 --code 6A02 --language de` |
+| ICD-11 keyword search (DE) | `uv run med-db-lookup-icd11 --keyword "Aufmerksamkeit" --language de` |
+| ICD-10 → ICD-11 | `uv run med-db-lookup-icd11 --icd10-code F90.0` |
+| ICD-11 → ICD-10 | `uv run med-db-lookup-icd11 --icd11-to-icd10 6A02` |
+| DSM-5-TR code | `uv run med-db-lookup-dsm5 --code F90.2` |
+| DSM-5-TR keyword search | `uv run med-db-lookup-dsm5 --keyword "bipolar"` |
+| DSM-5-TR category search | `uv run med-db-lookup-dsm5 --category "personality"` |
+| DSM-5-TR list categories | `uv run med-db-lookup-dsm5 --list-categories` |
+
+- Default output is JSON. Use `--format text` for human-readable output.
 - Supported web discovery sources: `google-scholar`, `doaj`, `open-science-directory`, `free-medical-journals`,
-  `openmd`, `trip-database`. Archive reproducible query pages under `web/`; use PubMed and Europe PMC for
-  structured machine-readable records.
-- **Full-text access fallback** — When a paper is paywalled, try Sci-Hub at `https://www.sci-hub.st/` via DOI.
-  Prefer official open-access sources first. Papers before 2022 are more likely available; newer papers occasionally.
+  `openmd`, `trip-database`. Archive reproducible query pages under `web/`; prefer PubMed and Europe PMC for
+  structured records.
+- **Full-text fallback** — When paywalled, try Sci-Hub at `https://www.sci-hub.st/` via DOI. Prefer official
+  open-access sources first. Papers before 2022 are more likely available.
 
 ## Medical DB structure (`./med-db/`)
 
-- Treat `./med-db` as the local literature archive.
-- `./med-db/index.json` is mandatory. Every archived search, paper, full-text capture, guideline, and web source must be
-listed there with title/identifier, canonical path, source, access date, and extraction notes. Update `index.json` in
-the same change as every new or moved archive capture.
-- Use lowercase kebab-case folder and file names. Prefer clear language suffixes for multi-language captures, e.g.
-`source.en.md`, `source.de.md`.
-- Required top-level archive categories:
-  - `searches/<topic-slug>/` — saved literature search queries as machine-readable JSON. Use `uncategorized/` when
-    no topic is specified.
-  - `papers/<topic-slug>/<identifier>-<title-slug>/` — each folder must contain `metadata.json` and `abstract.txt`.
-    Keep together; never split across flat directories.
-  - `fulltext/<topic-slug>/<identifier>-<title-slug>/` — full-text via open access or Sci-Hub fallback. Each folder
-    must contain `source.md` (YAML frontmatter with `title`, `authors`, `source`, `source_url`, `access_date`,
-    `language`, `extraction_notes`) plus the original `metadata.json`.
-  - `guidelines/<topic-slug>/<title-slug>/` — clinical practice guidelines. Each folder: `source.<lang>.md` with
-    YAML frontmatter.
-  - `web/<topic-slug>/` — archived web pages or reproducible search definition pages.
-- **Paper archive standard** — `papers/`: `metadata.json` + `abstract.txt`. `fulltext/`: `source.md` + `metadata.json`.
-  No intermediate download artifacts.
-- **YAML frontmatter on every source file** — minimum fields: `title`, `authors`, `source`, `source_url`, `access_date`
+Use lowercase kebab-case names. `./med-db/index.json` is mandatory — every entry must be listed there.
+Update `index.json` in the same change as every new or moved archive.
+
+Required top-level categories:
+
+- `searches/<topic-slug>/` — machine-readable JSON (`uncategorized/` when no topic specified).
+- `papers/<topic-slug>/<identifier>-<title-slug>/` — `metadata.json` + `abstract.txt`. Never split across dirs.
+- `fulltext/<topic-slug>/<identifier>-<title-slug>/` — `source.md` with YAML frontmatter + `metadata.json`.
+- `guidelines/<topic-slug>/<title-slug>/` — `source.<lang>.md` with YAML frontmatter.
+- `web/<topic-slug>/` — archived web pages or reproducible search definition pages.
+- **Paper standard:** `papers/`: `metadata.json` + `abstract.txt`. `fulltext/`: `source.md` + `metadata.json`.
+  No intermediate artifacts.
+- **YAML frontmatter** on every source file: `title`, `authors`, `source`, `source_url`, `access_date`
   (YYYY-MM-DD), `language`, `extraction_notes`.
-- **Source priority:** check `index.json` → `searches/` → fetch. External: PubMed (E-utilities), Europe PMC (REST
-  API) for structured records → DOAJ, open-access directories for full-text → Google Scholar for broad searches →
-  Sci-Hub for paywalled papers.
-- Keep the medical evidence lens explicit and source-backed. Flag study types and evidence categories per the
-  med-researcher agent's Evidence Hierarchy (`.agents/agents/med-researcher.md`).
-- For reusable research write-ups, create new files under `tmp/` rather than overwriting the source brief or archived
-records.
+- **Source priority:** `index.json` → `searches/` → fetch. PubMed (E-utilities), Europe PMC (REST API) →
+  DOAJ / open-access directories → Google Scholar → Sci-Hub for paywalled papers.
+- Flag evidence per `med-researcher` Evidence Hierarchy (`.agents/agents/med-researcher.md`).
+  Reusable write-ups → `tmp/`, not overwriting source briefs or archived records.

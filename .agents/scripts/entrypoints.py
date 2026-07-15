@@ -41,6 +41,22 @@ def med_db_query():
     return _load_script("med_db_query", "med-db-query.py").main()
 
 
+def med_db_lookup_icd11():
+    return _load_script("med_db_lookup_icd11", "med-db-lookup-icd11.py").main()
+
+
+def med_db_lookup_dsm5():
+    return _load_script("med_db_lookup_dsm5", "med-db-lookup-dsm5.py").main()
+
+
+def med_db_download_icd11():
+    return _load_script("med_db_download_icd11", "med-db-download-icd11.py").main()
+
+
+def med_db_setup_dsm5():
+    return _load_script("med_db_setup_dsm5", "med-db-setup-dsm5.py").main()
+
+
 def lint_md():
     """Run pymarkdownlnt on repo markdown files.
 

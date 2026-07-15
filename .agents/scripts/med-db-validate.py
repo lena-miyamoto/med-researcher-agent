@@ -187,11 +187,12 @@ def validate_index(root, issues):
         for p in (root / "fulltext").rglob("metadata.json")
         if (root / "fulltext").is_dir()
     )
-    actual_guideline_dirs = sorted(
+    actual_guideline_dirs = sorted(set(
         str(p.parent.relative_to(root))
-        for p in (root / "guidelines").rglob("source.*.md")
+        for pattern in ("source.md", "source.*.md")
+        for p in (root / "guidelines").rglob(pattern)
         if (root / "guidelines").is_dir()
-    )
+    ))
     actual_web = sorted(
         str(p.relative_to(root))
         for p in (root / "web").rglob("*.html")
@@ -268,7 +269,10 @@ def main():
     search_count = len(list((root / "searches").rglob("*.json"))) if (root / "searches").is_dir() else 0
     paper_count = len(list((root / "papers").rglob("metadata.json"))) if (root / "papers").is_dir() else 0
     fulltext_count = len(list((root / "fulltext").rglob("metadata.json"))) if (root / "fulltext").is_dir() else 0
-    guideline_count = len(list((root / "guidelines").rglob("source.*.md"))) if (root / "guidelines").is_dir() else 0
+    guideline_count = len(set(
+        p.parent for pattern in ("source.md", "source.*.md")
+        for p in (root / "guidelines").rglob(pattern)
+    )) if (root / "guidelines").is_dir() else 0
     web_count = len(list((root / "web").rglob("*.html"))) if (root / "web").is_dir() else 0
 
     print("med-db validation OK")

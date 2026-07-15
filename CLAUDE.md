@@ -14,7 +14,7 @@ Agent tool with `subagent_type: "X"`. The agent name is the `name` field in the 
 | `med-researcher` | `.agents/agents/med-researcher.md` | Medical/dietological research: evidence hierarchy, counter-evidence, harms search, literature review |
 | `fitness-coach` | `.agents/agents/fitness-coach.md` | Workout design: exercise selection, programming, RPE autoregulation, technique |
 | `dietologist` | `.agents/agents/dietologist.md` | Dietary planning: macronutrients, meal composition, supplementation, ED screening |
-| `psychotherapist` | `.agents/agents/psychotherapist.md` | Therapeutic dialogue, DSM/ICD diagnosis, case formulation, psychoeducation. Bilingual DE/EN |
+| `psychotherapist` | `.agents/agents/psychotherapist.md` | Therapeutic dialogue, DSM/ICD diagnosis, case formulation, psychoeducation. Specialized in adult ADHD, ASD, neurodevelopmental comorbidities, gender-affirming care (trans/NB), and sex/relationship therapy. Bilingual DE/EN |
 
 ## Skills
 

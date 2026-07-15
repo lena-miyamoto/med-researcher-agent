@@ -87,22 +87,18 @@ uv run test          # re-run the full suite
 
 ## Instruction Layout
 
-- `AGENTS.md`: repo-wide, tool-agnostic workflow.
-- `CLAUDE.md`: Claude-specific routing.
-- `.github/copilot-instructions.md`: Copilot-specific routing.
-- `.agents/agents/med-researcher.md`: shared med-researcher role and output rules.
-- `.agents/agents/fitness-coach.md`: shared fitness-coach persona, programming methodology, and safety rules.
-- `.agents/agents/dietologist.md`: shared dietologist persona, dietary methodology, supplementation policy, and safety rules.
-- `.agents/agents/psychotherapist.md`: shared psychotherapist persona, clinical methodology, safety rules, and output format.
-- `.github/agents/med-researcher.agent.md`, `.claude/agents/med-researcher.md`: thin med-researcher harness wrappers.
-- `.github/agents/fitness-coach.agent.md`, `.claude/agents/fitness-coach.md`: thin fitness-coach harness wrappers.
-- `.github/agents/dietologist.agent.md`, `.claude/agents/dietologist.md`: thin dietologist harness wrappers.
-- `.github/agents/psychotherapist.agent.md`, `.claude/agents/psychotherapist.md`: thin psychotherapist harness wrappers.
-- `.agents/skills/<name>/SKILL.md`: shared cross-harness skill procedures.
-- `.github/skills/`, `.claude/skills/`: thin harness wrappers pointing at the shared skill.
-- `.agents/scripts/`: local archive tooling used by both agents.
+| File | Purpose |
+|------|---------|
+| `AGENTS.md` | Repo-wide workflow, command contract, Medical DB reference |
+| `CLAUDE.md` | Claude-specific routing and agent/skill tables |
+| `.github/copilot-instructions.md` | Copilot-specific routing |
+| `.agents/agents/<name>.md` | Shared agent behavior (source of truth) |
+| `.github/agents/<name>.agent.md`, `.claude/agents/<name>.md` | Thin harness wrappers |
+| `.agents/skills/<name>/SKILL.md` | Shared skill procedure (source of truth) |
+| `.github/skills/<name>/SKILL.md`, `.claude/skills/<name>/SKILL.md` | Thin harness wrappers |
+| `.agents/scripts/` | Local tooling used by both harnesses |
 
-Agent wrappers stay aligned; differences are limited to harness frontmatter, tool names, and model selection.
+Wrappers stay aligned; differences are limited to harness frontmatter, tool names, and model selection.
 
 ## Claude Code Usage
 
