@@ -507,7 +507,7 @@ def verify():
     with open(CLASSIFICATION_PATH, encoding="utf-8") as fh:
         data = json.load(fh)
     cats = len(data.get("categories", []))
-    total = sum(len(c["disorders"]) for c in data.get("categories", []))
+    total = sum(len(c.get("disorders", [])) for c in data.get("categories", []))
     return True, f"{cats} categories, {total} disorders"
 
 

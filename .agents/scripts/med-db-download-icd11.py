@@ -150,7 +150,8 @@ def verify_quick(release, language):
 
     Returns (entry_count, None) on success, or (0, error_message) on failure.
     """
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    scripts_dir = str(Path(__file__).resolve().parent)
+    sys.path.insert(0, scripts_dir)
     try:
         from importlib import import_module
         mod = import_module("med-db-lookup-icd11")
@@ -162,6 +163,12 @@ def verify_quick(release, language):
         return 0, "lookup tool exited (data not found or unreadable)"
     except Exception as exc:
         return 0, str(exc)
+    finally:
+        # Restore sys.path to avoid side-effect leakage
+        try:
+            sys.path.remove(scripts_dir)
+        except ValueError:
+            pass
 
 
 def parse_args():

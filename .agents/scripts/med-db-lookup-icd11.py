@@ -174,7 +174,7 @@ def _is_match(text: str, query: str) -> bool:
 
 def search_by_code(entries, code):
     """Exact case-insensitive code match. Returns matching entry or None."""
-    code_upper = code.strip().upper()
+    code_upper = code.strip().upper().rstrip(".")
     # Exact match first
     for e in entries:
         if e["code"].upper() == code_upper:

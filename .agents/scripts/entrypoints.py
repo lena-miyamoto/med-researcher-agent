@@ -57,6 +57,10 @@ def med_db_setup_dsm5():
     return _load_script("med_db_setup_dsm5", "med-db-setup-dsm5.py").main()
 
 
+def med_db_setup_therapy_methods():
+    return _load_script("med_db_setup_therapy_methods", "med-db-setup-therapy-methods.py").main()
+
+
 def lint_md():
     """Run pymarkdownlnt on repo markdown files.
 
@@ -72,13 +76,14 @@ def lint_md():
         fix_mode = True
 
     if not args:
+        repo_root = Path(__file__).resolve().parent.parent.parent
         args = [
-            "AGENTS.md",
-            "README.md",
-            "CLAUDE.md",
-            ".agents",
-            ".github",
-            ".claude",
+            str(repo_root / "AGENTS.md"),
+            str(repo_root / "README.md"),
+            str(repo_root / "CLAUDE.md"),
+            str(repo_root / ".agents"),
+            str(repo_root / ".github"),
+            str(repo_root / ".claude"),
         ]
 
     base_cmd = ["pymarkdownlnt", "--config", ".pymarkdown.yaml"]

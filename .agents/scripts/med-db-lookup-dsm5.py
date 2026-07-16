@@ -27,8 +27,15 @@ def load_classification():
             "Run the download/setup first.\n"
         )
         sys.exit(1)
-    with open(CLASSIFICATION_PATH, encoding="utf-8") as fh:
-        return json.load(fh)
+    try:
+        with open(CLASSIFICATION_PATH, encoding="utf-8") as fh:
+            return json.load(fh)
+    except json.JSONDecodeError as exc:
+        sys.stderr.write(
+            f"DSM-5-TR classification data is corrupt: {exc}\n"
+            "Run 'uv run med-db-setup-dsm5 --force' to regenerate.\n"
+        )
+        sys.exit(1)
 
 
 def _flatten_disorders(data):
@@ -44,7 +51,12 @@ def _is_match(text, query):
 
 
 def search_by_code(data, code):
-    """Exact ICD-10-CM code match. Returns (category_name, disorder_dict) or None."""
+    """Exact ICD-10-CM code match. Returns (category_name, disorder_dict) or None.
+
+    For partial codes that match multiple disorders (e.g. "F32"), returns a
+    list of (category_name, disorder_dict) tuples instead of a single tuple.
+    Callers should check whether the result is a list or a single match.
+    """
     code_upper = code.strip().upper().replace(" ", "")
     for cat_name, d in _flatten_disorders(data):
         if d.get("code") and d["code"].upper().replace(" ", "") == code_upper:
@@ -56,6 +68,8 @@ def search_by_code(data, code):
             results.append((cat_name, d))
     if len(results) == 1:
         return results[0]
+    if len(results) > 1:
+        return results
     return None
 
 
@@ -90,6 +104,17 @@ def _format_text_output(output, args):
         cl = output["code_lookup"]
         if "error" in cl:
             lines.append(f"Error: {cl['error']}")
+        elif cl.get("partial_match"):
+            lines.append(f"Code '{cl['query']}' matches {cl['count']} disorders:")
+            lines.append("")
+            for item in cl["results"]:
+                d = item["disorder"]
+                code_str = d.get("code") or "(no code)"
+                lines.append(f"  {code_str:<12} {d['name']}")
+                lines.append(f"              Category: {item['category']}")
+                if d.get("specifiers"):
+                    lines.append(f"              Specifiers: {', '.join(d['specifiers'])}")
+                lines.append("")
         else:
             lines.append(f"Code:        {cl['disorder']['code'] or 'N/A'}")
             lines.append(f"Disorder:    {cl['disorder']['name']}")
@@ -203,6 +228,13 @@ def main():
         result = search_by_code(data, args.code)
         if result is None:
             output["code_lookup"] = {"error": f"code '{args.code}' not found"}
+        elif isinstance(result, list):
+            output["code_lookup"] = {
+                "partial_match": True,
+                "query": args.code,
+                "count": len(result),
+                "results": [{"category": c, "disorder": d} for c, d in result],
+            }
         else:
             cat_name, disorder = result
             output["code_lookup"] = {

@@ -349,6 +349,8 @@ def _format_text(result, command):
         return "\n".join(lines)
 
     if command == "read-metadata":
+        if "error" in result:
+            return f"Error: {result['error']}"
         lines = [
             f"Title:  {result.get('title', 'N/A')}",
             f"Source: {result.get('source', 'N/A')}",

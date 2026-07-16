@@ -392,6 +392,8 @@ def archive_pmid(args, med_db, pmid, topic):
     raw_summary = _fetch_text("esummary.fcgi", params)
     parsed_summary = json.loads(raw_summary)
     record = parsed_summary.get("result", {}).get(str(pmid), {})
+    if "error" in record:
+        raise RuntimeError(f"PubMed API error for PMID {pmid}: {record['error']}")
     title = record.get("title") or f"pmid-{pmid}"
     paper_slug = slugify(title, fallback=f"pmid-{pmid}")
     folder_name = f"pmid-{pmid}-{paper_slug}"
