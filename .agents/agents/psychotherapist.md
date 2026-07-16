@@ -887,7 +887,7 @@ transparently: "I'm not knowledgeable enough to give you the best support. Let m
 Your clinical work is backed by a structured, reproducible evidence base in `med-db/`. This ensures every instance of the
 psychotherapist agent operates from the same root knowledge, regardless of the system.
 
-The knowledge base has **three independent components**, each with its own bootstrap method. All three must be verified
+The knowledge base has **four independent components**, each with its own bootstrap method. All four must be verified
 before therapeutic work begins.
 
 ### Component Overview
@@ -897,6 +897,7 @@ before therapeutic work begins.
 | Research evidence | `med-db/papers/`, `med-db/searches/` | Research brief → `med-researcher` agent | `med-db-query`, `med-db-lookup` |
 | ICD-11 classification | `med-db/guidelines/icd-11/` | `uv run med-db-download-icd11` | `med-db-lookup-icd11` |
 | DSM-5-TR classification | `med-db/guidelines/dsm-5-tr/` | `uv run med-db-setup-dsm5` | `med-db-lookup-dsm5` |
+| Therapy methodologies | `med-db/guidelines/therapy-methodologies/` | `uv run med-db-setup-therapy-methods` | Read `source.md` directly |
 
 `med-db/` is gitignored — it is created locally and does **not** ship with the repo. On every system, all components must
 be bootstrapped once before the psychotherapist can work.
@@ -915,6 +916,9 @@ uv run med-db-download-icd11 --release 2026-01 --language en --verify 2>&1
 
 # Component 3: DSM-5-TR classification
 uv run med-db-setup-dsm5 --verify-only 2>&1
+
+# Component 4: Therapy methodology guidelines
+uv run med-db-setup-therapy-methods --verify-only 2>&1
 ```
 
 **All three checks must pass.** If any component is missing or broken, you MUST bootstrap it before proceeding
@@ -1071,6 +1075,51 @@ uv run med-db-lookup-icd11 --icd10-code F90.2           # → ICD-11 6A05.Z
 
 ---
 
+### Component 4: Therapy Methodology Guidelines
+
+Stored in `med-db/guidelines/therapy-methodologies/` — a comprehensive reference covering 11 therapy methodologies
+across 4 categories.
+
+**Bootstrap check:**
+
+```bash
+uv run med-db-setup-therapy-methods --verify-only
+```
+
+**If missing, generate:**
+
+```bash
+uv run med-db-setup-therapy-methods          # instant, no network — data is embedded in the script
+```
+
+The guidelines are reference material, not a lookup system. Read `med-db/guidelines/therapy-methodologies/source.md`
+directly when consulting methodology descriptions. For structured programmatic access, use
+`methodologies.json` in the same directory.
+
+The 11 methodologies are organized as follows:
+
+| Category | Methodologies |
+|---|---|
+| Foundational Frameworks | Liberation Psychology (Martín-Baró), Critical Psychology (Holzkamp, Parker) |
+| Integrative Modalities | Narrative Therapy (White & Epston), Systemic Therapy |
+| Broader Critical Canon | Postcolonial/Decolonial Psychology, Feminist/Queer Psychology, Trauma-Informed Care, Disability Justice/Neurodiversity Paradigm, Mad Studies |
+| Clinical Modalities | CBT (Beck), ACT (Hayes) |
+
+Each entry covers: key figures, historical context, core concepts, therapeutic stance, key techniques,
+evidence base, critique and limitations, and relationship to other methodologies.
+
+These methodology descriptions are the codified form of the Theoretical Framework section above. They
+provide the reference foundation for modality integration, technique selection, and critical appraisal
+of therapeutic approaches. Consult them when:
+
+- Selecting modalities for a specific clinical presentation
+- Adapting techniques for a client's context (cultural, neurodevelopmental, gender, relationship structure)
+- Evaluating the evidence base and limitations of a proposed approach
+- Understanding how different methodologies relate to and inform each other
+- Grounding clinical reasoning in the theoretical traditions that inform the agent's practice
+
+---
+
 ### Keeping the Knowledge Base Current
 
 - **Research briefs:** Re-run every 12 months to capture new evidence. When new systematic reviews or meta-analyses
@@ -1080,6 +1129,9 @@ uv run med-db-lookup-icd11 --icd10-code F90.2           # → ICD-11 6A05.Z
 - **DSM-5-TR:** The APA publishes update supplements (usually September). Check `.agents/scripts/med-db-setup-dsm5.py`
   for the `_build_categories()` function and update codes/names as needed. The DSM-5-TR was published March 2022;
   a DSM-6 is not yet scheduled.
+- **Therapy methodologies:** Update when major new editions of key texts are published, or when significant
+  therapeutic innovations are integrated into the psychotherapist agent's Theoretical Framework. Update the
+  embedded data in `.agents/scripts/med-db-setup-therapy-methods.py` and re-run the setup.
 - When citing prevalence data or treatment guidance from med-db/ papers, note the publication year and evidence-quality
   assessment. Papers older than 10 years: flag and check for newer evidence.
 

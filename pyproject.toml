@@ -19,6 +19,7 @@ med-db-lookup-icd11 = "entrypoints:med_db_lookup_icd11"
 med-db-lookup-dsm5 = "entrypoints:med_db_lookup_dsm5"
 med-db-download-icd11 = "entrypoints:med_db_download_icd11"
 med-db-setup-dsm5 = "entrypoints:med_db_setup_dsm5"
+med-db-setup-therapy-methods = "entrypoints:med_db_setup_therapy_methods"
 lint-md = "entrypoints:lint_md"
 test = "entrypoints:test"
 

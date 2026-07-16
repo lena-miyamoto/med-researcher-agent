@@ -13,7 +13,7 @@ This repo contains reusable medical research agent configuration and the local M
 
 **Required:** `uv run <entry-point>` from repo root — `med-db`, `med-db-validate`, `med-db-lookup`,
 `med-db-query`, `med-db-lookup-icd11`, `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-setup-dsm5`,
-`test`, `lint-md`.
+`med-db-setup-therapy-methods`, `test`, `lint-md`.
 
 - **`uv run test`** after editing any `*.py` file. No other test invocation.
 - **`uv run lint-md`** after batch-editing tracked `*.md` files. Never `uv run pymarkdownlnt` directly — only
@@ -87,6 +87,8 @@ Literature archive for medical, nutritional, or endometriosis research.
 | Verify ICD-11 present | `uv run med-db-download-icd11 --release 2026-01 --language en --verify` |
 | Setup DSM-5-TR | `uv run med-db-setup-dsm5` |
 | Verify DSM-5-TR present | `uv run med-db-setup-dsm5 --verify-only` |
+| Setup therapy methodology guidelines | `uv run med-db-setup-therapy-methods` |
+| Verify therapy methodology guidelines | `uv run med-db-setup-therapy-methods --verify-only` |
 
 **Lookup** (local, no network)
 
