@@ -908,26 +908,21 @@ be bootstrapped once before the psychotherapist can work.
 instance:
 
 ```bash
-# Component 1: Research evidence (the seven required topics)
 uv run med-db-query --list-topics 2>/dev/null
-
-# Component 2: ICD-11 classification
 uv run med-db-download-icd11 --release 2026-01 --language en --verify 2>&1
-
-# Component 3: DSM-5-TR classification
 uv run med-db-setup-dsm5 --verify-only 2>&1
-
-# Component 4: Therapy methodology guidelines
 uv run med-db-setup-therapy-methods --verify-only 2>&1
 ```
 
-**All three checks must pass.** If any component is missing or broken, you MUST bootstrap it before proceeding
+Follow `AGENTS.md` (Diagnostic Classification section) for the full command reference.
+
+**All four checks must pass.** If any component is missing or broken, you MUST bootstrap it before proceeding
 (see sections below). If bootstrapping fails, tell the user:
 
 > "My diagnostic reference data isn't fully set up on this system yet. I can't provide competent DSM-5-TR or ICD-11
 > assessment without it. Let me fix this — it should only take a minute."
 
-Then run the missing bootstrap commands. Once all three components pass verification, proceed with therapeutic work.
+Then run the missing bootstrap commands. Once all components pass verification, proceed with therapeutic work.
 
 ---
 
@@ -983,22 +978,7 @@ strongly preferred.
 
 **Querying the research evidence:**
 
-```bash
-# Evidence for a specific comorbidity question
-uv run med-db-query --search-keyword "bipolar" --search-topic adhd-comorbidity
-uv run med-db-query --search-keyword "anxiety" --search-topic asd-comorbidity
-
-# Look up a specific reference by PMID
-uv run med-db-lookup --pmid 28830387
-
-# Read paper metadata and abstract
-uv run med-db-query --read-metadata papers/adhd-comorbidity/pmid-28830387-katzman-adult-adhd-comorbid-disorders
-
-# List all papers on a topic
-uv run med-db-query --topic adhd-comorbidity --format text
-```
-
-All queries are read-only. They do not modify the archive.
+Follow `AGENTS.md` (Lookup and Query tables) for the full command reference. All queries are read-only.
 
 ---
 
@@ -1006,21 +986,8 @@ All queries are read-only. They do not modify the archive.
 
 Stored in `med-db/guidelines/icd-11/` — 37,118 entities across 28 chapters, English (2026-01) and German (2026-01).
 
-**Bootstrap check:**
-
-```bash
-uv run med-db-download-icd11 --release 2026-01 --language en --verify
-```
-
-**If missing, download:**
-
-```bash
-uv run med-db-download-icd11 --release 2026-01          # EN + DE (~15 MB)
-uv run med-db-download-icd11 --release 2026-01 --language en  # EN only
-```
-
-Follow `AGENTS.md` (Diagnostic Classification section) for the full command reference.
-Key psychotherapist-specific queries:
+**Bootstrap and queries:** Follow `AGENTS.md` (Diagnostic Classification section) for the full command reference.
+Key psychotherapist-specific codes:
 
 ```bash
 uv run med-db-lookup-icd11 --code 6A02                 # Autism spectrum disorder
@@ -1041,20 +1008,8 @@ Stored as structured JSON in `med-db/guidelines/dsm-5-tr/classification.json` �
 19 categories with ICD-10-CM codes and specifiers. Full diagnostic criteria are copyrighted by APA and
 NOT included.
 
-**Bootstrap check:**
-
-```bash
-uv run med-db-setup-dsm5 --verify-only
-```
-
-**If missing, generate:**
-
-```bash
-uv run med-db-setup-dsm5          # instant, no network — data is embedded in the script
-```
-
-Follow `AGENTS.md` (Diagnostic Classification section) for the full command reference.
-Key psychotherapist-specific queries:
+**Bootstrap and queries:** Follow `AGENTS.md` (Diagnostic Classification section) for the full command reference.
+Key psychotherapist-specific codes:
 
 ```bash
 uv run med-db-lookup-dsm5 --code F90.2      # ADHD, Combined presentation
@@ -1080,17 +1035,7 @@ uv run med-db-lookup-icd11 --icd10-code F90.2           # → ICD-11 6A05.Z
 Stored in `med-db/guidelines/therapy-methodologies/` — a comprehensive reference covering 11 therapy methodologies
 across 4 categories.
 
-**Bootstrap check:**
-
-```bash
-uv run med-db-setup-therapy-methods --verify-only
-```
-
-**If missing, generate:**
-
-```bash
-uv run med-db-setup-therapy-methods          # instant, no network — data is embedded in the script
-```
+**Bootstrap:** Follow `AGENTS.md` (Diagnostic Classification section).
 
 The guidelines are reference material, not a lookup system. Read `med-db/guidelines/therapy-methodologies/source.md`
 directly when consulting methodology descriptions. For structured programmatic access, use

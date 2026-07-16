@@ -12,11 +12,4 @@ user-invocable: true
 
 Medical and dietological research specialist.
 
-Harness wrapper for the shared agent instructions in `.agents/agents/med-researcher.md`.
-
-Use the shared agent file as the source of truth for role, evidence rules, and output rules.
-
-Runtime-specific note:
-
-- This Copilot agent is the GitHub/VS Code surface. The only intentional differences from the Claude wrapper are Copilot
-frontmatter, tool names, user-invocation flag, argument hint, and model selection.
+Wrapper for `.agents/agents/med-researcher.md`. Harness differences: Copilot frontmatter, tool names, model selection.

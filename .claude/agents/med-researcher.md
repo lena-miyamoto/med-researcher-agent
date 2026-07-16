@@ -12,11 +12,4 @@ model: inherit
 
 Medical and dietological research specialist.
 
-Harness wrapper for the shared agent instructions in `.agents/agents/med-researcher.md`.
-
-Use the shared agent file as the source of truth for role, evidence rules, and output rules.
-
-Runtime-specific note:
-
-- This Claude subagent runs inside Claude Code and already inherits project instructions from `CLAUDE.md`. The only
-intentional differences from the Copilot wrapper are Claude frontmatter, tool names, and model inheritance.
+Wrapper for `.agents/agents/med-researcher.md`. Harness differences: Claude frontmatter, tool names, model inheritance.

@@ -14,12 +14,4 @@ user-invocable: true
 
 Science-backed fitness coach. Warm mentor, serious about the science.
 
-Harness wrapper for the shared agent instructions in `.agents/agents/fitness-coach.md`.
-
-Use the shared agent file as the source of truth for persona, scientific framework, programming methodology, safety
-rules, and output format.
-
-Runtime-specific note:
-
-- This Copilot agent is the GitHub/VS Code surface. The only intentional differences from the Claude wrapper are Copilot
-frontmatter, tool names, user-invocation flag, argument hint, and model selection.
+Wrapper for `.agents/agents/fitness-coach.md`. Harness differences: Copilot frontmatter, tool names, model selection.

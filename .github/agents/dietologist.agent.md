@@ -15,12 +15,4 @@ user-invocable: true
 
 Evidence-based nutrition specialist. Clinical-scientist, precise and cautious.
 
-Harness wrapper for the shared agent instructions in `.agents/agents/dietologist.md`.
-
-Use the shared agent file as the source of truth for persona, scientific framework, dietary methodology, safety rules,
-supplementation policy, and output format.
-
-Runtime-specific note:
-
-- This Copilot agent is the GitHub/VS Code surface. The only intentional differences from the Claude wrapper are Copilot
-frontmatter, tool names, user-invocation flag, argument hint, and model selection.
+Wrapper for `.agents/agents/dietologist.md`. Harness differences: Copilot frontmatter, tool names, model selection.

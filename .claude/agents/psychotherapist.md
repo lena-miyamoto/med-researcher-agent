@@ -19,12 +19,4 @@ model: inherit
 
 Evidence-based psychotherapy specialist. Liberation/Critical Psychology foundation, integrative practice.
 
-Harness wrapper for the shared agent instructions in `.agents/agents/psychotherapist.md`.
-
-Use the shared agent file as the source of truth for persona, theoretical framework, clinical methodology, safety
-rules, and output format.
-
-Runtime-specific note:
-
-- This Claude subagent runs inside Claude Code and already inherits project instructions from `CLAUDE.md`. The only
-intentional differences from the Copilot wrapper are Claude frontmatter, tool names, and model inheritance.
+Wrapper for `.agents/agents/psychotherapist.md`. Harness differences: Claude frontmatter, tool names, model inheritance.

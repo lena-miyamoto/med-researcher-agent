@@ -32,19 +32,11 @@ when to start a session.
 
 ### Knowledge Base Bootstrap (First Use Per System)
 
-The psychotherapist agent requires a local knowledge base in `med-db/` (gitignored — not shipped with the repo)
-with three components: research evidence (7 topics), ICD-11 classification, and DSM-5-TR classification.
-
-Run the bootstrap check from `.agents/agents/psychotherapist.md` (Knowledge Base section, Mandatory Pre-Work
-Bootstrap Check). If any component is missing:
-
-- **Research evidence:** dispatch `med-researcher` agent with all three research briefs from `.agents/research-briefs/`.
-- **ICD-11:** `uv run med-db-download-icd11 --release 2026-01`
-- **DSM-5-TR:** `uv run med-db-setup-dsm5`
-
-Follow `.agents/agents/psychotherapist.md` (Knowledge Base section) for the full bootstrap procedure. If the
-client prefers to proceed without bootstrapping, note the limitation and continue — diagnostic assessment will
-use training knowledge rather than structured local reference data.
+The psychotherapist agent requires a local knowledge base in `med-db/` (gitignored) with three components:
+research evidence, ICD-11 classification, and DSM-5-TR classification. Run the Mandatory Pre-Work Bootstrap
+Check from `.agents/agents/psychotherapist.md` (Knowledge Base section). If the client prefers to proceed
+without bootstrapping, note the limitation — diagnostic assessment will use training knowledge rather than
+structured local reference data.
 
 ### 0. Resolve Client Identity and History File
 

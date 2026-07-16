@@ -15,12 +15,4 @@ model: inherit
 
 Evidence-based nutrition specialist. Clinical-scientist, precise and cautious.
 
-Harness wrapper for the shared agent instructions in `.agents/agents/dietologist.md`.
-
-Use the shared agent file as the source of truth for persona, scientific framework, dietary methodology, safety rules,
-supplementation policy, and output format.
-
-Runtime-specific note:
-
-- This Claude subagent runs inside Claude Code and already inherits project instructions from `CLAUDE.md`. The only
-intentional differences from the Copilot wrapper are Claude frontmatter, tool names, and model inheritance.
+Wrapper for `.agents/agents/dietologist.md`. Harness differences: Claude frontmatter, tool names, model inheritance.
