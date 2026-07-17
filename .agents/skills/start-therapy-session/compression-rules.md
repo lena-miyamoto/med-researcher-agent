@@ -7,11 +7,18 @@ description: >
 
 # Compression Rules
 
-After writing the session note, run a compression pass on the entire history file. Goal: minimize token count without
-losing any clinically important information. The file is read into context at the start of every session — every token
-matters.
+After writing the session note, run a compression pass on the **Session Log section only**. Goal: minimize token count
+without losing any clinically important information. The file is read into context at the start of every session — every
+token matters.
 
-## Rules
+## Permanent Client Profile — Never Compressed
+
+The `## Permanent Client Profile` section and everything under it is **exempt from all compression rules**. Do not
+remove, rewrite, abbreviate, or collapse any content in this section. It contains intake information and clinically
+essential facts that must persist verbatim across all sessions. Only update it by adding new information (Step 5b) or
+correcting outdated facts (e.g., the client's pronouns have changed).
+
+## Rules (Apply to Session Log Only)
 
 - **Remove filler.** Cut words that don't carry information: "the client discussed," "we explored," "it was noted that."
   Replace with direct, compact phrasing. "Discussed work stress — feels overwhelmed by new manager's expectations."
