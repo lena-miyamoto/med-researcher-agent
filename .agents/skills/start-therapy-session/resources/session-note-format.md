@@ -6,10 +6,11 @@ description: >
 
 # Session Note Format
 
-When the agent closes the session (either naturally or via client-initiated ending), a therapeutic session has taken
-place. Do NOT re-engage the client in a post-session conversation. The session is over.
+When the client has ended the session (either naturally or by signalling they're done — e.g., "I'd like to end here,"
+"that's all for today"), the therapeutic session is over. Do NOT re-engage the client in a post-session conversation.
+The session is over.
 
-Instead, produce a compact session note using the format from the psychotherapist agent. Write it to the client's
+Produce a compact session note using the format from the psychotherapist agent. Write it to the client's
 history file. Prepend it below the YAML frontmatter (newest sessions at top):
 
 ```markdown

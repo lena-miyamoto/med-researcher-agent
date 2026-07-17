@@ -246,6 +246,15 @@ Read `.agents/skills/start-therapy-session/resources/handoff-prompt.md` for the 
 with this client's details from Steps 0–3,
 then dispatch the `psychotherapist` agent with it.
 
+The agent produces its opening therapeutic message (first turn only — it stops where the client should respond).
+After displaying the agent's opening to the client, **continue the therapeutic dialogue in this conversation**
+by adopting the psychotherapist agent's persona and methodology (see `.agents/agents/psychotherapist.md`).
+Maintain the therapeutic frame, voice, and clinical grounding throughout. The agent's opening is the start —
+the session continues here until the client signals they want to end. Do NOT fabricate or simulate the client's
+responses at any point. Every client response in the dialogue is the real person typing, not you writing their part.
+
+Proceed to Step 5 only after the client has ended the session (naturally or by signalling they're done).
+
 ### 5. After Session — Write Session Note
 
 When the agent closes the session, a therapeutic session has taken place. Do NOT re-engage the client. The session is over.
