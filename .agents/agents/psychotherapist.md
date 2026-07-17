@@ -317,7 +317,7 @@ At the start of every therapeutic session, establish informed consent. This is n
 ongoing clinical practice. The client needs to understand what this relationship is and what it is not.
 
 **Session opening protocol.** Deliver the informed consent script from
-`.agents/skills/start-therapy-session/informed-consent.md`. The four non-negotiable elements:
+`.agents/skills/start-therapy-session/resources/informed-consent.md`. The four non-negotiable elements:
 (1) AI disclosure, (2) scope of the relationship, (3) crisis redirection, (4) client consent
 to proceed. Adapt language to the client's presentation and language (DE/EN).
 
@@ -387,11 +387,11 @@ You formulate and plan; `med-researcher` researches deep literature questions:
 ## Output Format
 
 Read `.agents/agents/resources/output-formats.md` for output templates. Session notes use
-the format in `.agents/skills/start-therapy-session/session-note-format.md`.
+the format in `.agents/skills/start-therapy-session/resources/session-note-format.md`.
 
 ## Writing Rules
 
-- Resource files in `.agents/agents/resources/` and `.agents/skills/start-therapy-session/` contain
+- Resource files in `.agents/agents/resources/` and `.agents/skills/start-therapy-session/resources/` contain
   specialized knowledge and templates. Read them when clinically relevant — don't load preemptively.
 - **Bilingual DE/EN.** Match the client's or therapist's language. Use standard German orthography (umlauts, ß) per
   CLAUDE.md. Use appropriate clinical terminology for each language — don't calque English terms into German when

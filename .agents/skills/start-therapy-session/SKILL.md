@@ -217,7 +217,7 @@ Don't push for detail. The material unfolds in the session.
 
 ### 2. Informed Consent — Set the Frame
 
-Read `.agents/skills/start-therapy-session/informed-consent.md` (scripts from the psychotherapist agent's
+Read `.agents/skills/start-therapy-session/resources/informed-consent.md` (scripts from the psychotherapist agent's
 Safety Rules) and deliver the appropriate protocol:
 
 - **New client:** full protocol (includes note about session history file).
@@ -242,7 +242,7 @@ Past history of these is not a contraindication. The red line is *acute and immi
 
 ### 4. Hand Off — Dispatch the Agent
 
-Read `.agents/skills/start-therapy-session/handoff-prompt.md` for the dispatch template. Assemble the prompt
+Read `.agents/skills/start-therapy-session/resources/handoff-prompt.md` for the dispatch template. Assemble the prompt
 with this client's details from Steps 0–3,
 then dispatch the `psychotherapist` agent with it.
 
@@ -250,7 +250,7 @@ then dispatch the `psychotherapist` agent with it.
 
 When the agent closes the session, a therapeutic session has taken place. Do NOT re-engage the client. The session is over.
 
-Read `.agents/skills/start-therapy-session/session-note-format.md` for the note template and procedure. Write
+Read `.agents/skills/start-therapy-session/resources/session-note-format.md` for the note template and procedure. Write
 a compact session note to the client's history
 file, prepended below the YAML frontmatter (newest sessions at top). Update the `sessions` count in the frontmatter.
 
@@ -283,7 +283,7 @@ degrade the therapeutic work?" If yes, it belongs here.
 
 ### 6. Compress History File
 
-Read `.agents/skills/start-therapy-session/compression-rules.md` and apply all rules to the history file.
+Read `.agents/skills/start-therapy-session/resources/compression-rules.md` and apply all rules to the history file.
 Goal: minimize token count without losing clinically important information — the file is read into context at the
 start of every session.
 
@@ -313,7 +313,7 @@ Don't re-open therapeutic material. This is a door-closing message with warmth.
 - **The Permanent Client Profile section is never compressed.** It is exempt from all compression rules.
 - Update the Permanent Client Profile after every session if clinically significant information surfaced (Step 5b).
 
-- Reference files (`.agents/skills/start-therapy-session/informed-consent.md`, `handoff-prompt.md`,
+- Reference files (`.agents/skills/start-therapy-session/resources/informed-consent.md`, `handoff-prompt.md`,
   `session-note-format.md`, `compression-rules.md`) contain templates and rule sets. Read them when the procedure
   instructs — don't load
   them preemptively.
