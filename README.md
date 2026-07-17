@@ -89,8 +89,8 @@ uv run test          # re-run the full suite
 
 | File                                                               | Purpose                                                    |
 | ------------------------------------------------------------------ | ---------------------------------------------------------- |
-| `AGENTS.md`                                                        | Repo-wide workflow, command contract, Medical DB reference |
-| `CLAUDE.md`                                                        | Claude-specific routing and agent/skill tables             |
+| `CLAUDE.md`                                                        | Repo-wide workflow, command contract, Medical DB reference |
+| `AGENTS.md`                                                        | Copilot-specific instructions, thin pointer to `CLAUDE.md`  |
 | `.github/copilot-instructions.md`                                  | Copilot-specific routing                                   |
 | `.agents/agents/<name>.md`                                         | Shared agent behavior (source of truth)                    |
 | `.github/agents/<name>.agent.md`, `.claude/agents/<name>.md`       | Thin harness wrappers                                      |

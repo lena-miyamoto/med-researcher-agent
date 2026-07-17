@@ -1,6 +1,6 @@
 # Copilot Repository Instructions
 
-Copilot-specific routing only. Shared repo workflow and skill/agent source-of-truth rules live in `AGENTS.md`.
+Copilot-specific routing only. Shared repo workflow and skill/agent source-of-truth rules live in `CLAUDE.md`.
 
 ## Instruction Boundaries
 

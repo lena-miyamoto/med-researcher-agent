@@ -24,15 +24,16 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 
 | Surface | Owner / Shape |
 |---------|---------------|
-| Repo workflow, command contract, bootstrap, command table | `AGENTS.md`; keep compact and table-first. |
-| Copilot entrypoint | `.github/copilot-instructions.md`; thin pointer to `AGENTS.md` and Copilot wrappers. |
-| Claude entrypoint | `CLAUDE.md`; thin pointer to `AGENTS.md` and Claude wrappers. |
+| Repo workflow, command contract, bootstrap, command table | `CLAUDE.md`; keep compact and table-first. |
+| Copilot entrypoint | `.github/copilot-instructions.md`; thin pointer to `CLAUDE.md` and Copilot wrappers. |
+| Claude entrypoint | `CLAUDE.md`; main instruction file — all shared rules live here. |
 | Shared skills | `.agents/skills/<name>/SKILL.md`; owns actual procedure. |
 | Copilot skill wrappers | `.github/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
 | Claude skill wrappers | `.claude/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
 | Shared agent behavior | `.agents/agents/<name>.md`; role, routing, and repo-specific behavior. |
 | Copilot agent wrappers | `.github/agents/<name>.agent.md`; harness metadata plus pointer. |
 | Claude agent wrappers | `.claude/agents/<name>.md`; harness metadata plus pointer. |
+| Agent/skill resource dirs | `.agents/agents/resources/` or `.agents/skills/<name>/`; on-demand reference files for oversized instruction files (see 800-line rule). |
 | Human onboarding | `README.md`; install/bootstrap/command examples, not policy detail. |
 
 ## Reference Ownership
@@ -41,10 +42,10 @@ Skills and docs must point to these owner files instead of restating their rules
 
 | Domain | Owner |
 |--------|-------|
-| Archive layout, naming, frontmatter, required tools | `AGENTS.md` (Medical DB section) |
-| Command invocation contract (`uv run ...` only) | `AGENTS.md` (Shared section) |
-| Bootstrap after fresh checkout | `AGENTS.md` (Medical DB section) |
-| Canonical markdown lint command (`uv run lint-md`) | `AGENTS.md` (Shared section) |
+| Archive layout, naming, frontmatter, required tools | `CLAUDE.md` (Medical DB section) |
+| Command invocation contract (`uv run ...` only) | `CLAUDE.md` (Shared section) |
+| Bootstrap after fresh checkout | `CLAUDE.md` (Medical DB section) |
+| Canonical markdown lint command (`uv run lint-md`) | `CLAUDE.md` (Shared section) |
 | Markdown lint config | `.pymarkdown.yaml` |
 | Evidence hierarchy, quality standards, search protocol | `.agents/agents/med-researcher.md` |
 | Harms/safety search, counter-evidence requirements | `.agents/agents/med-researcher.md` |
@@ -61,22 +62,33 @@ Skills and docs must point to these owner files instead of restating their rules
    - If a requested cleanup would require touching an ignored path, stop and report that it is intentionally excluded.
 3. Capture the current state before editing:
    - Check `git status --short`.
-   - Count relevant instruction lines with `wc -l AGENTS.md README.md .agents/skills/*/SKILL.md
-   .github/skills/*/SKILL.md .claude/skills/*/SKILL.md .agents/agents/* .github/agents/* .claude/agents/*`.
+   - Count relevant instruction lines with `wc -l CLAUDE.md README.md .agents/skills/*/SKILL.md
+   .github/skills/*/SKILL.md .claude/skills/*/SKILL.md .agents/agents/*.md .github/agents/* .claude/agents/*`.
+   - Flag any instruction file over ~800 lines for splitting (see 800-line rule in audit step 4).
    - Read changed files before patching; assume user/formatter edits are intentional unless they break the task.
 4. Audit against the structure above:
-   - `AGENTS.md` should stay under about 120 lines and keep command reference as a table.
+   - `CLAUDE.md` should stay under about 150 lines and keep command reference as a table.
    - Wrapper files should stay about 10 lines: frontmatter, heading, pointer.
    - Shared skills should contain input parsing, delegated calls, procedure, validation, and output only.
    - Agent files should be one focused role; evidence and safety rules stay in the shared agent file.
+   - **800-line rule:** Any instruction file over ~800 lines must be split into a slim core file (~200–500 lines
+     of always-needed content) plus a `resources/` subdirectory holding self-contained reference files. Each
+     resource file gets minimal YAML frontmatter (`description`) and is read on-demand via explicit "Read
+     `<path>` when `<condition>`" instructions in the core file. Resource files hold: domain-specific
+     knowledge, output templates, bootstrap/setup procedures — anything not needed every invocation.
    - `README.md` should explain onboarding and use tables for command examples; avoid becoming a second policy surface.
 5. Repair messy instructions in this order:
    - Restore source-of-truth ownership first; move or delete restated policy before wordsmithing.
-   - Replace copied rules with short pointers such as `Follow AGENTS.md (Medical DB section).` or `Follow
+   - Replace copied rules with short pointers such as `Follow CLAUDE.md (Medical DB section).` or `Follow
    .agents/agents/med-researcher.md.`
    - Delete padded explanation when a command, table row, or owner-doc pointer carries the meaning.
    - Convert command lists to tables when agents need to scan operation → command quickly.
-   - Keep command examples in `AGENTS.md` and README synchronized in spirit, but do not duplicate every policy note.
+   - Keep command examples in `CLAUDE.md` and README synchronized in spirit, but do not duplicate every policy note.
+   - **Split oversized files (>~800 lines):** Identify self-contained sections that aren't needed every invocation
+     (domain-specific knowledge, output templates, bootstrap/setup procedures). Extract each to a resource file in a
+     `resources/` subdirectory with YAML frontmatter (`description`). Replace with an explicit "Read `<path>` when
+     `<condition>`" instruction. Keep core identity, safety rules, writing rules, and always-needed procedures inline.
+     Follow the pattern in `.agents/agents/psychotherapist.md` + `.agents/agents/resources/`.
 6. Keep discovery-critical frontmatter concise:
    - Skill descriptions should identify when to invoke the skill, not explain policy.
    - Argument hints should show input shape only.
@@ -94,30 +106,30 @@ matches must only appear in the listed owner files.
 
 `uv run med-db`, `uv run med-db-validate`, `uv run med-db-lookup`, `uv run med-db-query`, `uv run test`, `uv run
 lint-md`
-→ `AGENTS.md` only (README may show examples).
+→ `CLAUDE.md` only (README may show examples).
 
 `searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`, `metadata.json`, `abstract.txt`, `source.md`, `YAML
 frontmatter`, `bootstrap`, `gitignored`
-→ `AGENTS.md` only.
+→ `CLAUDE.md` only.
 
 Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research Output Format
 → `.agents/agents/med-researcher.md` only.
 
 `Sci-Hub`
-→ `AGENTS.md` and `.agents/agents/med-researcher.md` only. Do not duplicate elsewhere.
+→ `CLAUDE.md` and `.agents/agents/med-researcher.md` only. Do not duplicate elsewhere.
 
 `DocCheck Flexicon`
 → `.agents/agents/med-researcher.md` only.
 
 `.pymarkdown.yaml`
-→ Config file. `AGENTS.md` may reference the lint command.
+→ Config file. `CLAUDE.md` may reference the lint command.
 
 ## Preferred Shapes
 
 - Use tables for command matrices, routing maps, source-of-truth maps, source priority, and platform/mirror status.
 - Use bullets for short behavior rules and validation checks.
 - Do not nest bullets deeper than one level unless the existing file already requires it for readability.
-- Avoid long prose in wrappers, entrypoints, and `AGENTS.md`; these are high-load files that every agent sees.
+- Avoid long prose in wrappers and entrypoints; `CLAUDE.md` is the main instruction file and may be longer.
 - Preserve non-ASCII already used for German terms, arrows, and source names; do not add decorative symbols.
 
 ## Writing Rules
@@ -141,7 +153,7 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 5. Compare paired skill wrappers: `.github/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md` should match
 except for deliberate harness differences.
 6. Re-read changed `*.md` for padding, repeated phrases, stale owner references, and accidental second sources of truth.
-7. Confirm `AGENTS.md` is compact and command tables remain tables.
+7. Confirm `CLAUDE.md` is compact and command tables remain tables.
 8. After completing edits to any `*.md` file, run `uv run lint-md`.
 9. If any `*.py` file changed, run `uv run test`.
 

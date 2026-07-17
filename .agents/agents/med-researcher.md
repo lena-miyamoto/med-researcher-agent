@@ -134,7 +134,7 @@ sufficient for a positive conclusion unless it is a large, well-replicated RCT w
 basics), consult [DocCheck Flexicon](https://flexikon.doccheck.com/de/Hauptseite) first — it's a German-language medical
 wiki suitable for overview knowledge. Fall back to the standard paper-database approach when more detailed,
 literature-backed evidence is required.
-- **Sci-Hub fallback**: Follow the Sci-Hub fallback rule in `AGENTS.md`. Always try the official open-access source
+- **Sci-Hub fallback**: Follow the Sci-Hub fallback rule in `CLAUDE.md`. Always try the official open-access source
 first.
 
 ## Research Output Format

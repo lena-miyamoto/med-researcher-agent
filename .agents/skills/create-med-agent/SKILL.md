@@ -23,7 +23,7 @@ user-invocable: true
 1. Clarify contract: name, role, discovery description, trigger phrases, invocation mode (user-invocable, subagent-only,
    or both), minimal tool set, argument hint, model constraints, handoff behavior.
 2. Use the same ownership pattern as skills: stable instructions in `.agents/`, harness files are wrappers. See
-   `CLAUDE.md` and `AGENTS.md` for the full architecture.
+   `CLAUDE.md` for the full architecture.
 3. Write the shared agent instructions at `.agents/agents/<name>.md`: mirror discovery frontmatter where useful, then
 put the role, stable behavior, and output expectations here. Don't restate the multi-agent architecture — `CLAUDE.md`
 covers that. Don't add "this file is the shared source of truth" boilerplate — it's implicit in where the file lives.
@@ -33,7 +33,7 @@ aliases. Point the body at the shared agent file.
 body at the shared agent file.
 6. Keep wrappers aligned. Differences are limited to harness frontmatter, tool names, model settings, invocation fields,
 and brief runtime notes.
-7. Push broader workflow out of the agent: repo-wide behavior into `AGENTS.md`, reusable procedure into
+7. Push broader workflow out of the agent: repo-wide behavior into `CLAUDE.md`, reusable procedure into
 `.agents/skills/`. Agent wrappers stay short.
 8. Reuse repo tooling: `med-db/` workflow and `.agents/scripts/`. Keep evidence and safety rules in repo-level
 instructions unless the shared agent file needs specialization.

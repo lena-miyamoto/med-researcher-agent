@@ -32,7 +32,7 @@ user-invocable: true
 file.
 4. Write the Claude wrapper at `.claude/skills/<name>/SKILL.md`: same as Copilot wrapper.
 5. Never duplicate procedure across `.agents`, `.github`, `.claude`. Wrappers only discover and redirect.
-6. Reuse repo tooling: `.agents/scripts/` and the `med-db/` workflow. Keep medical-research workflow in `AGENTS.md` and
+6. Reuse repo tooling: `.agents/scripts/` and the `med-db/` workflow. Keep medical-research workflow in `CLAUDE.md` and
 the `med-researcher` agents, not in generic skills.
 7. Update `README.md` only if the skill should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md`
 only when routing boundaries change.
