@@ -56,6 +56,7 @@ Literature archive for medical, nutritional, or endometriosis research.
 | Google Scholar search | `uv run med-db --source google-scholar --query '...' --search-slug '...' --validate` |
 | Web discovery (DOAJ etc.) | `uv run med-db --source doaj --query '...' --search-slug '...' --validate` |
 | PMID archival | `uv run med-db --pmid 12345678 --pmid 23456789 --validate` |
+| DOI archival | `uv run med-db --doi 10.1000/xyz --doi 10.1000/abc --validate` |
 | Validate archive | `uv run med-db-validate --med-db med-db` |
 
 **Lookup (`med-db-lookup`)**
@@ -77,8 +78,12 @@ Literature archive for medical, nutritional, or endometriosis research.
 | Check EPMC archived | `uv run med-db-query --check-epmc MED:35350465` |
 | Keyword search | `uv run med-db-query --search-keyword lisdexamfetamine` |
 | Topic-scoped keyword search | `uv run med-db-query --search-keyword lisdexamfetamine --search-topic adhd` |
+| Keyword search (compact) | `uv run med-db-query --search-keyword lisdexamfetamine --summary` |
+| Search within archived queries | `uv run med-db-query --search-searches "sexual dysfunction"` |
 | Extract PMIDs from search JSON | `uv run med-db-query --pmids-from-search searches/adhd/pubmed-search.json` |
 | Read paper metadata | `uv run med-db-query --read-metadata papers/adhd/pmid-12345-title-slug` |
+| Read paper metadata with abstract | `uv run med-db-query --read-metadata papers/adhd/pmid-12345-title-slug --show-abstract` |
+| Recent papers | `uv run med-db-query --recent 10` |
 
 ### Diagnostic Classification (Setup and Lookup)
 

@@ -463,6 +463,61 @@ def archive_europe_pmc_record(med_db, record_spec, topic):
     return metadata_file, abstract_file, title, f"{source_name}:{record_id}", europe_pmc_article_url(source_name, record_id)
 
 
+def _resolve_doi_to_pmid(doi, email=None):
+    """Resolve a DOI to a PMID via PubMed E-utilities.
+
+    Returns the PMID string, or None if not found.
+    """
+    try:
+        params = {"db": "pubmed", "retmode": "json", "term": f"{doi}[doi]", "tool": "med-db"}
+        if email:
+            params["email"] = email
+        raw = utils.fetch_pubmed("esearch.fcgi", params)
+        data = json.loads(raw)
+        idlist = data.get("esearchresult", {}).get("idlist", [])
+        return str(idlist[0]) if idlist else None
+    except RuntimeError:
+        return None
+
+
+def _resolve_doi_to_epmc(doi):
+    """Resolve a DOI to a Europe PMC SOURCE:ID via Europe PMC REST API.
+
+    Returns a "SOURCE:ID" string, or None if not found.
+    """
+    try:
+        params = {"query": doi, "resultType": "core", "format": "json", "pageSize": "1"}
+        raw = utils.fetch_europe_pmc("search", params)
+        data = json.loads(raw)
+        hits = data.get("resultList", {}).get("result", [])
+        if not hits:
+            return None
+        record = hits[0]
+        source_name = str(record.get("source") or "MED")
+        record_id = str(record.get("id") or record.get("pmid") or "")
+        return f"{source_name}:{record_id}" if record_id else None
+    except RuntimeError:
+        return None
+
+
+def archive_doi(args, med_db, doi, topic):
+    """Resolve a DOI and archive the paper.
+
+    Tries PubMed first, then falls back to Europe PMC.
+    Returns the archive result tuple from archive_pmid or archive_europe_pmc_record,
+    or raises RuntimeError if the DOI cannot be resolved.
+    """
+    pmid = _resolve_doi_to_pmid(doi, email=args.email)
+    if pmid:
+        return archive_pmid(args, med_db, pmid, topic)
+
+    epmc_spec = _resolve_doi_to_epmc(doi)
+    if epmc_spec:
+        return archive_europe_pmc_record(med_db, epmc_spec, topic)
+
+    raise RuntimeError(f"DOI not found in PubMed or Europe PMC: {doi}")
+
+
 def archive_web_query(args, med_db, topic):
     spec = WEB_SOURCE_SPECS[args.source]
     query_url_builder = spec.get("query_url_builder")
@@ -668,6 +723,12 @@ def parse_args():
         help="Europe PMC record to archive as SOURCE:ID. May be passed multiple times.",
     )
     parser.add_argument(
+        "--doi",
+        action="append",
+        default=[],
+        help="DOI to resolve and archive. May be passed multiple times. Tries PubMed first, then Europe PMC.",
+    )
+    parser.add_argument(
         "--archive-first",
         type=int,
         default=0,
@@ -714,7 +775,7 @@ def parse_args():
     if args.migrate or args.migrate_dry_run:
         return args
 
-    if not args.query and not args.pmid and not args.epmc_record:
+    if not args.query and not args.pmid and not args.epmc_record and not args.doi:
         parser.error("provide --query and/or at least one record identifier")
     if args.source != "pubmed" and args.pmid:
         parser.error("--pmid is only supported with --source pubmed")
@@ -800,6 +861,25 @@ def main():
             "accessed": datetime.date.today().isoformat(),
         }
         if index < len(epmc_records) - 1 and args.delay > 0:
+            time.sleep(args.delay)
+
+    dois = dedupe([d.strip() for d in args.doi if d.strip()])
+    for index, doi in enumerate(dois):
+        try:
+            metadata_file, abstract_file, title, identifier, url = archive_doi(args, med_db, doi, topic)
+        except RuntimeError as exc:
+            print(f"error resolving DOI {doi}: {exc}", file=sys.stderr)
+            continue
+        if metadata_file is None:
+            continue
+        archived.append((identifier, metadata_file, abstract_file, title))
+        paper_updates[str(metadata_file.parent.relative_to(med_db))] = {
+            "identifier": identifier,
+            "url": url,
+            "purpose": DEFAULT_PAPER_PURPOSE,
+            "accessed": datetime.date.today().isoformat(),
+        }
+        if index < len(dois) - 1 and args.delay > 0:
             time.sleep(args.delay)
 
     sync_index(med_db, search_updates=search_updates, paper_updates=paper_updates, web_updates=web_updates)

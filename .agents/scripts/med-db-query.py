@@ -292,6 +292,141 @@ def search_keyword(med_db, keyword, topic=None):
     return matches
 
 
+def read_paper_abstract(paper_dir):
+    """Read the abstract.txt from a paper directory.
+
+    Args:
+        paper_dir: path to paper directory (e.g. papers/adhd/pmid-12345-title).
+
+    Returns:
+        str: abstract text, or error message if not found.
+    """
+    abstract_path = Path(paper_dir) / "abstract.txt"
+    if not abstract_path.is_file():
+        return "Abstract file not found."
+    try:
+        return abstract_path.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        return f"Could not read abstract: {exc}"
+
+
+def recent_papers(med_db, count=10):
+    """List the most recently added papers from index.json.
+
+    Sorts by ``accessed`` date descending and returns the top *count* entries.
+    Only returns paper entries (not searches, fulltext, etc.).
+
+    Args:
+        med_db: path to med-db root directory.
+        count: maximum number of entries to return (default 10).
+
+    Returns:
+        list of dicts with keys: path, identifier, url, title, topic, accessed.
+    """
+    index_path = med_db / "index.json"
+    if not index_path.is_file():
+        return []
+
+    try:
+        data = json.loads(index_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+
+    entries = []
+    for paper in data.get("papers", []):
+        path_str = paper.get("path", "")
+        topic = path_str.split("/")[1] if "/" in path_str else "unknown"
+        entries.append({
+            "path": path_str,
+            "identifier": paper.get("identifier", "unknown"),
+            "url": paper.get("url", ""),
+            "title": _paper_title_from_path(med_db, path_str),
+            "topic": topic,
+            "accessed": paper.get("accessed", ""),
+        })
+
+    entries.sort(key=lambda e: e["accessed"], reverse=True)
+    return entries[:count]
+
+
+def _paper_title_from_path(med_db, rel_path):
+    """Read the title from a paper's metadata.json given its index path."""
+    meta_path = med_db / rel_path / "metadata.json"
+    if not meta_path.is_file():
+        return "Unknown title"
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return "Unknown title"
+
+    pubmed_result = meta.get("result", {})
+    if isinstance(pubmed_result, dict) and "uids" in pubmed_result:
+        uids = pubmed_result.get("uids", [])
+        if uids:
+            pmid = str(uids[0])
+            record = pubmed_result.get(pmid, {})
+            return record.get("title", "Unknown title")
+
+    epmc_results = meta.get("resultList", {}).get("result", [])
+    if epmc_results:
+        return epmc_results[0].get("title", "Unknown title")
+
+    return "Unknown title"
+
+
+def search_searches(med_db, keyword, topic=None):
+    """Keyword search within archived search JSON files' query text.
+
+    Searches the query/querytranslation field of each search JSON file.
+    Case-insensitive.
+
+    Args:
+        med_db: path to med-db root directory.
+        keyword: keyword to search for.
+        topic: optional topic scope (e.g. "adhd").
+
+    Returns:
+        list of dicts with keys: path, source, query, match_snippet.
+    """
+    searches_dir = med_db / "searches"
+    search_root = searches_dir / topic if topic else searches_dir
+    if not search_root.is_dir():
+        return []
+
+    keyword_lower = keyword.lower()
+    matches = []
+
+    for search_path in sorted(search_root.rglob("*.json")):
+        try:
+            data = json.loads(search_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+
+        query_text = ""
+        pubmed_result = data.get("esearchresult", {})
+        if pubmed_result and "querytranslation" in pubmed_result:
+            query_text = pubmed_result.get("querytranslation", "")
+        else:
+            request = data.get("request", {})
+            query_text = request.get("queryString") or request.get("query") or ""
+
+        if keyword_lower in query_text.lower():
+            idx = query_text.lower().index(keyword_lower)
+            start = max(0, idx - 30)
+            end = min(len(query_text), idx + len(keyword_lower) + 30)
+            snippet = ("..." if start > 0 else "") + query_text[start:end] + ("..." if end < len(query_text) else "")
+
+            source = "PubMed" if pubmed_result and "querytranslation" in pubmed_result else "Europe PMC"
+            matches.append({
+                "path": str(search_path.relative_to(med_db)),
+                "source": source,
+                "query": query_text,
+                "match_snippet": snippet,
+            })
+
+    return matches
+
+
 # ---------------------------------------------------------------------------
 # Output formatting
 # ---------------------------------------------------------------------------
@@ -361,17 +496,58 @@ def _format_text(result, command):
         authors = result.get("authors", [])
         if authors:
             lines.append(f"Authors:{', '.join(authors[:10])}{'...' if len(authors) > 10 else ''}")
+        abstract = result.get("abstract")
+        if abstract:
+            lines.append("")
+            lines.append("Abstract:")
+            words = abstract.split()
+            current_line = ""
+            for word in words:
+                if len(current_line) + len(word) + 1 > 80:
+                    lines.append(current_line)
+                    current_line = word
+                else:
+                    current_line = f"{current_line} {word}".strip()
+            if current_line:
+                lines.append(current_line)
         return "\n".join(lines)
 
     if command == "search-keyword":
         matches = result.get("matches", [])
         if not matches:
             return f"No matches for '{result.get('keyword', '')}'."
+        summary = result.get("summary", False)
+        if summary:
+            lines = [f"Keyword '{result.get('keyword', '')}': {result.get('match_count', len(matches))} match(es)"]
+            for m in matches:
+                lines.append(f"  {m['identifier']}: {m['title'][:120]}")
+            return "\n".join(lines)
         lines = [f"Keyword '{result.get('keyword', '')}': {len(matches)} match(es)"]
         for m in matches:
             lines.append(f"  {m['folder']}")
             lines.append(f"    {m['identifier']}: {m['title'][:100]}")
             lines.append(f"    matched in: {m['match_field']}")
+        return "\n".join(lines)
+
+    if command == "recent":
+        papers = result.get("papers", [])
+        if not papers:
+            return "No recently added papers found."
+        lines = [f"Recent papers ({len(papers)}):"]
+        for p in papers:
+            lines.append(f"  {p['accessed']}  {p['identifier']}  [{p['topic']}]")
+            lines.append(f"    {p['title'][:120]}")
+        return "\n".join(lines)
+
+    if command == "search-searches":
+        matches = result.get("matches", [])
+        if not matches:
+            return f"No matching searches for '{result.get('keyword', '')}'."
+        lines = [f"Search keyword '{result.get('keyword', '')}': {len(matches)} match(es)"]
+        for m in matches:
+            lines.append(f"  {m['path']}")
+            lines.append(f"    source: {m['source']}")
+            lines.append(f"    query:  {m['query'][:120]}")
         return "\n".join(lines)
 
     return json.dumps(result, indent=2, default=str, ensure_ascii=False)
@@ -406,10 +582,22 @@ def parse_args():
     group.add_argument("--pmids-from-search", type=str, help="Extract PMID list from a search JSON file.")
     group.add_argument("--read-metadata", type=str, help="Read metadata from a paper directory.")
     group.add_argument("--search-keyword", type=str, help="Search papers by keyword (case-insensitive).")
+    group.add_argument("--recent", type=int, help="List N most recently added papers.")
+    group.add_argument("--search-searches", type=str, help="Search archived search queries by keyword (case-insensitive).")
     parser.add_argument(
         "--search-topic",
         type=str,
-        help="Optional topic scope for --search-keyword.",
+        help="Optional topic scope for --search-keyword or --search-searches.",
+    )
+    parser.add_argument(
+        "--show-abstract",
+        action="store_true",
+        help="Include abstract text with --read-metadata output.",
+    )
+    parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="Compact output for --search-keyword (identifiers and titles only, no snippets).",
     )
 
     return parser.parse_args()
@@ -454,10 +642,29 @@ def main():
     elif args.read_metadata:
         command = "read-metadata"
         result = read_paper_metadata(args.read_metadata)
+        if args.show_abstract and "error" not in result:
+            result["abstract"] = read_paper_abstract(args.read_metadata)
     elif args.search_keyword:
         command = "search-keyword"
         matches = search_keyword(med_db, args.search_keyword, topic=args.search_topic)
-        result = {"keyword": args.search_keyword, "match_count": len(matches), "matches": matches}
+        result = {
+            "keyword": args.search_keyword,
+            "match_count": len(matches),
+            "matches": matches,
+            "summary": args.summary,
+        }
+    elif args.recent:
+        command = "recent"
+        papers = recent_papers(med_db, count=args.recent)
+        result = {"papers": papers}
+    elif args.search_searches:
+        command = "search-searches"
+        matches = search_searches(med_db, args.search_searches, topic=args.search_topic)
+        result = {
+            "keyword": args.search_searches,
+            "match_count": len(matches),
+            "matches": matches,
+        }
 
     if args.format == "text":
         print(_format_text(result, command))
