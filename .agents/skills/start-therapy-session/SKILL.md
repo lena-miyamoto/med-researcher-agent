@@ -117,9 +117,65 @@ If the file path is invalid or doesn't exist, tell the client and fall back to t
 
 Skip Step 1's name question — greet the client by the name in the history file. Proceed to Step 0b.
 
-### 0b. Prepare Session Context
+### 0b. Pre-Session Knowledge Gap Analysis (Returning Clients — Mandatory)
 
-Read the history file. Extract key information for the agent:
+**For returning clients only** (history file exists with ≥1 prior sessions). Skip this step for new clients.
+
+Before the session begins, the agent must fill any knowledge gaps identified in previous sessions. This is not optional —
+a therapist who never learns from their clients is a deteriorating one. Each client should leave the knowledge base broader
+than it was before.
+
+#### 0b-i. Scan for Knowledge Gaps
+
+Read the full session history. For every session note, identify:
+
+- **Conditions mentioned** — any diagnosis, symptom cluster, or clinical presentation discussed
+- **Techniques and modalities referenced** — any therapeutic approach named or applied
+- **Concepts and terminology** — any clinical concept, framework, or specialized term that appeared
+- **Medications named** — any psychopharmacological agent the client mentioned (even in passing)
+- **Life experiences and contexts** — any social, cultural, or experiential domain that is clinically relevant (e.g.,
+  a specific form of discrimination, a cultural practice, a health condition, a relationship structure)
+- **Topics flagged in "Gaps flagged" fields** — anything the agent explicitly admitted it didn't know enough about
+  during a previous session and committed to researching
+
+#### 0b-ii. Check Coverage
+
+For each identified item, check whether the knowledge base has adequate coverage:
+
+1. **med-db/ coverage**: Is there at least one relevant paper archived under a matching topic? Query with
+   `uv run med-db-query --search-keyword "<term>"` or `uv run med-db-query --list-topics` to check topic presence.
+2. **Resource file coverage**: Do the agent's resource files (`neurodevelopmental-specialization`,
+   `gender-affirming-care`, `sex-relationship-therapy`, `knowledge-base`) cover this? Read the relevant file and check.
+3. **Therapy methodology coverage**: Do the bootstrapped therapy methodology guidelines
+   (`med-db/guidelines/therapy-methodologies/`) cover techniques or modalities mentioned?
+
+An item has **adequate coverage** if at least one of these three sources provides substantive clinical information —
+not just a passing mention, but enough to inform competent therapeutic work.
+
+#### 0b-iii. Dispatch Research for Gaps
+
+For every item with inadequate coverage, dispatch the `med-researcher` agent with a focused, well-scoped prompt. Examples:
+
+> "Research and archive evidence on [condition X] in adults. Focus on: prevalence, diagnostic criteria, evidence-based
+> treatments, and any relevant clinical practice guidelines. Archive the top 3–5 most relevant papers in med-db/ under a
+> new or existing topic."
+>
+> "Research and archive evidence on [technique Y] for [population Z]. What is the evidence base, effect sizes,
+> limitations, and adaptations needed? Archive key papers."
+>
+> "Client mentioned [medication M]. Research and archive: mechanism of action, indications, common side effects, evidence
+> quality, and interactions relevant to [client's other conditions/medications]."
+
+Run these research dispatches **before proceeding to Step 1**. The med-researcher agent archives papers in med-db/,
+populating the knowledge base for this and all future sessions. This takes a few minutes — the client is not waiting yet;
+this is pre-session preparation.
+
+If the med-researcher agent cannot find adequate evidence on a topic, note this honestly: "Research was attempted on [X]
+but no high-quality evidence was found. This limitation should be disclosed to the client if the topic arises."
+
+#### 0b-iv. Prepare Session Context
+
+After the gap analysis is complete (or if skipped for a new client), extract key information for the session:
 
 - Client name and slug
 - Session language (from frontmatter `language` field)
@@ -129,6 +185,10 @@ Read the history file. Extract key information for the agent:
 - Client's own language for their experience (verbatim phrases from past notes)
 - Interventions that have been used and how they landed
 - Any known diagnoses, important life context, or standing concerns
+- **Knowledge gaps newly filled** — brief summary of what was researched and archived this cycle (so the agent knows what
+  new knowledge is available)
+- **Unresolved gaps** — topics flagged in previous sessions that still lack coverage (so the agent can be honest with the
+  client if they come up)
 
 Assemble this into a brief context block (keep it compact — the agent will read the full file itself if needed).
 
@@ -317,6 +377,9 @@ Don't re-open therapeutic material. This is a door-closing message with warmth.
 - Never skip informed consent, even for returning clients (shortened version is fine).
 - Crisis screen is mandatory. Acute risk → redirection, not therapy.
 - Session notes are written after the session, never during. Immersion is sacred.
+- **The "Gaps flagged" field in session notes is mandatory.** Every session note must record topics the agent admitted
+  not knowing enough about and committed to researching. These are the primary input to the pre-session knowledge gap
+  analysis (Step 0b). "none" is acceptable when nothing was flagged.
 - Compression is mandatory after every session. Token efficiency is a clinical requirement — bloated history files
   degrade session quality by consuming context window.
 - **The Permanent Client Profile section is never compressed.** It is exempt from all compression rules.
@@ -333,18 +396,21 @@ Don't re-open therapeutic material. This is a door-closing message with warmth.
 ## Validation
 
 1. Client identity resolved — language selected, name known, slug created, history file located or created.
-2. History file read and context extracted (if returning client).
-3. First session: structured intake collected (name, gender/pronouns, age, diagnoses, medication, opening, context).
+2. **Returning client: Pre-session knowledge gap analysis completed (Step 0b-i–iii).** Session log scanned, coverage
+   checked against med-db/, resource files, and therapy methodology guidelines. Gaps dispatched to med-researcher agent.
+   Research results archived in med-db/. New and unresolved gaps documented in session context (Step 0b-iv).
+3. History file read and context extracted — including newly filled and unresolved knowledge gaps.
+4. First session: structured intake collected (name, gender/pronouns, age, diagnoses, medication, opening, context).
    Returning client: skipped, greeted with thread from last session.
-4. Permanent Client Profile populated with intake data and written to history file before informed consent (new clients).
-5. Informed consent established — all elements present and client consented.
-6. Crisis screen passed — no acute risk detected, or appropriately redirected.
-7. Agent dispatched with session prompt including history context.
-8. Agent's session work is present, warm, and grounded in the psychotherapist agent's methodology.
-9. Session note written to history file (after session, not during).
-10. Permanent Client Profile reviewed and updated with any clinically essential information from the session (Step 5b).
-11. History file compressed per compression rules — Permanent Client Profile untouched.
-12. No duplication of agent's therapeutic methodology in the skill's own output.
+5. Permanent Client Profile populated with intake data and written to history file before informed consent (new clients).
+6. Informed consent established — all elements present and client consented.
+7. Crisis screen passed — no acute risk detected, or appropriately redirected.
+8. Agent dispatched with session prompt including history context and gap analysis results.
+9. Agent's session work is present, warm, and grounded in the psychotherapist agent's methodology.
+10. Session note written to history file (after session, not during) — includes "Gaps flagged" field.
+11. Permanent Client Profile reviewed and updated with any clinically essential information from the session (Step 5b).
+12. History file compressed per compression rules — Permanent Client Profile untouched.
+13. No duplication of agent's therapeutic methodology in the skill's own output.
 
 ## Output
 

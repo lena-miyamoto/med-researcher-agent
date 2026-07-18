@@ -41,6 +41,7 @@ file. The format is token-efficient — every word earns its place:
 - Interventions: [modality:technique, e.g. "ACT:values clarification", "narrative:externalizing"]
 - Key client language: [verbatim phrases that capture the client's voice — 1-3 short quotes]
 - Patterns noted: [recurring themes across sessions, if any]
+- Gaps flagged: [topics the agent admitted not knowing enough about and committed to researching. "none" if nothing]
 - State at close: [grounded / emotional but contained / activated / etc.]
 - Thread for next: [1 line — what to pick up]
 ```

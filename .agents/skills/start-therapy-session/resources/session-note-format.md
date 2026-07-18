@@ -21,6 +21,8 @@ history file. Prepend it below the YAML frontmatter (newest sessions at top):
 - Interventions: [modality:technique, e.g. "ACT:values clarification"]
 - Key client language: [1-3 short verbatim quotes]
 - Patterns: [recurring themes across sessions, if observed]
+- Gaps flagged: [topics the agent admitted not knowing enough about and committed to researching — list each one so the
+  pre-session gap analysis can dispatch med-researcher to fill them. "none" if nothing was flagged]
 - State at close: [grounded / emotional but contained / activated / etc.]
 - Thread for next: [1 line]
 ```

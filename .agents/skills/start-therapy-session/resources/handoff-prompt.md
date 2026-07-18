@@ -24,6 +24,9 @@ Context: [any relevant background — 1-3 sentences max]
 Recurring themes from history: [brief list, or "none yet"]
 Client's language: [1-3 key verbatim phrases from past sessions, or "new client"]
 
+Knowledge gaps newly filled since last session: [brief summary of what was researched and archived, or "none — no gaps identified" if the gap analysis found full coverage]
+Unresolved gaps: [topics flagged in previous sessions that still lack coverage — be honest with the client if these come up. "none" if all gaps were filled]
+
 Informed consent has been established and the client consented to proceed.
 
 **New client — additional introductory questions:** You may begin with a few additional introductory questions

@@ -124,18 +124,33 @@ evaluated before individual studies.
 - Required sources: PubMed (Clinical Queries / SR filter), Europe PMC (SR filter), Cochrane Library (mandatory for
 intervention questions), ClinicalTrials.gov / WHO ICTRP (for unpublished and terminated trials — essential for detecting
 publication bias), Retraction Watch.
+- **APA PsycINFO** ([https://www.apa.org/pubs/databases/psycinfo](https://www.apa.org/pubs/databases/psycinfo)) —
+  mandatory for psychology, sociology, and mental-health research questions. PsycINFO is the American Psychological
+  Association's abstract database, indexing over 5 million records across 2,500+ journals. Without a paid institutional
+  account, only abstracts and summaries are accessible — full text is behind a paywall. Use PsycINFO as a **discovery
+  engine**: search for relevant papers by keyword, author, or topic, review the abstracts to identify the most relevant
+  studies, then pursue full text through open-access databases (PubMed, Europe PMC, DOAJ) or Sci-Hub. The abstract-only
+  limitation means PsycINFO findings alone are insufficient for evidence conclusions — you must retrieve and evaluate
+  the full paper through another channel. For psychology- or sociology-heavy research briefs (e.g., from the
+  psychotherapist agent), always include PsycINFO in the search sweep — PubMed alone underrepresents psychology
+  literature.
 - When no meta-analysis exists, compare at least 2–3 of the most relevant individual studies. A single study is never
 sufficient for a positive conclusion unless it is a large, well-replicated RCT with no contradictory evidence.
 - Do not stop at the first study. Search broadly for conflicting evidence and negative results.
 
 ### Full-Text Access
 
+- **APA PsycINFO → open databases → Sci-Hub pipeline**: PsycINFO provides abstracts only without a paid institutional
+  account. Use it for discovery, then pursue full text: (1) search the paper by title/DOI/author on PubMed and Europe PMC
+  — many psychology journals are also indexed there; (2) check DOAJ and other open-access directories; (3) try Google
+  Scholar for open-access PDFs or author-posted preprints; (4) Sci-Hub fallback per `CLAUDE.md` as a last resort. A
+  PsycINFO abstract alone is never sufficient for evidence conclusions — you must retrieve and evaluate the full paper.
 - **DocCheck Flexicon**: For general medical questions in German (definitions, pathophysiology, diagnostics, clinical
-basics), consult [DocCheck Flexicon](https://flexikon.doccheck.com/de/Hauptseite) first — it's a German-language medical
-wiki suitable for overview knowledge. Fall back to the standard paper-database approach when more detailed,
-literature-backed evidence is required.
+  basics), consult [DocCheck Flexicon](https://flexikon.doccheck.com/de/Hauptseite) first — it's a German-language medical
+  wiki suitable for overview knowledge. Fall back to the standard paper-database approach when more detailed,
+  literature-backed evidence is required.
 - **Sci-Hub fallback**: Follow the Sci-Hub fallback rule in `CLAUDE.md`. Always try the official open-access source
-first.
+  first.
 
 ## Research Output Format
 
