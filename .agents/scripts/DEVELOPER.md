@@ -30,6 +30,6 @@ Required top-level categories:
 - **YAML frontmatter** on every source file: `title`, `authors`, `source`, `source_url`, `access_date`
   (YYYY-MM-DD), `language`, `extraction_notes`.
 - **Source priority:** `index.json` → `searches/` → fetch. PubMed (E-utilities), Europe PMC (REST API) →
-  DOAJ / open-access directories → Google Scholar → Sci-Hub for paywalled papers.
+  DOAJ / open-access directories → Google Scholar. Full-text fallback: follow the Sci-Hub policy in `.agents/agents/med-researcher.md`.
 - Flag evidence per `med-researcher` Evidence Hierarchy (`../agents/med-researcher.md`).
   Reusable write-ups → `tmp/`, not overwriting source briefs or archived records.

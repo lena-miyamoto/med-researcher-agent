@@ -7,11 +7,27 @@ Reusable medical research agent configuration and local Medical DB workflow (`./
 > **Every repo Python tool must be run via `uv run <entry-point>` from the repository root.** Applies to Claude
 > Code, Copilot, all subagents. No exceptions.
 
-**Forbidden:** `python3`, `python`, shebang, or direct-path invocation of any `.agents/scripts/*.py` file.
+**Forbidden — all of the following, without exception:**
+
+- `python3`, `python`, `python3.11`, `python3.12`, or any other `python*` executable — whether as a shebang,
+  direct script invocation, or `-c` inline code. This includes `python3 -c "..."`, `python -c "..."`, and any
+  heredoc piped to a Python interpreter.
+- `node -e "..."`, `perl -e "..."`, or any other inline-code execution that reads, parses, or manipulates
+  files under `med-db/`.
+- Direct filesystem access to `med-db/` contents: no `cat`, `jq`, `grep`, `sed`, `awk`, `python3 -c`, or
+  any other tool that reads `med-db/index.json` or any file under `med-db/*/`. The `med-db/` directory is
+  the exclusive domain of the `uv run med-db*` entry points. Read access is harmless in isolation but trains
+  models to bypass the tool layer — the next step is direct writes, which corrupt the archive.
 
 **Required:** `uv run <entry-point>` from repo root — `med-db`, `med-db-lookup`,
 `med-db-query`, `med-db-lookup-icd11`, `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-setup-dsm5`,
 `med-db-setup-therapy-methods`, `med-db-integrity-check`, `test`, `lint-md`.
+
+**Rationale:** `med-db/` data integrity depends on the tool layer. Direct file access — even read-only — erodes
+the norm that the tools are the only interface. The `uv run` entry points validate, normalize, and cross-reference
+on every operation. Bypassing them with inline Python or shell text processing introduces silent data corruption
+risk. This rule is enforced at the settings.json level (`python*` commands are denied) and must also be followed
+voluntarily by every agent and subagent.
 
 - **`uv run test`** after editing any `*.py` file. No other test invocation. **Full suite must pass** — if any
   test fails, the change is not done. Evaluate each failure: either the logic changed and the test needs to

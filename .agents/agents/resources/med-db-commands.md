@@ -9,8 +9,8 @@ unless noted; use `--format text` for human-readable output.
 Supported web discovery sources: `google-scholar`, `doaj`, `open-science-directory`,
 `free-medical-journals`, `openmd`, `trip-database`. Prefer PubMed and Europe PMC for structured records.
 
-Full-text fallback: when paywalled, try Sci-Hub at `https://www.sci-hub.st/` via DOI. Prefer official
-open-access sources first. Papers before 2022 more likely available.
+Full-text fallback: follow the Sci-Hub policy in `.agents/agents/med-researcher.md`. Prefer official
+open-access sources first.
 
 Integrity enforcement: `med-db-integrity-check` runs automatically after every archival, setup, or
 download operation. Errors block completion (exit code 1) and must be fixed immediately.
