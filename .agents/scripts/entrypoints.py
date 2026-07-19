@@ -29,9 +29,6 @@ def med_db():
     return _load_script("med_db", "med-db.py").main()
 
 
-def med_db_validate():
-    return _load_script("med_db_validate", "med-db-validate.py").main()
-
 
 def med_db_lookup():
     return _load_script("med_db_lookup", "med-db-lookup.py").main()

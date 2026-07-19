@@ -241,7 +241,7 @@ Archive results under `neurodevelopmental-overlap`.
 After all phases, run a comprehensive validation:
 
 ```bash
-uv run med-db-validate --med-db med-db
+uv run med-db-integrity-check --med-db med-db
 ```
 
 Then verify the topics are populated:

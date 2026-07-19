@@ -2,7 +2,7 @@
 
 Constants, slugify, API fetch helpers, and the unified default_paper_entry
 parser used across med-db.py, med-db-lookup.py, med-db-query.py, and
-med-db-validate.py.
+med-db-integrity-check.py.
 """
 
 import html as _html

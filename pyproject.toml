@@ -12,7 +12,6 @@ dependencies = []
 
 [project.scripts]
 med-db = "entrypoints:med_db"
-med-db-validate = "entrypoints:med_db_validate"
 med-db-lookup = "entrypoints:med_db_lookup"
 med-db-query = "entrypoints:med_db_query"
 med-db-lookup-icd11 = "entrypoints:med_db_lookup_icd11"

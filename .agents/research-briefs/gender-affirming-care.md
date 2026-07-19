@@ -305,7 +305,7 @@ Archive under `gender-affirming-care`.
 ## Phase 7: Validation
 
 ```bash
-uv run med-db-validate --med-db med-db
+uv run med-db-integrity-check --med-db med-db
 uv run med-db-query --list-topics
 uv run med-db-query --topic gender-affirming-care
 uv run med-db-query --topic trans-nb-mental-health
