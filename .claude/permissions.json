@@ -22,6 +22,15 @@
       "^https://europepmc.org(/|$)",
       "^https://aura.abdn.ac.uk(/|$)"
     ],
+    "Skill": [
+      "^analyze-med-claims$",
+      "^create-diet-plan$",
+      "^create-med-agent$",
+      "^create-med-skill$",
+      "^create-workout-routine$",
+      "^optimize-repo$",
+      "^start-therapy-session$"
+    ],
     "Bash": [
       "^curl -s [\"']https://([a-zA-Z0-9-]+\\.)*ncbi\\.nlm\\.nih\\.gov/",
       "^curl -s [\"']https://www.ebi.ac.uk/",
