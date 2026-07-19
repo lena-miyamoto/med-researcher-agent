@@ -507,3 +507,104 @@ class TestMain:
 
         out = json.loads(capsys.readouterr().out)
         assert len(out["papers"]) == 2
+
+
+# ---------------------------------------------------------------------------
+# read_paper_abstract
+# ---------------------------------------------------------------------------
+
+
+class TestReadPaperAbstract:
+    def test_existing_abstract(self, tmp_path):
+        _make_paper(tmp_path, "papers/adhd/pmid-12345-title", pmid="12345", abstract="Full abstract here.")
+        result = mq.read_paper_abstract(tmp_path / "papers" / "adhd" / "pmid-12345-title")
+        assert result == "Full abstract here."
+
+    def test_missing_file(self, tmp_path):
+        result = mq.read_paper_abstract(tmp_path / "nonexistent")
+        assert "not found" in result.lower()
+
+
+# ---------------------------------------------------------------------------
+# recent_papers
+# ---------------------------------------------------------------------------
+
+
+class TestRecentPapers:
+    def test_empty_index(self, tmp_path):
+        result = mq.recent_papers(tmp_path)
+        assert result == []
+
+    def test_returns_most_recent(self, tmp_path):
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-a", pmid="11111", title="Older")
+        _make_paper(tmp_path, "papers/adhd/pmid-22222-b", pmid="22222", title="Newer")
+        index = {
+            "searches": [], "fulltext": [], "guidelines": [], "web": [],
+            "papers": [
+                {"path": "papers/adhd/pmid-11111-a", "identifier": "PMID:11111",
+                 "url": "https://pubmed.ncbi.nlm.nih.gov/11111/", "accessed": "2025-01-01"},
+                {"path": "papers/adhd/pmid-22222-b", "identifier": "PMID:22222",
+                 "url": "https://pubmed.ncbi.nlm.nih.gov/22222/", "accessed": "2026-06-15"},
+            ],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+        result = mq.recent_papers(tmp_path, count=10)
+        assert len(result) == 2
+        assert result[0]["identifier"] == "PMID:22222"  # newer first
+        assert result[1]["identifier"] == "PMID:11111"
+
+    def test_truncated_to_count(self, tmp_path):
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-a", pmid="11111")
+        _make_paper(tmp_path, "papers/adhd/pmid-22222-b", pmid="22222")
+        _make_paper(tmp_path, "papers/adhd/pmid-33333-c", pmid="33333")
+        index = {
+            "searches": [], "fulltext": [], "guidelines": [], "web": [],
+            "papers": [
+                {"path": "papers/adhd/pmid-11111-a", "identifier": "PMID:11111",
+                 "url": "", "accessed": "2025-01-01"},
+                {"path": "papers/adhd/pmid-22222-b", "identifier": "PMID:22222",
+                 "url": "", "accessed": "2025-02-01"},
+                {"path": "papers/adhd/pmid-33333-c", "identifier": "PMID:33333",
+                 "url": "", "accessed": "2025-03-01"},
+            ],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+        result = mq.recent_papers(tmp_path, count=2)
+        assert len(result) == 2
+
+
+# ---------------------------------------------------------------------------
+# search_searches
+# ---------------------------------------------------------------------------
+
+
+class TestSearchSearches:
+    def test_pubmed_match(self, tmp_path):
+        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
+                          source="pubmed", pmids=["1"], query="lisdexamfetamine ADHD")
+        result = mq.search_searches(tmp_path, "lisdexamfetamine")
+        assert len(result) == 1
+        assert "pubmed" in result[0]["source"].lower()
+
+    def test_europe_pmc_match(self, tmp_path):
+        _make_search_json(tmp_path / "searches" / "depression" / "epmc-a.json",
+                          source="epmc", pmids=["2"], query="sexual dysfunction SSRI")
+        result = mq.search_searches(tmp_path, "sexual dysfunction")
+        assert len(result) == 1
+        assert "europe" in result[0]["source"].lower()
+
+    def test_no_match(self, tmp_path):
+        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
+                          source="pubmed", pmids=["1"], query="ADHD stimulants")
+        result = mq.search_searches(tmp_path, "zzz_nonexistent_zzz")
+        assert result == []
+
+    def test_scoped_to_topic(self, tmp_path):
+        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
+                          source="pubmed", pmids=["1"], query="ADHD stimulants")
+        _make_search_json(tmp_path / "searches" / "depression" / "epmc-b.json",
+                          source="epmc", pmids=["2"], query="depression SSRI")
+        result = mq.search_searches(tmp_path, "ADHD", topic="adhd")
+        assert len(result) == 1
+        result_all = mq.search_searches(tmp_path, "SSRI")
+        assert len(result_all) == 1

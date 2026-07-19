@@ -4,7 +4,6 @@ import html
 import json
 import re
 import shutil
-import subprocess
 import sys
 import time
 import urllib.parse
@@ -76,7 +75,7 @@ default_paper_entry = utils.default_paper_entry
 
 
 def save_text(path, content):
-    path.write_text(content, encoding="utf-8")
+    utils.atomic_write(path, content)
 
 
 def ensure_med_db_structure(med_db):
@@ -272,23 +271,24 @@ def collect_index_data(med_db):
                 "accessed": today,
             })
 
-    # Guidelines
+    # Guidelines — scan both source.md and source.LANG.md patterns
     guidelines_dir = med_db / "guidelines"
     if guidelines_dir.is_dir():
         seen_dirs = set()
-        for source_path in sorted(guidelines_dir.rglob("source.*.md")):
-            guideline_dir = source_path.parent
-            rel_dir = str(guideline_dir.relative_to(med_db))
-            if rel_dir in seen_dirs:
-                continue
-            seen_dirs.add(rel_dir)
-            guidelines.append({
-                "path": rel_dir,
-                "source": "Review and refine source.",
-                "url": "URL unavailable; review and refine.",
-                "purpose": DEFAULT_PAPER_PURPOSE,
-                "accessed": today,
-            })
+        for pattern in ("source.md", "source.*.md"):
+            for source_path in sorted(guidelines_dir.rglob(pattern)):
+                guideline_dir = source_path.parent
+                rel_dir = str(guideline_dir.relative_to(med_db))
+                if rel_dir in seen_dirs:
+                    continue
+                seen_dirs.add(rel_dir)
+                guidelines.append({
+                    "path": rel_dir,
+                    "source": "Review and refine source.",
+                    "url": "URL unavailable; review and refine.",
+                    "purpose": DEFAULT_PAPER_PURPOSE,
+                    "accessed": today,
+                })
 
     # Web
     web_dir = med_db / "web"
@@ -324,11 +324,17 @@ def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates
     fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web = collect_index_data(med_db)
 
     def _merge(fs_list, existing_dict):
+        """Merge filesystem-derived items with existing index entries.
+
+        Filesystem data provides the canonical base (path, identifier,
+        url, source, query, accessed).  All existing entry fields are
+        overlaid so user edits (purpose, notes, etc.) are preserved.
+        """
         result = []
         for item in fs_list:
             entry = existing_dict.get(item["path"], {})
             merged = dict(item)
-            merged.update({k: v for k, v in entry.items() if k in merged})
+            merged.update(entry)
             result.append(merged)
         return result
 
@@ -401,7 +407,7 @@ def archive_pmid(args, med_db, pmid, topic):
     paper_dir = med_db / "papers" / topic / folder_name
     if paper_dir.exists():
         print(f"skipping already archived: {folder_name}", file=sys.stderr)
-        return None, None, None, None, None
+        return None
     paper_dir.mkdir(parents=True, exist_ok=True)
 
     metadata_file = paper_dir / "metadata.json"
@@ -414,7 +420,11 @@ def archive_pmid(args, med_db, pmid, topic):
         "rettype": "abstract",
         "retmode": "text",
     })
-    raw_abstract = _fetch_text("efetch.fcgi", params)
+    try:
+        raw_abstract = utils.fetch_pubmed("efetch.fcgi", params)
+    except RuntimeError as exc:
+        print(f"warning: could not fetch abstract for PMID {pmid}: {exc}", file=sys.stderr)
+        raw_abstract = f"Abstract unavailable from PubMed for PMID {pmid}.\n"
     save_text(abstract_file, raw_abstract)
 
     return metadata_file, abstract_file, title, f"PMID:{pmid}", f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
@@ -450,7 +460,7 @@ def archive_europe_pmc_record(med_db, record_spec, topic):
     paper_dir = med_db / "papers" / topic / folder_name
     if paper_dir.exists():
         print(f"skipping already archived: {folder_name}", file=sys.stderr)
-        return None, None, None, None, None
+        return None
     paper_dir.mkdir(parents=True, exist_ok=True)
 
     metadata_file = paper_dir / "metadata.json"
@@ -463,43 +473,6 @@ def archive_europe_pmc_record(med_db, record_spec, topic):
     return metadata_file, abstract_file, title, f"{source_name}:{record_id}", europe_pmc_article_url(source_name, record_id)
 
 
-def _resolve_doi_to_pmid(doi, email=None):
-    """Resolve a DOI to a PMID via PubMed E-utilities.
-
-    Returns the PMID string, or None if not found.
-    """
-    try:
-        params = {"db": "pubmed", "retmode": "json", "term": f"{doi}[doi]", "tool": "med-db"}
-        if email:
-            params["email"] = email
-        raw = utils.fetch_pubmed("esearch.fcgi", params)
-        data = json.loads(raw)
-        idlist = data.get("esearchresult", {}).get("idlist", [])
-        return str(idlist[0]) if idlist else None
-    except RuntimeError:
-        return None
-
-
-def _resolve_doi_to_epmc(doi):
-    """Resolve a DOI to a Europe PMC SOURCE:ID via Europe PMC REST API.
-
-    Returns a "SOURCE:ID" string, or None if not found.
-    """
-    try:
-        params = {"query": doi, "resultType": "core", "format": "json", "pageSize": "1"}
-        raw = utils.fetch_europe_pmc("search", params)
-        data = json.loads(raw)
-        hits = data.get("resultList", {}).get("result", [])
-        if not hits:
-            return None
-        record = hits[0]
-        source_name = str(record.get("source") or "MED")
-        record_id = str(record.get("id") or record.get("pmid") or "")
-        return f"{source_name}:{record_id}" if record_id else None
-    except RuntimeError:
-        return None
-
-
 def archive_doi(args, med_db, doi, topic):
     """Resolve a DOI and archive the paper.
 
@@ -507,13 +480,11 @@ def archive_doi(args, med_db, doi, topic):
     Returns the archive result tuple from archive_pmid or archive_europe_pmc_record,
     or raises RuntimeError if the DOI cannot be resolved.
     """
-    pmid = _resolve_doi_to_pmid(doi, email=args.email)
-    if pmid:
-        return archive_pmid(args, med_db, pmid, topic)
-
-    epmc_spec = _resolve_doi_to_epmc(doi)
-    if epmc_spec:
-        return archive_europe_pmc_record(med_db, epmc_spec, topic)
+    source, identifier = utils.resolve_doi_to_id(doi, email=args.email)
+    if source == "pubmed":
+        return archive_pmid(args, med_db, identifier, topic)
+    elif source == "europe-pmc":
+        return archive_europe_pmc_record(med_db, identifier, topic)
 
     raise RuntimeError(f"DOI not found in PubMed or Europe PMC: {doi}")
 
@@ -570,23 +541,6 @@ def dedupe(values):
         ordered.append(value)
     return ordered
 
-
-def run_validator(med_db):
-    # Use the canonical uv run entry point as required by AGENTS.md.
-    # subprocess.run is necessary here because the validator must run in a
-    # separate process — it imports med_db_validate as its own main module,
-    # and calling it in-process would re-execute med-db.py's own main().
-    try:
-        subprocess.run(
-            ["uv", "run", "med-db-validate", "--med-db", str(med_db)],
-            check=True,
-        )
-        return 0
-    except FileNotFoundError:
-        print("validator not available (uv not found)", file=sys.stderr)
-        return 1
-    except subprocess.CalledProcessError:
-        return 1
 
 
 def copy2_verified(source, destination):
@@ -756,11 +710,6 @@ def parse_args():
         help="Delay between PMID fetches in seconds. Defaults to 0.34.",
     )
     parser.add_argument(
-        "--validate",
-        action="store_true",
-        help="Run med-db-validate.py after the archival step and return its exit status on failure.",
-    )
-    parser.add_argument(
         "--migrate",
         action="store_true",
         help="Migrate existing flat med-db/ structure to topic-based per-paper folders. Preserves originals.",
@@ -798,7 +747,15 @@ def main():
 
     if args.migrate or args.migrate_dry_run:
         med_db.mkdir(parents=True, exist_ok=True)
-        return migrate_flat_to_topic(med_db, dry_run=args.migrate_dry_run)
+        ensure_med_db_structure(med_db)
+        result = migrate_flat_to_topic(med_db, dry_run=args.migrate_dry_run)
+        if result != 0:
+            return result
+        if not args.migrate_dry_run:
+            sync_index(med_db)
+            if utils.verify_and_report_integrity(med_db) != 0:
+                return 1
+        return 0
 
     med_db.mkdir(parents=True, exist_ok=True)
     ensure_med_db_structure(med_db)
@@ -836,9 +793,10 @@ def main():
     epmc_records = dedupe([r.upper() for r in epmc_records])
     archived = []
     for index, pmid in enumerate(pmids):
-        metadata_file, abstract_file, title, identifier, url = archive_pmid(args, med_db, pmid, topic)
-        if metadata_file is None:
+        result = archive_pmid(args, med_db, pmid, topic)
+        if result is None:
             continue
+        metadata_file, abstract_file, title, identifier, url = result
         archived.append((identifier, metadata_file, abstract_file, title))
         paper_updates[str(metadata_file.parent.relative_to(med_db))] = {
             "identifier": identifier,
@@ -850,9 +808,10 @@ def main():
             time.sleep(args.delay)
 
     for index, record_spec in enumerate(epmc_records):
-        metadata_file, abstract_file, title, identifier, url = archive_europe_pmc_record(med_db, record_spec, topic)
-        if metadata_file is None:
+        result = archive_europe_pmc_record(med_db, record_spec, topic)
+        if result is None:
             continue
+        metadata_file, abstract_file, title, identifier, url = result
         archived.append((identifier, metadata_file, abstract_file, title))
         paper_updates[str(metadata_file.parent.relative_to(med_db))] = {
             "identifier": identifier,
@@ -866,12 +825,13 @@ def main():
     dois = dedupe([d.strip() for d in args.doi if d.strip()])
     for index, doi in enumerate(dois):
         try:
-            metadata_file, abstract_file, title, identifier, url = archive_doi(args, med_db, doi, topic)
+            result = archive_doi(args, med_db, doi, topic)
         except RuntimeError as exc:
             print(f"error resolving DOI {doi}: {exc}", file=sys.stderr)
             continue
-        if metadata_file is None:
+        if result is None:
             continue
+        metadata_file, abstract_file, title, identifier, url = result
         archived.append((identifier, metadata_file, abstract_file, title))
         paper_updates[str(metadata_file.parent.relative_to(med_db))] = {
             "identifier": identifier,
@@ -896,9 +856,8 @@ def main():
 
     if not archived:
         print("archived structured records: none")
-        if args.validate:
-            print("running validator...")
-            return run_validator(med_db)
+        if utils.verify_and_report_integrity(med_db) != 0:
+            return 1
         return 0
 
     print("archived structured records:")
@@ -906,16 +865,11 @@ def main():
         print(f"- {identifier}: {title}")
         print(f"  folder: {metadata_file.parent}")
 
-    if args.validate:
-        print("running validator...")
-        return run_validator(med_db)
+    if utils.verify_and_report_integrity(med_db) != 0:
+        return 1
 
     return 0
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)

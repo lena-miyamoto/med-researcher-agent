@@ -500,16 +500,7 @@ def _format_text(result, command):
         if abstract:
             lines.append("")
             lines.append("Abstract:")
-            words = abstract.split()
-            current_line = ""
-            for word in words:
-                if len(current_line) + len(word) + 1 > 80:
-                    lines.append(current_line)
-                    current_line = word
-                else:
-                    current_line = f"{current_line} {word}".strip()
-            if current_line:
-                lines.append(current_line)
+            lines.extend(utils.wrap_text(abstract))
         return "\n".join(lines)
 
     if command == "search-keyword":
@@ -675,8 +666,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)

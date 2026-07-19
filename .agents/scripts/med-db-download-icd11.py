@@ -18,8 +18,8 @@ import zipfile
 from pathlib import Path
 from urllib.request import urlretrieve
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MED_DB = REPO_ROOT / "med-db"
+import utils
+from utils import REPO_ROOT, MED_DB
 ICD11_BASE = MED_DB / "guidelines" / "icd-11"
 
 WHO_CDN = "https://icdcdn.who.int/static/releasefiles"
@@ -150,11 +150,17 @@ def verify_quick(release, language):
 
     Returns (entry_count, None) on success, or (0, error_message) on failure.
     """
-    scripts_dir = str(Path(__file__).resolve().parent)
-    sys.path.insert(0, scripts_dir)
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "med_db_lookup_icd11_verify",
+        Path(__file__).resolve().parent / "med-db-lookup-icd11.py",
+    )
+    if spec is None or spec.loader is None:
+        return 0, "could not load med-db-lookup-icd11 module"
+    mod = importlib.util.module_from_spec(spec)
     try:
-        from importlib import import_module
-        mod = import_module("med-db-lookup-icd11")
+        spec.loader.exec_module(mod)
         entries, version = mod.load_tabulation(release, language)
         if entries:
             return len(entries), None
@@ -163,12 +169,6 @@ def verify_quick(release, language):
         return 0, "lookup tool exited (data not found or unreadable)"
     except Exception as exc:
         return 0, str(exc)
-    finally:
-        # Restore sys.path to avoid side-effect leakage
-        try:
-            sys.path.remove(scripts_dir)
-        except ValueError:
-            pass
 
 
 def parse_args():
@@ -195,7 +195,7 @@ def parse_args():
     )
     parser.add_argument(
         "--verify",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
         default=True,
         help="Run a quick smoke test after downloading (default on). "
              "Use --no-verify to skip.",
@@ -205,7 +205,8 @@ def parse_args():
 
     if not args.language:
         # 2026-01 has DE; earlier releases typically EN-only
-        if args.release >= "2026-01":
+        release_parts = tuple(int(part) for part in args.release.split("-"))
+        if release_parts >= (2026, 1):
             args.language = ["en", "de"]
         else:
             args.language = ["en"]
@@ -252,12 +253,10 @@ def main():
         print("  source.md not found — it should be created separately "
               "(it ships with the repo under med-db/guidelines/icd-11/source.md)")
 
+    if utils.verify_and_report_integrity(MED_DB) != 0:
+        return 1
     return 0
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)

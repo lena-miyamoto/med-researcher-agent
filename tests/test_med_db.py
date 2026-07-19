@@ -927,7 +927,6 @@ class TestParseArgs:
         assert args.retmax == 20
         assert args.delay == 0.34
         assert args.med_db == "med-db"
-        assert args.validate is False
 
     def test_europe_pmc_source_with_epmc_record(self):
         with mock.patch.object(sys, "argv", ["med-db.py", "--source", "europe-pmc", "--epmc-record", "MED:35350465"]):
@@ -1177,28 +1176,6 @@ class TestMainIntegration:
         # And both web files should be listed
         assert any("roundtrip-test" in w["path"] for w in second_data["web"])
         assert any("roundtrip-test-2" in w["path"] for w in second_data["web"])
-
-    def test_validate_flag_calls_validator(self, tmp_path, monkeypatch):
-        """When --validate is passed and no records archived, validator should run."""
-        med_db_path = tmp_path / "med-db"
-        monkeypatch.chdir(tmp_path)
-        # We need a fake validator to exist for the subprocess call
-        fake_validator = tmp_path / "med-db-validate.py"
-        fake_validator.write_text(
-            "#!/usr/bin/python3\nimport sys; print('med-db validation OK'); sys.exit(0)\n"
-        )
-        # Monkey-patch the validator path to point to our fake
-        import med_db as med_db_mod
-        with mock.patch.object(med_db_mod, "run_validator", return_value=0):
-            with mock.patch.object(sys, "argv", [
-                "med-db.py",
-                "--source", "google-scholar",
-                "--query", "test",
-                "--med-db", str(med_db_path),
-                "--validate",
-            ]):
-                exit_code = med_db.main()
-            assert exit_code == 0
 
     def test_no_arguments_prints_error(self, capsys):
         with mock.patch.object(sys, "argv", ["med-db.py"]):

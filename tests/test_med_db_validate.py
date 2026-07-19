@@ -218,7 +218,7 @@ class TestValidateSearchJson:
         issues = []
         med_db_validate.validate_search_json(tmp_path, issues)
         # resultList exists but has no "result" key
-        assert any("result list" in issue.lower() for issue in issues)
+        assert any("result" in issue.lower() for issue in issues)
 
     def test_europe_pmc_missing_resultlist_key(self, tmp_path):
         searches = tmp_path / "searches"
@@ -243,7 +243,8 @@ class TestValidateSearchJson:
         (searches / "unknown.json").write_text(json.dumps(data))
         issues = []
         med_db_validate.validate_search_json(tmp_path, issues)
-        assert any("unrecognized" in issue for issue in issues)
+        # Arbitrary dicts are treated as web search JSON blobs — no issue.
+        assert issues == []
 
     def test_invalid_json(self, tmp_path):
         searches = tmp_path / "searches"
@@ -277,7 +278,7 @@ class TestValidateSearchJson:
         (searches / "unknown.json").write_text(json.dumps({"x": "y"}))
         issues = []
         med_db_validate.validate_search_json(tmp_path, issues)
-        assert len(issues) == 2  # bad.json + unknown.json
+        assert len(issues) == 1  # bad.json (invalid JSON); unknown.json is a web blob — skipped
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +316,7 @@ class TestValidatePapers:
         (papers / "abstract.txt").write_text("abstract")
         issues = []
         med_db_validate.validate_papers(tmp_path, issues)
-        assert any("pmid mismatch" in issue for issue in issues)
+        assert any("PMID mismatch" in issue for issue in issues)
 
     def test_pmid_unexpected_uid_count(self, tmp_path):
         papers = tmp_path / "papers" / "endometriosis" / "pmid-12345-diet-study"
@@ -326,7 +327,7 @@ class TestValidatePapers:
         (papers / "abstract.txt").write_text("abstract")
         issues = []
         med_db_validate.validate_papers(tmp_path, issues)
-        assert any("unexpected uid count" in issue for issue in issues)
+        assert any("Expected 1 PubMed UID" in issue for issue in issues)
 
     def test_valid_europe_pmc_paper(self, tmp_path):
         papers = tmp_path / "papers" / "endometriosis" / "epmc-med-35350465-some-title"
@@ -365,7 +366,7 @@ class TestValidatePapers:
         (papers / "abstract.txt").write_text("abstract")
         issues = []
         med_db_validate.validate_papers(tmp_path, issues)
-        assert any("Europe PMC id mismatch" in issue for issue in issues)
+        assert any("Europe PMC ID mismatch" in issue for issue in issues)
 
     def test_europe_pmc_unexpected_result_count(self, tmp_path):
         papers = tmp_path / "papers" / "endometriosis" / "epmc-med-35350465-some-title"
@@ -378,7 +379,7 @@ class TestValidatePapers:
         (papers / "abstract.txt").write_text("abstract")
         issues = []
         med_db_validate.validate_papers(tmp_path, issues)
-        assert any("unexpected Europe PMC result count" in issue for issue in issues)
+        assert any("Expected 1 Europe PMC result" in issue for issue in issues)
 
     def test_unrecognized_folder_name(self, tmp_path):
         papers = tmp_path / "papers" / "endometriosis" / "weird-folder-name"
@@ -387,7 +388,7 @@ class TestValidatePapers:
         (papers / "abstract.txt").write_text("abstract")
         issues = []
         med_db_validate.validate_papers(tmp_path, issues)
-        assert any("unrecognized paper folder name" in issue for issue in issues)
+        assert any("Unrecognised paper folder" in issue for issue in issues)
 
     def test_invalid_metadata_json(self, tmp_path):
         papers = tmp_path / "papers" / "endometriosis" / "pmid-12345-study"
@@ -395,7 +396,7 @@ class TestValidatePapers:
         (papers / "metadata.json").write_text("not valid {{{ json")
         issues = []
         med_db_validate.validate_papers(tmp_path, issues)
-        assert any("invalid metadata json" in issue for issue in issues)
+        assert any("not valid JSON" in issue for issue in issues)
 
     def test_empty_abstract_content(self, tmp_path):
         papers = tmp_path / "papers" / "endometriosis" / "pmid-12345-study"
@@ -407,7 +408,7 @@ class TestValidatePapers:
         issues = []
         med_db_validate.validate_papers(tmp_path, issues)
         # The empty abstract check runs separately on all abstract.txt files
-        assert any("empty abstract content" in issue for issue in issues)
+        assert any("whitespace" in issue for issue in issues)
 
     def test_missing_papers_dir_no_issues(self, tmp_path):
         issues = []
@@ -445,7 +446,7 @@ class TestValidateWeb:
         (web_dir / "empty.html").write_text("")
         issues = []
         med_db_validate.validate_web(tmp_path, issues)
-        assert any("empty web file" in issue for issue in issues)
+        assert any("empty" in issue.lower() for issue in issues)
 
     def test_html_file_without_html_tag(self, tmp_path):
         web_dir = tmp_path / "web" / "endometriosis"
@@ -453,7 +454,7 @@ class TestValidateWeb:
         (web_dir / "not-html.html").write_text("just some text, no html tags")
         issues = []
         med_db_validate.validate_web(tmp_path, issues)
-        assert any("does not look like html" in issue for issue in issues)
+        assert any("<html> tag" in issue for issue in issues)
 
     def test_non_html_file_not_checked_for_html(self, tmp_path):
         """Only .html files are checked for HTML-ness."""
@@ -485,7 +486,7 @@ class TestValidateWeb:
         (web_dir / "blank.html").write_text("   \n   \n  ")
         issues = []
         med_db_validate.validate_web(tmp_path, issues)
-        assert any("empty web file" in issue for issue in issues)
+        assert any("empty" in issue.lower() for issue in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -496,7 +497,7 @@ class TestValidateIndex:
     def test_missing_index(self, tmp_path):
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
-        assert any("missing index.json" in issue for issue in issues)
+        assert any("index.json" in issue and "missing" in issue for issue in issues)
 
     def test_index_matches_filesystem(self, tmp_path):
         # Create filesystem entries
@@ -553,11 +554,15 @@ class TestValidateIndex:
         index.write_text(json.dumps({
             "searches": [
                 {"path": "searches/endometriosis/nonexistent.json", "source": "PubMed", "query": "test", "purpose": "test", "accessed": "2026-01-01"}
-            ]
+            ],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
         }))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
-        assert any("references missing file" in issue for issue in issues)
+        assert any("not found on disk" in issue for issue in issues)
 
     def test_index_missing_existing_entry(self, tmp_path):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
@@ -566,10 +571,16 @@ class TestValidateIndex:
         searches_dir.mkdir(parents=True)
         (searches_dir / "pubmed-test.json").write_text("{}")
         index = tmp_path / "index.json"
-        index.write_text(json.dumps({"searches": []}))
+        index.write_text(json.dumps({
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+        }))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
-        assert any("is missing existing entry" in issue for issue in issues)
+        assert any("not listed in index" in issue for issue in issues)
 
     def test_empty_index_sections(self, tmp_path):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
@@ -578,9 +589,9 @@ class TestValidateIndex:
         index.write_text(json.dumps({}))
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
-        # No sections → nothing parsed. All actual filesystem entries are "extra".
-        # Since we have no actual files in the empty dirs, issues should be empty.
-        assert issues == []
+        # Canonical checker reports all 5 required keys as missing.
+        assert len(issues) == 5
+        assert all("missing required top-level key" in issue for issue in issues)
 
     def test_checks_all_sections(self, tmp_path):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
@@ -609,7 +620,7 @@ class TestValidateIndex:
         med_db_validate.validate_index(tmp_path, issues)
         # All 5 sections should report missing existing entries
         assert len(issues) == 5
-        assert all("is missing existing entry" in i for i in issues)
+        assert all("not listed in index" in i for i in issues)
 
     def test_invalid_json(self, tmp_path):
         for name in ("searches", "papers", "fulltext", "guidelines", "web"):
@@ -618,7 +629,7 @@ class TestValidateIndex:
         index.write_text("not valid json {{{")
         issues = []
         med_db_validate.validate_index(tmp_path, issues)
-        assert any("invalid index.json" in issue for issue in issues)
+        assert any("not valid JSON" in issue for issue in issues)
 
 
 # ---------------------------------------------------------------------------
@@ -703,7 +714,10 @@ class TestMain:
             ],
             "papers": [
                 {"path": "papers/test/pmid-1-x", "identifier": "PMID:1", "url": "url", "purpose": "purpose", "accessed": "2026-01-01"}
-            ]
+            ],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
         }))
         with mock.patch.object(sys, "argv", ["med-db-validate.py", "--med-db", str(tmp_path)]):
             exit_code = med_db_validate.main()

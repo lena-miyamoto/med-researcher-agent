@@ -16,10 +16,9 @@ import argparse
 import json
 import sys
 from pathlib import Path
-import tempfile
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MED_DB = REPO_ROOT / "med-db"
+import utils
+from utils import REPO_ROOT, MED_DB
 GUIDELINE_DIR = MED_DB / "guidelines" / "therapy-methodologies"
 SOURCE_MD = GUIDELINE_DIR / "source.md"
 METHODOLOGIES_JSON = GUIDELINE_DIR / "methodologies.json"
@@ -1510,7 +1509,7 @@ def _build_source_md_body(data):
     lines.append(
         "uv run python -c \"import json; d=json.load(open("
         "'med-db/guidelines/therapy-methodologies/methodologies.json')); "
-        "print([m['name'] for m in d['methodologies']])\""
+        "print([m['name'] for c in d['categories'] for m in c['methodologies']])\""
     )
     lines.append("```")
     lines.append("")
@@ -1675,15 +1674,21 @@ def setup(force=False):
 
     data = _build_methodologies_categorized()
 
-    # Write source.md
+    # Write source.md (atomic)
     source_content = _build_source_md(data)
-    with open(SOURCE_MD, "w", encoding="utf-8") as fh:
-        fh.write(source_content)
+    utils.atomic_write(SOURCE_MD, source_content)
 
-    # Write methodologies.json
-    with open(METHODOLOGIES_JSON, "w", encoding="utf-8") as fh:
-        json.dump(data, fh, indent=2, ensure_ascii=False)
-        fh.write("\n")
+    # Write methodologies.json (atomic)
+    tmp_json = METHODOLOGIES_JSON.with_suffix(METHODOLOGIES_JSON.suffix + ".tmp")
+    try:
+        with open(tmp_json, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=2, ensure_ascii=False)
+            fh.write("\n")
+        tmp_json.replace(METHODOLOGIES_JSON)
+    except Exception:
+        if tmp_json.exists():
+            tmp_json.unlink()
+        raise
 
     # Update index.json
     _update_index_json(_build_index_entry())
@@ -1779,12 +1784,10 @@ def main():
         print(f"  Verify: ERROR — {msg}", file=sys.stderr)
         return 1
 
+    if utils.verify_and_report_integrity(MED_DB) != 0:
+        return 1
     return 0
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)

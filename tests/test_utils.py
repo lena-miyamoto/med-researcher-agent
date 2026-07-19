@@ -1,6 +1,7 @@
 """Tests for utils.py — shared helpers used across med-db scripts."""
 
 import json
+import sys
 import urllib.error
 from pathlib import Path
 
@@ -324,3 +325,615 @@ class TestConstants:
     def test_user_agent_not_empty(self):
         assert len(utils.USER_AGENT) > 0
         assert "Mozilla" in utils.USER_AGENT
+
+
+# ---------------------------------------------------------------------------
+# wrap_text
+# ---------------------------------------------------------------------------
+
+
+class TestWrapText:
+    def test_wraps_at_default_width(self):
+        text = "a " * 50  # 100 words, each "a"
+        lines = utils.wrap_text(text, width=20)
+        assert len(lines) > 1
+        for line in lines:
+            assert len(line) <= 20
+
+    def test_empty_string(self):
+        assert utils.wrap_text("") == []
+
+    def test_shorter_than_width(self):
+        assert utils.wrap_text("hello world", width=80) == ["hello world"]
+
+    def test_exact_width_word(self):
+        assert utils.wrap_text("abcdefghij", width=10) == ["abcdefghij"]
+
+    def test_long_single_word(self):
+        """A single word longer than width is not split — it stays on its own line."""
+        lines = utils.wrap_text("supercalifragilisticexpialidocious", width=10)
+        assert lines == ["supercalifragilisticexpialidocious"]
+
+
+# ---------------------------------------------------------------------------
+# run_cli
+# ---------------------------------------------------------------------------
+
+
+class TestRunCli:
+    def test_normal_exit(self, capsys):
+        def fake_main():
+            return 42
+
+        with pytest.raises(SystemExit) as exc:
+            utils.run_cli(fake_main)
+        assert exc.value.code == 42
+        captured = capsys.readouterr()
+        assert captured.err == ""
+
+    def test_keyboard_interrupt(self, capsys):
+        def fake_main():
+            raise KeyboardInterrupt()
+
+        with pytest.raises(SystemExit) as exc:
+            utils.run_cli(fake_main)
+        assert exc.value.code == 130
+        captured = capsys.readouterr()
+        assert "cancelled" in captured.err
+
+    def test_exception_propagates(self):
+        def fake_main():
+            raise ValueError("boom")
+
+        with pytest.raises(ValueError, match="boom"):
+            utils.run_cli(fake_main)
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — finding factory and constants
+# ---------------------------------------------------------------------------
+
+
+class TestFinding:
+    def test_all_fields_populated(self):
+        f = utils.finding(
+            severity=utils.SEVERITY_ERROR,
+            category=utils.CATEGORY_STRUCTURAL,
+            location="papers/adhd",
+            description="Something is wrong.",
+            fix_hint="Do this to fix.",
+        )
+        assert f["severity"] == "error"
+        assert f["category"] == "structural"
+        assert f["location"] == "papers/adhd"
+        assert f["description"] == "Something is wrong."
+        assert f["fix"] == "Do this to fix."
+
+    def test_warning_severity(self):
+        f = utils.finding(utils.SEVERITY_WARNING, utils.CATEGORY_INDEX, "x", "y", "z")
+        assert f["severity"] == "warning"
+
+
+class TestIntegrityConstants:
+    def test_severities(self):
+        assert utils.SEVERITY_ERROR == "error"
+        assert utils.SEVERITY_WARNING == "warning"
+
+    def test_categories(self):
+        assert utils.CATEGORY_STRUCTURAL == "structural"
+        assert utils.CATEGORY_INDEX == "index"
+        assert utils.CATEGORY_METADATA == "metadata"
+        assert utils.CATEGORY_SEARCH == "search"
+        assert utils.CATEGORY_WEB == "web"
+        assert utils.CATEGORY_GUIDELINE == "guideline"
+
+    def test_repo_paths(self):
+        assert utils.REPO_ROOT.is_dir()
+        assert utils.MED_DB.name == "med-db"
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — structural checks
+# ---------------------------------------------------------------------------
+
+
+class TestCheckRequiredDirs:
+    def test_all_present(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        findings = []
+        utils.check_required_dirs(tmp_path, findings)
+        assert findings == []
+
+    def test_one_missing(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines"):
+            (tmp_path / name).mkdir()
+        findings = []
+        utils.check_required_dirs(tmp_path, findings)
+        assert len(findings) == 1
+        assert findings[0]["severity"] == "error"
+        assert "web" in findings[0]["description"]
+
+    def test_all_missing(self, tmp_path):
+        findings = []
+        utils.check_required_dirs(tmp_path, findings)
+        assert len(findings) == 5
+
+
+class TestCheckEmptyFiles:
+    def test_no_empty_files(self, tmp_path):
+        f = tmp_path / "ok.txt"
+        f.write_text("content")
+        findings = []
+        utils.check_empty_files(tmp_path, findings)
+        assert findings == []
+
+    def test_one_empty_file(self, tmp_path):
+        f = tmp_path / "empty.txt"
+        f.write_text("")
+        findings = []
+        utils.check_empty_files(tmp_path, findings)
+        assert len(findings) == 1
+        assert findings[0]["severity"] == "error"
+        assert "zero bytes" in findings[0]["description"]
+
+    def test_mixed(self, tmp_path):
+        (tmp_path / "ok.txt").write_text("content")
+        (tmp_path / "empty.txt").write_text("")
+        findings = []
+        utils.check_empty_files(tmp_path, findings)
+        assert len(findings) == 1
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — index validation
+# ---------------------------------------------------------------------------
+
+
+class TestCheckIndexValid:
+    def test_missing_index(self, tmp_path):
+        findings = []
+        result = utils.check_index_valid(tmp_path, findings)
+        assert result is None
+        assert len(findings) == 1
+        assert "missing" in findings[0]["description"]
+
+    def test_valid_index(self, tmp_path):
+        index = {
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+        findings = []
+        result = utils.check_index_valid(tmp_path, findings)
+        assert result == index
+        assert findings == []
+
+    def test_invalid_json(self, tmp_path):
+        (tmp_path / "index.json").write_text("not {{{ json")
+        findings = []
+        result = utils.check_index_valid(tmp_path, findings)
+        assert result is None
+        assert len(findings) == 1
+        assert "not valid JSON" in findings[0]["description"]
+
+    def test_missing_required_keys(self, tmp_path):
+        (tmp_path / "index.json").write_text(json.dumps({"searches": [], "papers": []}))
+        findings = []
+        result = utils.check_index_valid(tmp_path, findings)
+        assert result is None  # can't proceed with cross-reference
+        assert any("fulltext" in f["description"] for f in findings)
+
+    def test_extra_keys_warning(self, tmp_path):
+        index = {
+            "searches": [], "papers": [], "fulltext": [],
+            "guidelines": [], "web": [], "extra_category": [],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+        findings = []
+        result = utils.check_index_valid(tmp_path, findings)
+        assert result is not None  # extra keys aren't fatal
+        assert any("extra_category" in f["description"] for f in findings)
+
+    def test_duplicate_paths_in_category(self, tmp_path):
+        index = {
+            "searches": [
+                {"path": "searches/adhd/pubmed-a.json"},
+                {"path": "searches/adhd/pubmed-a.json"},
+            ],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+        findings = []
+        utils.check_index_valid(tmp_path, findings)
+        duplicates = [f for f in findings if "Duplicate" in f["description"]]
+        assert len(duplicates) == 1
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — cross-reference
+# ---------------------------------------------------------------------------
+
+
+class TestCheckIndexCrossref:
+    def test_all_in_sync(self, tmp_path):
+        (tmp_path / "searches").mkdir()
+        (tmp_path / "papers").mkdir()
+        (tmp_path / "fulltext").mkdir()
+        (tmp_path / "guidelines").mkdir()
+        (tmp_path / "web").mkdir()
+        data = {
+            "searches": [], "papers": [], "fulltext": [],
+            "guidelines": [], "web": [],
+        }
+        findings = []
+        utils.check_index_crossref(tmp_path, data, findings)
+        assert findings == []
+
+    def test_indexed_but_missing_on_disk(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        data = {
+            "searches": [{"path": "searches/ghost/pubmed-search.json"}],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+        }
+        findings = []
+        utils.check_index_crossref(tmp_path, data, findings)
+        missing = [f for f in findings if "not found on disk" in f["description"]]
+        assert len(missing) == 1
+
+    def test_on_disk_but_not_indexed(self, tmp_path):
+        (tmp_path / "searches" / "topic").mkdir(parents=True)
+        (tmp_path / "papers").mkdir()
+        (tmp_path / "fulltext").mkdir()
+        (tmp_path / "guidelines").mkdir()
+        (tmp_path / "web").mkdir()
+        (tmp_path / "searches" / "topic" / "pubmed-search.json").write_text("{}")
+        data = {
+            "searches": [], "papers": [], "fulltext": [],
+            "guidelines": [], "web": [],
+        }
+        findings = []
+        utils.check_index_crossref(tmp_path, data, findings)
+        extra = [f for f in findings if "not listed in index" in f["description"]]
+        assert len(extra) == 1
+
+    def test_papers_are_checked(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        (tmp_path / "papers" / "pmid-123-slug").mkdir()
+        (tmp_path / "papers" / "pmid-123-slug" / "metadata.json").write_text("{}")
+        data = {
+            "searches": [], "papers": [], "fulltext": [],
+            "guidelines": [], "web": [],
+        }
+        findings = []
+        utils.check_index_crossref(tmp_path, data, findings)
+        extra = [f for f in findings if "not listed in index" in f["description"]]
+        assert len(extra) == 1
+
+    def test_web_files_are_checked(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        (tmp_path / "web" / "page.html").write_text("<html></html>")
+        data = {
+            "searches": [], "papers": [], "fulltext": [],
+            "guidelines": [], "web": [],
+        }
+        findings = []
+        utils.check_index_crossref(tmp_path, data, findings)
+        extra = [f for f in findings if "not listed in index" in f["description"]]
+        assert len(extra) == 1
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — paper integrity
+# ---------------------------------------------------------------------------
+
+
+class TestCheckPaperIntegrity:
+    def test_valid_pmid_paper(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "pmid-12345-test-title"
+        paper_dir.mkdir()
+        meta = {"result": {"uids": ["12345"]}}
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("Abstract content.")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert findings == []
+
+    def test_valid_epmc_paper(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "epmc-med-35350465-test-title"
+        paper_dir.mkdir()
+        meta = {"resultList": {"result": [{"source": "MED", "id": "35350465"}]}}
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("Abstract.")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert findings == []
+
+    def test_missing_abstract_txt(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "pmid-12345-test"
+        paper_dir.mkdir()
+        (paper_dir / "metadata.json").write_text('{"result": {"uids": ["12345"]}}')
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("missing abstract.txt" in f["description"] for f in findings)
+
+    def test_invalid_metadata_json(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "pmid-12345-test"
+        paper_dir.mkdir()
+        (paper_dir / "metadata.json").write_text("garbage {{{")
+        (paper_dir / "abstract.txt").write_text("ok")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("not valid JSON" in f["description"] for f in findings)
+
+    def test_pmid_mismatch(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "pmid-12345-test"
+        paper_dir.mkdir()
+        # Metadata claims PMID 99999, folder says 12345
+        (paper_dir / "metadata.json").write_text('{"result": {"uids": ["99999"]}}')
+        (paper_dir / "abstract.txt").write_text("ok")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("PMID mismatch" in f["description"] for f in findings)
+
+    def test_epmc_source_mismatch(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "epmc-ppr-35350465-test"
+        paper_dir.mkdir()
+        meta = {"resultList": {"result": [{"source": "MED", "id": "35350465"}]}}
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("ok")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("source mismatch" in f["description"] for f in findings)
+
+    def test_epmc_id_slug_mismatch(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "epmc-med-wrongslug-test"
+        paper_dir.mkdir()
+        meta = {"resultList": {"result": [{"source": "MED", "id": "99999"}]}}
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("ok")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("ID mismatch" in f["description"] for f in findings)
+
+    def test_unrecognized_folder_name(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "weird-folder-name"
+        paper_dir.mkdir()
+        (paper_dir / "metadata.json").write_text('{"some": "data"}')
+        (paper_dir / "abstract.txt").write_text("ok")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("Unrecognised paper folder" in f["description"] for f in findings)
+
+    def test_empty_abstract_content(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "pmid-12345-test"
+        paper_dir.mkdir()
+        (paper_dir / "metadata.json").write_text('{"result": {"uids": ["12345"]}}')
+        (paper_dir / "abstract.txt").write_text("   ")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("only whitespace" in f["description"] for f in findings)
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — search JSON
+# ---------------------------------------------------------------------------
+
+
+class TestCheckSearchJson:
+    def test_valid_pubmed_esearch(self, tmp_path):
+        (tmp_path / "searches").mkdir()
+        file_path = tmp_path / "searches" / "pubmed-search.json"
+        data = {
+            "header": {"type": "esearch"},
+            "esearchresult": {
+                "idlist": ["1", "2"],
+                "querytranslation": "test query",
+            },
+        }
+        file_path.write_text(json.dumps(data))
+        findings = []
+        utils.check_search_json(tmp_path, findings)
+        assert findings == []
+
+    def test_pubmed_missing_idlist(self, tmp_path):
+        (tmp_path / "searches").mkdir()
+        file_path = tmp_path / "searches" / "pubmed-search.json"
+        # esearchresult must be truthy to enter the PubMed branch, but missing "idlist"
+        data = {"header": {"type": "esearch"}, "esearchresult": {"count": "5"}}
+        file_path.write_text(json.dumps(data))
+        findings = []
+        utils.check_search_json(tmp_path, findings)
+        assert any('missing "idlist"' in f["description"] for f in findings)
+
+    def test_valid_europe_pmc(self, tmp_path):
+        (tmp_path / "searches").mkdir()
+        file_path = tmp_path / "searches" / "epmc-search.json"
+        data = {
+            "request": {"queryString": "test query"},
+            "resultList": {"result": [{"id": "1"}]},
+        }
+        file_path.write_text(json.dumps(data))
+        findings = []
+        utils.check_search_json(tmp_path, findings)
+        assert findings == [] or all(f["severity"] == "warning" for f in findings)
+
+    def test_europe_pmc_missing_query_string(self, tmp_path):
+        (tmp_path / "searches").mkdir()
+        file_path = tmp_path / "searches" / "epmc-search.json"
+        # request must be truthy to enter the EPMC branch, but missing queryString
+        data = {"request": {"other": "value"}, "resultList": {"result": [{"id": "1"}]}}
+        file_path.write_text(json.dumps(data))
+        findings = []
+        utils.check_search_json(tmp_path, findings)
+        assert any("queryString" in f["description"] for f in findings)
+
+    def test_unrecognized_format(self, tmp_path):
+        (tmp_path / "searches").mkdir()
+        file_path = tmp_path / "searches" / "unknown.json"
+        # An empty dict doesn't match any known format and won't hit the
+        # "non-empty dict → skip" catch-all
+        file_path.write_text("{}")
+        findings = []
+        utils.check_search_json(tmp_path, findings)
+        assert any("Unrecognised search JSON" in f["description"] for f in findings)
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — web files
+# ---------------------------------------------------------------------------
+
+
+class TestCheckWebFiles:
+    def test_valid_html(self, tmp_path):
+        (tmp_path / "web").mkdir()
+        file_path = tmp_path / "web" / "page.html"
+        file_path.write_text("<!doctype html>\n<html></html>")
+        findings = []
+        utils.check_web_files(tmp_path, findings)
+        assert findings == []
+
+    def test_empty_file(self, tmp_path):
+        (tmp_path / "web").mkdir()
+        file_path = tmp_path / "web" / "empty.html"
+        file_path.write_text("")
+        findings = []
+        utils.check_web_files(tmp_path, findings)
+        assert any("empty" in f["description"] for f in findings)
+
+    def test_html_file_without_html_tag(self, tmp_path):
+        (tmp_path / "web").mkdir()
+        file_path = tmp_path / "web" / "page.html"
+        file_path.write_text("Just some text, no html tag.")
+        findings = []
+        utils.check_web_files(tmp_path, findings)
+        assert any("<html> tag" in f["description"] for f in findings)
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — guideline integrity
+# ---------------------------------------------------------------------------
+
+
+class TestCheckGuidelineIntegrity:
+    def test_valid_source_md(self, tmp_path):
+        (tmp_path / "guidelines").mkdir()
+        gdir = tmp_path / "guidelines" / "dsm-5-tr"
+        gdir.mkdir(parents=True)
+        (gdir / "source.md").write_text("---\ntitle: Test\n---\n\n# Content")
+        findings = []
+        utils.check_guideline_integrity(tmp_path, findings)
+        assert findings == []
+
+    def test_empty_source_md(self, tmp_path):
+        (tmp_path / "guidelines").mkdir()
+        gdir = tmp_path / "guidelines" / "empty-guideline"
+        gdir.mkdir(parents=True)
+        (gdir / "source.md").write_text("")
+        findings = []
+        utils.check_guideline_integrity(tmp_path, findings)
+        assert any("empty" in f["description"] for f in findings)
+
+    def test_missing_frontmatter(self, tmp_path):
+        (tmp_path / "guidelines").mkdir()
+        gdir = tmp_path / "guidelines" / "bad-guideline"
+        gdir.mkdir(parents=True)
+        (gdir / "source.md").write_text("# No frontmatter here")
+        findings = []
+        utils.check_guideline_integrity(tmp_path, findings)
+        assert any("missing YAML frontmatter" in f["description"] for f in findings)
+
+    def test_multilingual_source_files(self, tmp_path):
+        (tmp_path / "guidelines").mkdir()
+        gdir = tmp_path / "guidelines" / "icd-11"
+        gdir.mkdir(parents=True)
+        (gdir / "source.de.md").write_text("---\ntitle: DE\n---\nContent")
+        findings = []
+        utils.check_guideline_integrity(tmp_path, findings)
+        # Should check source.*.md files too
+        assert findings == []
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — legacy dirs
+# ---------------------------------------------------------------------------
+
+
+class TestCheckLegacyDirs:
+    def test_legacy_dirs_present(self, tmp_path):
+        (tmp_path / "metadata").mkdir()
+        (tmp_path / "abstracts").mkdir()
+        findings = []
+        utils.check_legacy_dirs(tmp_path, findings)
+        assert len(findings) == 2
+        assert all(f["severity"] == "warning" for f in findings)
+
+    def test_no_legacy_dirs(self, tmp_path):
+        findings = []
+        utils.check_legacy_dirs(tmp_path, findings)
+        assert findings == []
+
+
+# ---------------------------------------------------------------------------
+# Integrity check — orchestration
+# ---------------------------------------------------------------------------
+
+
+class TestRunIntegrityCheck:
+    def test_missing_root(self, tmp_path):
+        missing = tmp_path / "nonexistent"
+        findings = utils.run_integrity_check(missing)
+        assert len(findings) == 1
+        assert findings[0]["severity"] == "error"
+        assert "not found" in findings[0]["description"]
+
+    def test_clean_archive(self, tmp_path):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        index = {
+            "searches": [], "papers": [], "fulltext": [],
+            "guidelines": [], "web": [],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+        findings = utils.run_integrity_check(tmp_path)
+        assert findings == []
+
+
+class TestVerifyAndReportIntegrity:
+    def test_clean_returns_zero(self, tmp_path, capsys):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+            (tmp_path / name).mkdir()
+        index = {
+            "searches": [], "papers": [], "fulltext": [],
+            "guidelines": [], "web": [],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+        result = utils.verify_and_report_integrity(tmp_path)
+        assert result == 0
+
+    def test_errors_return_one(self, tmp_path, capsys):
+        result = utils.verify_and_report_integrity(tmp_path)
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "FAILED" in captured.err

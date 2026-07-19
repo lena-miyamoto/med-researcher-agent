@@ -14,9 +14,8 @@ import json
 import sys
 from pathlib import Path
 
-
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MED_DB = REPO_ROOT / "med-db"
+import utils
+from utils import MED_DB
 ICD11_BASE = MED_DB / "guidelines" / "icd-11"
 
 
@@ -52,54 +51,54 @@ def _build_column_map(header, language):
     # Normalize header names: strip whitespace, BOM prefix, lowercase
     clean = [h.strip().lstrip("﻿").lower() for h in header]
 
-    col_map = {}
-    for idx, name in enumerate(clean):
+    column_map = {}
+    for index, name in enumerate(clean):
         if name in ("foundation uri", "foundation_uri"):
-            col_map["foundation_uri"] = idx
+            column_map["foundation_uri"] = index
         elif name in ("linearization uri", "linearization (release) uri", "linearization_uri"):
-            col_map["linearization_uri"] = idx
+            column_map["linearization_uri"] = index
         elif name == "code":
-            col_map["code"] = idx
+            column_map["code"] = index
         elif name in ("blockid", "block_id"):
-            col_map["block_id"] = idx
+            column_map["block_id"] = index
         elif name == "title":
             # Title = localised title in DE files; only title column in EN files
-            col_map["title"] = idx
+            column_map["title"] = index
         elif name == "titleen":
-            col_map["title_en"] = idx
+            column_map["title_en"] = index
         elif name in ("classkind", "class_kind"):
-            col_map["class_kind"] = idx
+            column_map["class_kind"] = index
         elif name in ("depthinkind", "depth_in_kind"):
-            col_map["depth_in_kind"] = idx
+            column_map["depth_in_kind"] = index
         elif name in ("isresidual", "is_residual"):
-            col_map["is_residual"] = idx
+            column_map["is_residual"] = index
         elif name in ("chapterno", "chapter_no"):
-            col_map["chapter_no"] = idx
+            column_map["chapter_no"] = index
         elif name in ("browserlink", "browser_link"):
-            col_map["browser_link"] = idx
+            column_map["browser_link"] = index
         elif name == "isleaf":
-            col_map["is_leaf"] = idx
+            column_map["is_leaf"] = index
         elif name in ("primary tabulation", "primary_tabulation"):
-            col_map["primary_tabulation"] = idx
+            column_map["primary_tabulation"] = index
         elif name.startswith("grouping"):
             try:
                 n = int(name.replace("grouping", ""))
-                col_map[f"grouping{n}"] = idx
+                column_map[f"grouping{n}"] = index
             except ValueError:
                 pass
         elif name in ("codingnote", "coding_note"):
-            col_map["coding_note"] = idx
+            column_map["coding_note"] = index
         elif name == "parent":
-            col_map["parent"] = idx
+            column_map["parent"] = index
 
-    return col_map
+    return column_map
 
 
-def _cell(row, col_map, key, default=""):
+def _cell(row, column_map, key, default=""):
     """Safe cell access by mapped column index."""
-    idx = col_map.get(key)
-    if idx is not None and idx < len(row):
-        return row[idx].strip()
+    index = column_map.get(key)
+    if index is not None and index < len(row):
+        return row[index].strip()
     return default
 
 
@@ -127,38 +126,38 @@ def load_tabulation(release="2026-01", language="en"):
         header = next(reader, None)
         if header:
             version_str = header[-1] if "Version:" in (header[-1] or "") else None
-        col_map = _build_column_map(header, language)
+        column_map = _build_column_map(header, language)
 
         # Determine how to populate title / title_en
-        has_title_en = "title_en" in col_map
+        has_title_en = "title_en" in column_map
 
         for row in reader:
             if not row or all(c == "" for c in row):
                 continue
 
-            title = _cell(row, col_map, "title")
+            title = _cell(row, column_map, "title")
 
             entry = {
-                "foundation_uri": _cell(row, col_map, "foundation_uri"),
-                "linearization_uri": _cell(row, col_map, "linearization_uri"),
-                "code": _cell(row, col_map, "code"),
-                "block_id": _cell(row, col_map, "block_id"),
+                "foundation_uri": _cell(row, column_map, "foundation_uri"),
+                "linearization_uri": _cell(row, column_map, "linearization_uri"),
+                "code": _cell(row, column_map, "code"),
+                "block_id": _cell(row, column_map, "block_id"),
                 "title": title,
-                "title_en": _cell(row, col_map, "title_en") if has_title_en else title,
-                "class_kind": _cell(row, col_map, "class_kind"),
-                "depth_in_kind": _cell(row, col_map, "depth_in_kind"),
-                "is_residual": _cell(row, col_map, "is_residual"),
-                "chapter_no": _cell(row, col_map, "chapter_no"),
-                "browser_link": _cell(row, col_map, "browser_link"),
-                "is_leaf": _cell(row, col_map, "is_leaf"),
-                "primary_tabulation": _cell(row, col_map, "primary_tabulation"),
-                "grouping1": _cell(row, col_map, "grouping1"),
-                "grouping2": _cell(row, col_map, "grouping2"),
-                "grouping3": _cell(row, col_map, "grouping3"),
-                "grouping4": _cell(row, col_map, "grouping4"),
-                "grouping5": _cell(row, col_map, "grouping5"),
-                "coding_note": _cell(row, col_map, "coding_note"),
-                "parent": _cell(row, col_map, "parent"),
+                "title_en": _cell(row, column_map, "title_en") if has_title_en else title,
+                "class_kind": _cell(row, column_map, "class_kind"),
+                "depth_in_kind": _cell(row, column_map, "depth_in_kind"),
+                "is_residual": _cell(row, column_map, "is_residual"),
+                "chapter_no": _cell(row, column_map, "chapter_no"),
+                "browser_link": _cell(row, column_map, "browser_link"),
+                "is_leaf": _cell(row, column_map, "is_leaf"),
+                "primary_tabulation": _cell(row, column_map, "primary_tabulation"),
+                "grouping1": _cell(row, column_map, "grouping1"),
+                "grouping2": _cell(row, column_map, "grouping2"),
+                "grouping3": _cell(row, column_map, "grouping3"),
+                "grouping4": _cell(row, column_map, "grouping4"),
+                "grouping5": _cell(row, column_map, "grouping5"),
+                "coding_note": _cell(row, column_map, "coding_note"),
+                "parent": _cell(row, column_map, "parent"),
             }
             entries.append(entry)
 
@@ -173,17 +172,23 @@ def _is_match(text: str, query: str) -> bool:
 
 
 def search_by_code(entries, code):
-    """Exact case-insensitive code match. Returns matching entry or None."""
+    """Case-insensitive code match. Returns a list of matching entries.
+
+    Exact matches take priority — if an entry with the exact code exists,
+    only that entry is returned.  Otherwise all stem-code prefix matches
+    are returned (e.g. ``"6A02"`` matches ``"6A02.0"``, ``"6A02.1"``,
+    etc.).  Returns an empty list when no match is found.
+    """
     code_upper = code.strip().upper().rstrip(".")
+    if not code_upper:
+        return []
     # Exact match first
-    for e in entries:
-        if e["code"].upper() == code_upper:
-            return e
+    for entry in entries:
+        if entry["code"].upper() == code_upper:
+            return [entry]
     # Stem-code prefix match (e.g. "6A02" matches "6A02.0")
-    for e in entries:
-        if e["code"].upper().startswith(code_upper + "."):
-            return e
-    return None
+    prefix = code_upper + "."
+    return [entry for entry in entries if entry["code"].upper().startswith(prefix)]
 
 
 def search_by_keyword(entries, keyword, class_kind=None, limit=50):
@@ -261,19 +266,19 @@ def load_icd10_to_icd11_mapping(release="2026-01"):
         # Build column map from header
         clean = [h.strip().lower() for h in header]
         col = {}
-        for idx, name in enumerate(clean):
+        for index, name in enumerate(clean):
             if name in ("icd10code",):
-                col["icd10_code"] = idx
+                col["icd10_code"] = index
             elif name in ("icd10title",):
-                col["icd10_title"] = idx
+                col["icd10_title"] = index
             elif name in ("icd10chapter",):
-                col["icd10_chapter"] = idx
+                col["icd10_chapter"] = index
             elif name in ("icd11code",):
-                col["icd11_code"] = idx
+                col["icd11_code"] = index
             elif name in ("icd11title",):
-                col["icd11_title"] = idx
+                col["icd11_title"] = index
             elif name in ("icd11chapter",):
-                col["icd11_chapter"] = idx
+                col["icd11_chapter"] = index
 
         for row in reader:
             if len(row) < max(col.values(), default=0) + 1:
@@ -410,7 +415,7 @@ def parse_args():
     )
     parser.add_argument(
         "--hierarchy",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
         default=True,
         help="Show full hierarchy for code lookups (default on). Use --no-hierarchy to disable.",
     )
@@ -464,16 +469,24 @@ def main():
         output["total_entries"] = len(entries)
 
     if args.code:
-        entry = search_by_code(entries, args.code)
-        if entry is None:
+        matches = search_by_code(entries, args.code)
+        if not matches:
             output["code_lookup"] = {"error": f"code '{args.code}' not found"}
-        else:
+        elif len(matches) == 1:
+            entry = matches[0]
             result = dict(entry)
             if args.hierarchy:
                 result["ancestors"] = get_ancestors(entries, entry)
             if args.children:
                 result["children"] = get_children(entries, entry)
             output["code_lookup"] = result
+        else:
+            output["code_lookup"] = {
+                "partial_match": True,
+                "query": args.code,
+                "count": len(matches),
+                "results": matches,
+            }
 
     if args.keyword:
         results = search_by_keyword(
@@ -489,40 +502,48 @@ def main():
     if args.format == "text":
         lines = []
         if "code_lookup" in output:
-            cl = output["code_lookup"]
-            if "error" in cl:
-                lines.append(f"Error: {cl['error']}")
+            code_lookup = output["code_lookup"]
+            if "error" in code_lookup:
+                lines.append(f"Error: {code_lookup['error']}")
+                lines.append("")
+            elif code_lookup.get("partial_match"):
+                lines.append(f"Code '{code_lookup['query']}' matches {code_lookup['count']} entries:")
+                lines.append("")
+                for entry in code_lookup["results"]:
+                    code_str = entry["code"] if entry["code"] else f"[{entry.get('block_id', '')}]"
+                    lines.append(f"  {code_str:<12} {entry['title']}")
+                    lines.append(f"              ({entry['class_kind']}, ch.{entry.get('chapter_no', '?')})")
                 lines.append("")
             else:
-                ancestors = cl.pop("ancestors", None)
-                children = cl.pop("children", None)
-                lines.append(_format_entry_text(cl, ancestors=ancestors, children=children))
+                ancestors = code_lookup.pop("ancestors", None)
+                children = code_lookup.pop("children", None)
+                lines.append(_format_entry_text(code_lookup, ancestors=ancestors, children=children))
                 lines.append("")
 
         if "keyword_search" in output:
-            ks = output["keyword_search"]
-            lines.append(f'Keyword: "{ks["query"]}" — {ks["count"]} results')
-            if ks.get("class_kind_filter"):
-                lines.append(f"Filter: class_kind={ks['class_kind_filter']}")
+            keyword_search = output["keyword_search"]
+            lines.append(f'Keyword: "{keyword_search["query"]}" — {keyword_search["count"]} results')
+            if keyword_search.get("class_kind_filter"):
+                lines.append(f"Filter: class_kind={keyword_search['class_kind_filter']}")
             lines.append("")
-            for r in ks["results"]:
-                code_str = r["code"] if r["code"] else f"[{r.get('block_id', '')}]"
+            for result in keyword_search["results"]:
+                code_str = result["code"] if result["code"] else f"[{result.get('block_id', '')}]"
                 lines.append(
-                    f"  {code_str:<12} {r['title']}"
-                    f"  ({r['class_kind']}, ch.{r.get('chapter_no', '?')})"
+                    f"  {code_str:<12} {result['title']}"
+                    f"  ({result['class_kind']}, ch.{result.get('chapter_no', '?')})"
                 )
             lines.append("")
 
         if "icd10_to_icd11" in output:
-            m = output["icd10_to_icd11"]
-            if "error" in m:
-                lines.append(f"ICD-10 → ICD-11: {m['error']}")
+            mapping = output["icd10_to_icd11"]
+            if "error" in mapping:
+                lines.append(f"ICD-10 → ICD-11: {mapping['error']}")
             else:
                 lines.append(
-                    f"ICD-10 {m['icd10_code']}: {m['icd10_title']}"
+                    f"ICD-10 {mapping['icd10_code']}: {mapping['icd10_title']}"
                 )
                 lines.append(
-                    f"  → ICD-11 {m['icd11_code']}: {m['icd11_title']}"
+                    f"  → ICD-11 {mapping['icd11_code']}: {mapping['icd11_title']}"
                 )
             lines.append("")
 
@@ -534,9 +555,9 @@ def main():
                 lines.append(
                     f"ICD-11 {args.icd11_to_icd10} maps to {len(matches)} ICD-10 code(s):"
                 )
-                for m in matches:
+                for mapping in matches:
                     lines.append(
-                        f"  → ICD-10 {m['icd10_code']}: {m['icd10_title']}"
+                        f"  → ICD-10 {mapping['icd10_code']}: {mapping['icd10_title']}"
                     )
             lines.append("")
 
@@ -548,8 +569,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)

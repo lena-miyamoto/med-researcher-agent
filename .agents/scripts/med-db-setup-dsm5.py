@@ -16,9 +16,8 @@ import json
 import sys
 from pathlib import Path
 
-
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MED_DB = REPO_ROOT / "med-db"
+import utils
+from utils import REPO_ROOT, MED_DB
 CLASSIFICATION_PATH = MED_DB / "guidelines" / "dsm-5-tr" / "classification.json"
 
 
@@ -492,10 +491,17 @@ def setup(force=False):
         return False
 
     data = build_classification()
-    with open(CLASSIFICATION_PATH, "w", encoding="utf-8") as fh:
-        json.dump(data, fh, indent=2, ensure_ascii=False)
+    tmp_path = CLASSIFICATION_PATH.with_suffix(CLASSIFICATION_PATH.suffix + ".tmp")
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=2, ensure_ascii=False)
+        tmp_path.replace(CLASSIFICATION_PATH)
+    except Exception:
+        if tmp_path.exists():
+            tmp_path.unlink()
+        raise
 
-    total = sum(len(c["disorders"]) for c in data["categories"])
+    total = sum(len(c["disorders"]) for category in data["categories"])
     print(f"Created DSM-5-TR classification: {len(data['categories'])} categories, {total} disorders")
     return True
 
@@ -563,12 +569,10 @@ def main():
         print("  source.md not found — it should be created separately "
               "(it ships with the repo under med-db/guidelines/dsm-5-tr/source.md)")
 
+    if utils.verify_and_report_integrity(MED_DB) != 0:
+        return 1
     return 0
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)

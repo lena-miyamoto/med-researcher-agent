@@ -13,9 +13,8 @@ import json
 import sys
 from pathlib import Path
 
-
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MED_DB = REPO_ROOT / "med-db"
+import utils
+from utils import MED_DB
 CLASSIFICATION_PATH = MED_DB / "guidelines" / "dsm-5-tr" / "classification.json"
 
 
@@ -40,9 +39,9 @@ def load_classification():
 
 def _flatten_disorders(data):
     """Yield (category_name, disorder_dict) for every disorder."""
-    for cat in data["categories"]:
-        for d in cat["disorders"]:
-            yield cat["name"], d
+    for category in data["categories"]:
+        for disorder in category["disorders"]:
+            yield category["name"], disorder
 
 
 def _is_match(text, query):
@@ -51,35 +50,41 @@ def _is_match(text, query):
 
 
 def search_by_code(data, code):
-    """Exact ICD-10-CM code match. Returns (category_name, disorder_dict) or None.
+    """Search by ICD-10-CM code.
 
-    For partial codes that match multiple disorders (e.g. "F32"), returns a
-    list of (category_name, disorder_dict) tuples instead of a single tuple.
-    Callers should check whether the result is a list or a single match.
+    Returns a list of ``(category_name, disorder_dict)`` tuples — always a
+    list, even for single or no matches.  Exact matches take priority over
+    prefix matches (e.g. ``"F32"`` matches ``F32.0``, ``F32.1``, etc.).
     """
     code_upper = code.strip().upper().replace(" ", "")
-    for cat_name, d in _flatten_disorders(data):
-        if d.get("code") and d["code"].upper().replace(" ", "") == code_upper:
-            return cat_name, d
+    # Exact match
+    for category_name, disorder in _flatten_disorders(data):
+        if disorder.get("code") and disorder["code"].upper().replace(" ", "") == code_upper:
+            return [(category_name, disorder)]
     # Prefix match for partial codes (e.g., "F32" matches all F32.x codes)
     results = []
-    for cat_name, d in _flatten_disorders(data):
-        if d.get("code") and d["code"].upper().replace(" ", "").startswith(code_upper):
-            results.append((cat_name, d))
-    if len(results) == 1:
-        return results[0]
-    if len(results) > 1:
-        return results
-    return None
+    for category_name, disorder in _flatten_disorders(data):
+        if disorder.get("code") and disorder["code"].upper().replace(" ", "").startswith(code_upper):
+            results.append((category_name, disorder))
+    return results
 
 
 def search_by_keyword(data, keyword, limit=50):
-    """Find disorders whose name contains the keyword."""
+    """Find disorders whose name contains the keyword.
+
+    Args:
+        data: classification data dict.
+        keyword: search term (case-insensitive).
+        limit: maximum number of results (default 50).
+
+    Returns:
+        list of ``(category_name, disorder_dict)`` tuples.
+    """
     keyword = keyword.strip()
     results = []
-    for cat_name, d in _flatten_disorders(data):
-        if _is_match(d["name"], keyword):
-            results.append((cat_name, d))
+    for category_name, disorder in _flatten_disorders(data):
+        if _is_match(disorder["name"], keyword):
+            results.append((category_name, disorder))
             if len(results) >= limit:
                 break
     return results
@@ -88,9 +93,9 @@ def search_by_keyword(data, keyword, limit=50):
 def search_category(data, cat_keyword):
     """Find categories whose name contains the keyword."""
     results = []
-    for cat in data["categories"]:
-        if _is_match(cat["name"], cat_keyword):
-            results.append(cat)
+    for category in data["categories"]:
+        if _is_match(category["name"], cat_keyword):
+            results.append(category)
     return results
 
 
@@ -98,76 +103,82 @@ def search_category(data, cat_keyword):
 
 
 def _format_text_output(output, args):
+    """Format lookup results as human-readable text and print to stdout.
+
+    Args:
+        output: result dict from main().
+        args: parsed CLI arguments (reserved for future use).
+    """
     lines = []
 
     if "code_lookup" in output:
-        cl = output["code_lookup"]
-        if "error" in cl:
-            lines.append(f"Error: {cl['error']}")
-        elif cl.get("partial_match"):
-            lines.append(f"Code '{cl['query']}' matches {cl['count']} disorders:")
+        code_lookup = output["code_lookup"]
+        if "error" in code_lookup:
+            lines.append(f"Error: {code_lookup['error']}")
+        elif code_lookup.get("partial_match"):
+            lines.append(f"Code '{code_lookup['query']}' matches {code_lookup['count']} disorders:")
             lines.append("")
-            for item in cl["results"]:
-                d = item["disorder"]
-                code_str = d.get("code") or "(no code)"
-                lines.append(f"  {code_str:<12} {d['name']}")
+            for item in code_lookup["results"]:
+                disorder = item["disorder"]
+                code_str = disorder.get("code") or "(no code)"
+                lines.append(f"  {code_str:<12} {disorder['name']}")
                 lines.append(f"              Category: {item['category']}")
-                if d.get("specifiers"):
-                    lines.append(f"              Specifiers: {', '.join(d['specifiers'])}")
+                if disorder.get("specifiers"):
+                    lines.append(f"              Specifiers: {', '.join(disorder['specifiers'])}")
                 lines.append("")
         else:
-            lines.append(f"Code:        {cl['disorder']['code'] or 'N/A'}")
-            lines.append(f"Disorder:    {cl['disorder']['name']}")
-            lines.append(f"Category:    {cl['category']}")
-            if cl["disorder"].get("specifiers"):
-                lines.append(f"Specifiers:  {', '.join(cl['disorder']['specifiers'])}")
-            if cl["disorder"].get("note"):
-                lines.append(f"Note:        {cl['disorder']['note']}")
-            if cl["disorder"].get("dsm5tr_note"):
-                lines.append(f"DSM-5-TR:    {cl['disorder']['dsm5tr_note']}")
+            lines.append(f"Code:        {code_lookup['disorder']['code'] or 'N/A'}")
+            lines.append(f"Disorder:    {code_lookup['disorder']['name']}")
+            lines.append(f"Category:    {code_lookup['category']}")
+            if code_lookup["disorder"].get("specifiers"):
+                lines.append(f"Specifiers:  {', '.join(code_lookup['disorder']['specifiers'])}")
+            if code_lookup["disorder"].get("note"):
+                lines.append(f"Note:        {code_lookup['disorder']['note']}")
+            if code_lookup["disorder"].get("dsm5tr_note"):
+                lines.append(f"DSM-5-TR:    {code_lookup['disorder']['dsm5tr_note']}")
         lines.append("")
 
     if "keyword_search" in output:
-        ks = output["keyword_search"]
-        lines.append(f'Keyword: "{ks["query"]}" — {ks["count"]} results')
+        keyword_search = output["keyword_search"]
+        lines.append(f'Keyword: "{keyword_search["query"]}" — {keyword_search["count"]} results')
         lines.append("")
-        for item in ks["results"]:
-            cat_name = item["category"]
-            d = item["disorder"]
-            code_str = d.get("code") or "(no code)"
-            lines.append(f"  {code_str:<12} {d['name']}")
-            lines.append(f"              Category: {cat_name}")
-            if d.get("specifiers"):
-                lines.append(f"              Specifiers: {', '.join(d['specifiers'])}")
+        for item in keyword_search["results"]:
+            category_name = item["category"]
+            disorder = item["disorder"]
+            code_str = disorder.get("code") or "(no code)"
+            lines.append(f"  {code_str:<12} {disorder['name']}")
+            lines.append(f"              Category: {category_name}")
+            if disorder.get("specifiers"):
+                lines.append(f"              Specifiers: {', '.join(disorder['specifiers'])}")
             lines.append("")
         lines.append("")
 
     if "category_list" in output:
-        cl = output["category_list"]
-        if "error" in cl:
-            lines.append(f"Error: {cl['error']}")
+        category_list = output["category_list"]
+        if "error" in category_list:
+            lines.append(f"Error: {category_list['error']}")
         else:
-            lines.append(f'Category search: "{cl["query"]}" — {cl["count"]} results')
+            lines.append(f'Category search: "{category_list["query"]}" — {category_list["count"]} results')
             lines.append("")
-            for cat in cl["results"]:
-                lines.append(f"  {cat['name']}")
-                lines.append(f"    ICD-10-CM range: {cat.get('icd10cm_range', 'N/A')}")
-                lines.append(f"    Disorders: {len(cat['disorders'])}")
-                if cat.get("dsm5tr_note"):
-                    lines.append(f"    Note: {cat['dsm5tr_note']}")
+            for category in category_list["results"]:
+                lines.append(f"  {category['name']}")
+                lines.append(f"    ICD-10-CM range: {category.get('icd10cm_range', 'N/A')}")
+                lines.append(f"    Disorders: {len(category['disorders'])}")
+                if category.get("dsm5tr_note"):
+                    lines.append(f"    Note: {category['dsm5tr_note']}")
                 lines.append("")
         lines.append("")
 
     if "all_categories" in output:
-        cats = output["all_categories"]
-        lines.append(f"DSM-5-TR Diagnostic Categories ({len(cats)} total)")
+        categories = output["all_categories"]
+        lines.append(f"DSM-5-TR Diagnostic Categories ({len(categories)} total)")
         lines.append("")
-        for cat in output["all_categories"]:
-            lines.append(f"  {cat['name']}")
-            lines.append(f"    ICD-10-CM: {cat.get('icd10cm_range', 'N/A')}")
-            lines.append(f"    Disorders: {len(cat['disorders'])}")
-            if cat.get("dsm5tr_note"):
-                lines.append(f"    Note: {cat['dsm5tr_note']}")
+        for category in categories:
+            lines.append(f"  {category['name']}")
+            lines.append(f"    ICD-10-CM: {category.get('icd10cm_range', 'N/A')}")
+            lines.append(f"    Disorders: {len(category['disorders'])}")
+            if category.get("dsm5tr_note"):
+                lines.append(f"    Note: {category['dsm5tr_note']}")
         lines.append("")
 
     print("\n".join(lines).strip())
@@ -226,20 +237,20 @@ def main():
 
     if args.code:
         result = search_by_code(data, args.code)
-        if result is None:
+        if not result:
             output["code_lookup"] = {"error": f"code '{args.code}' not found"}
-        elif isinstance(result, list):
+        elif len(result) == 1:
+            cat_name, disorder = result[0]
+            output["code_lookup"] = {
+                "category": cat_name,
+                "disorder": disorder,
+            }
+        else:
             output["code_lookup"] = {
                 "partial_match": True,
                 "query": args.code,
                 "count": len(result),
                 "results": [{"category": c, "disorder": d} for c, d in result],
-            }
-        else:
-            cat_name, disorder = result
-            output["code_lookup"] = {
-                "category": cat_name,
-                "disorder": disorder,
             }
 
     if args.keyword:
@@ -273,8 +284,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)

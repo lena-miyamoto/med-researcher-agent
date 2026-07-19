@@ -61,7 +61,11 @@ def med_db_setup_therapy_methods():
     return _load_script("med_db_setup_therapy_methods", "med-db-setup-therapy-methods.py").main()
 
 
-def lint_md():
+def med_db_integrity_check():
+    return _load_script("med_db_integrity_check", "med-db-integrity-check.py").main()
+
+
+def lint_md(args=None):
     """Run pymarkdownlnt on repo markdown files.
 
     Falls back to scanning AGENTS.md, README.md, CLAUDE.md, .agents, .github,
@@ -69,7 +73,9 @@ def lint_md():
     """
     import subprocess
 
-    args = sys.argv[1:]
+    if args is None:
+        args = sys.argv[1:]
+
     fix_mode = False
     if "--fix" in args:
         args.remove("--fix")
@@ -103,11 +109,13 @@ def lint_md():
     ).returncode
 
 
-def test():
+def test(args=None):
+    """Run pytest on the test suite. Passes ``tests/ -v`` by default."""
     try:
         from pytest import main as pytest_main
     except ModuleNotFoundError as exc:
         raise RuntimeError("pytest is not installed; run 'uv sync' to install the dev dependencies") from exc
 
-    args = sys.argv[1:] or ["tests/", "-v"]
+    if args is None:
+        args = sys.argv[1:] or ["tests/", "-v"]
     return pytest_main(args)

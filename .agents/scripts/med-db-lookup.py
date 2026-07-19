@@ -108,20 +108,23 @@ def lookup_pmids(pmids, email=None, fetch_func=None, delay=0):
 
 
 def _extract_abstract_medline(raw):
-    """Extract abstract text from MEDLINE format efetch output."""
-    # MEDLINE abstract sections start with "AB  - "
+    """Extract abstract text from MEDLINE format efetch output.
+
+    Returns the abstract text as a single string, or ``"Abstract
+    unavailable."`` if no abstract could be extracted.
+    """
     lines = raw.splitlines()
-    ab_lines = []
-    in_ab = False
+    abstract_lines = []
+    in_abstract = False
     for line in lines:
         if line.startswith("AB  - "):
-            in_ab = True
-            ab_lines.append(line[6:])
-        elif in_ab and line.startswith("      "):
-            ab_lines.append(line[6:])
-        elif in_ab and not line.startswith("      "):
+            in_abstract = True
+            abstract_lines.append(line[6:])
+        elif in_abstract and line.startswith("      "):
+            abstract_lines.append(line[6:])
+        elif in_abstract and not line.startswith("      "):
             break
-    abstract = " ".join(ab_lines).strip()
+    abstract = " ".join(abstract_lines).strip()
     if not abstract:
         match = re.search(r"\bAbstract\s*(?:\n\s*-+\s*)?\n+(.+)", raw, re.DOTALL | re.IGNORECASE)
         if match:
@@ -227,38 +230,17 @@ def resolve_doi(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None):
     if epmc_fetch_func is None:
         epmc_fetch_func = fetch_europe_pmc
 
-    # Try PubMed esearch with [doi] term
-    try:
-        params = {"db": "pubmed", "retmode": "json", "term": f"{doi}[doi]", "tool": "med-db-lookup"}
-        if email:
-            params["email"] = email
-        raw = pubmed_fetch_func("esearch.fcgi", params)
-        data = json.loads(raw)
-        idlist = data.get("esearchresult", {}).get("idlist", [])
-        if idlist:
-            results = lookup_pmids([idlist[0]], email=email, fetch_func=pubmed_fetch_func)
-            if results and "error" not in results[0]:
-                return results[0]
-    except RuntimeError:
-        pass
-
-    # Fall back to Europe PMC
-    try:
-        params = {"query": f"{doi}", "resultType": "core", "format": "json", "pageSize": "1"}
-        raw = epmc_fetch_func("search", params)
-        data = json.loads(raw)
-        hits = data.get("resultList", {}).get("result", [])
-        if hits:
-            record = hits[0]
-            source_name = str(record.get("source") or "MED")
-            record_id = str(record.get("id") or record.get("pmid") or "")
-            if record_id:
-                results = lookup_epmc_records([f"{source_name}:{record_id}"], fetch_func=epmc_fetch_func)
-                if results and "error" not in results[0]:
-                    return results[0]
-    except RuntimeError:
-        pass
-
+    source, identifier = utils.resolve_doi_to_id(
+        doi, email=email,
+        pubmed_fetch_func=pubmed_fetch_func,
+        epmc_fetch_func=epmc_fetch_func,
+    )
+    if source == "pubmed":
+        results = lookup_pmids([identifier], email=email, fetch_func=pubmed_fetch_func)
+        return results[0] if results and "error" not in results[0] else None
+    elif source == "europe-pmc":
+        results = lookup_epmc_records([identifier], fetch_func=epmc_fetch_func)
+        return results[0] if results and "error" not in results[0] else None
     return None
 
 
@@ -273,40 +255,30 @@ def _format_json(results):
 
 def _format_text(results):
     lines = []
-    for i, r in enumerate(results, 1):
-        if "error" in r:
-            lines.append(f"--- Result {i} ({r.get('source', 'unknown')}) ---")
-            lines.append(f"ID:    {r.get('pmid') or r.get('epmc_id') or r.get('doi', 'N/A')}")
-            lines.append(f"ERROR: {r['error']}")
+    for index, result in enumerate(results, 1):
+        if "error" in result:
+            lines.append(f"--- Result {index} ({result.get('source', 'unknown')}) ---")
+            lines.append(f"ID:    {result.get('pmid') or result.get('epmc_id') or result.get('doi', 'N/A')}")
+            lines.append(f"ERROR: {result['error']}")
             lines.append("")
             continue
 
-        lines.append(f"--- Result {i} ({r['source']}) ---")
-        lines.append(f"PMID:    {r.get('pmid', 'N/A')}")
-        if r.get("epmc_id"):
-            lines.append(f"EPMC ID: {r['epmc_id']}")
-        lines.append(f"DOI:     {r.get('doi', 'N/A')}")
-        lines.append(f"Title:   {r.get('title', 'N/A')}")
-        authors = r.get("authors", [])
+        lines.append(f"--- Result {index} ({result['source']}) ---")
+        lines.append(f"PMID:    {result.get('pmid', 'N/A')}")
+        if result.get("epmc_id"):
+            lines.append(f"EPMC ID: {result['epmc_id']}")
+        lines.append(f"DOI:     {result.get('doi', 'N/A')}")
+        lines.append(f"Title:   {result.get('title', 'N/A')}")
+        authors = result.get("authors", [])
         if authors:
             lines.append(f"Authors: {', '.join(authors[:8])}{'...' if len(authors) > 8 else ''}")
-        lines.append(f"Journal: {r.get('journal', 'N/A')} ({r.get('publication_date', 'N/A')})")
-        lines.append(f"URL:     {r.get('url', 'N/A')}")
+        lines.append(f"Journal: {result.get('journal', 'N/A')} ({result.get('publication_date', 'N/A')})")
+        lines.append(f"URL:     {result.get('url', 'N/A')}")
         lines.append("")
-        abstract = r.get("abstract", "")
+        abstract = result.get("abstract", "")
         if abstract:
             lines.append(f"Abstract:")
-            # Wrap abstract at ~80 chars
-            words = abstract.split()
-            current_line = ""
-            for word in words:
-                if len(current_line) + len(word) + 1 > 80:
-                    lines.append(current_line)
-                    current_line = word
-                else:
-                    current_line = f"{current_line} {word}".strip()
-            if current_line:
-                lines.append(current_line)
+            lines.extend(utils.wrap_text(abstract))
         lines.append("")
 
     return "\n".join(lines)
@@ -391,8 +363,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("cancelled", file=sys.stderr)
-        raise SystemExit(130)
+    utils.run_cli(main)
