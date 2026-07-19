@@ -382,6 +382,56 @@ Be judicious. This section should stay compact — it's the distilled essence of
 Routine session content stays in the session log. When in doubt, ask: "Would missing this information in session 20
 degrade the therapeutic work?" If yes, it belongs here.
 
+### 5c. Save Full Session Protocol
+
+After the session note and profile update are written, save the complete session dialog as a standalone protocol file
+for long-term traceability. This is separate from the compact session note — the protocol preserves every word of the
+therapeutic dialogue.
+
+Create the protocols directory if it doesn't exist (auto-bootstraps):
+
+```text
+sessions/protocols/
+```
+
+Save the full transcript as a markdown file:
+
+```text
+sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md
+```
+
+Example: `sessions/protocols/2026-07-19_S4_lena.md`
+
+**Format:**
+
+```markdown
+# S<session-no>: <YYYY-MM-DD> — <Client Name>
+
+**Session language:** <de|en|...>
+
+---
+
+**Therapist:** [first message]
+
+**Client:** [response]
+
+**Therapist:** [next message]
+
+...
+```
+
+- Use bold speaker labels: **Therapeutin:** / **Client:** (in DE sessions) or **Therapist:** / **Client:** (in EN sessions).
+- Separate turns with blank lines.
+- Capture the complete dialog — every client response and every therapist message, verbatim.
+- Include the agent's opening message (from Step 4) as the first **Therapeutin:** entry.
+- Do not include the skill orchestrator's non-therapeutic output (intake questions, informed consent delivery, crisis
+  screen, research dispatches, meta-commentary).
+
+**These protocol files are NOT automatically read by the agent at session start.** The agent reads only the compact
+history file (`sessions/<client-slug>.md`). Protocol files exist for the client's reference and for explicit lookback
+when the user asks the agent to review a specific prior session. They consume significant token budget and must not
+be loaded into context unless the user explicitly requests it.
+
 ### 6. Compress History File
 
 Read `.agents/skills/start-therapy-session/resources/compression-rules.md` and apply all rules to the history file.
@@ -422,6 +472,8 @@ boundary — all three.
   degrade session quality by consuming context window.
 - **The Permanent Client Profile section is never compressed.** It is exempt from all compression rules.
 - Update the Permanent Client Profile after every session if clinically significant information surfaced (Step 5b).
+- Full session protocols are saved to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` after every
+  session (Step 5c). These are NOT auto-read by the agent — they exist for client reference and explicit lookback only.
 
 - Reference files (`.agents/skills/start-therapy-session/resources/informed-consent.md`, `handoff-prompt.md`,
   `session-note-format.md`, `compression-rules.md`) contain templates and rule sets. Read them when the procedure
@@ -456,8 +508,10 @@ boundary — all three.
 13. Closing message delivered as a statement, not a question. Door closed warmly, no invitation to re-engage.
 14. No duplication of agent's therapeutic methodology in the skill's own output.
 15. **At no point was the client's side of the conversation fabricated, implied, or assumed.**
+16. Full session protocol saved to `sessions/protocols/` with correct filename format (Step 5c).
 
 ## Output
 
 - A complete therapeutic session — dialogue between client and AI therapist.
 - `sessions/<client-slug>.md` — updated and compressed session history file.
+- `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` — full transcript of the therapeutic dialogue.
