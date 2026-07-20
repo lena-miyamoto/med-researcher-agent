@@ -83,6 +83,14 @@ Skills that say "dispatch the X agent" → invoke via Agent tool with `subagent_
 field in the shared agent file's YAML frontmatter (e.g., `med-researcher`, `fitness-coach`, `dietologist`,
 `psychotherapist`). Agents inherit `CLAUDE.md` — don't restate repo conventions in agent files.
 
+**Skill procedure completion (mandatory).** When executing a skill that defines post-work steps —
+documentation, cleanup, compression, profile updates — those steps are part of the procedure, not optional
+afterthoughts. A skill has not been fully executed until every step in its SKILL.md has been completed.
+This is especially critical for the therapy session skill (Steps 5–7: session note, protocol save,
+compression, closing statement), but applies to any skill with a multi-step procedure. Switching into
+an agentic persona (e.g., therapist) does not relieve you of the obligation to complete the full
+procedure after that persona's work is done.
+
 ## Medical DB (`./med-db/`)
 
 Literature archive for medical, nutritional, or endometriosis research.

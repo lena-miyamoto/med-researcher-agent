@@ -342,7 +342,24 @@ Maintain the therapeutic frame, voice, and clinical grounding throughout. The ag
 the session continues here until the client signals they want to end. Do NOT fabricate or simulate the client's
 responses at any point. Every client response in the dialogue is the real person typing, not you writing their part.
 
-Proceed to Step 5 only after the client has ended the session (naturally or by signalling they're done).
+**CRITICAL — Post-Session Routine Mandatory:** The moment the client signals they want to end (e.g.,
+"I'd like to end here," "that's all for today," "Good talk!," or a natural conversational close), the
+therapeutic persona is DROPPED. You are now the skill orchestrator. You MUST execute every step below
+before the conversation ends. This is not optional — skipping documentation corrupts the client's history
+file and degrades future sessions.
+
+> **Post-Session Checklist — complete all five steps, in order, before ending the conversation:**
+>
+> - [ ] **Step 5:** Write session note to `sessions/<client-slug>.md` (prepend below frontmatter, newest first).
+>       Update `sessions` count in frontmatter. Read `resources/session-note-format.md`.
+> - [ ] **Step 5b:** Review session for Permanent Client Profile updates (new/changed diagnoses, medication,
+>       life context, key metaphors, language change). Update profile if needed.
+> - [ ] **Step 5c:** Save full session protocol to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md`.
+>       Use bold speaker labels (**Therapeutin:** / **Client:** for DE; **Therapist:** / **Client:** for EN).
+>       Exclude skill orchestrator output (intake, informed consent, crisis screen, meta-commentary).
+> - [ ] **Step 6:** Compress history file (Session Log only — Permanent Client Profile is never compressed).
+>       Read `resources/compression-rules.md` and apply all rules.
+> - [ ] **Step 7:** Deliver brief closing statement to client (a statement, not a question — door closed warmly).
 
 ### 5. After Session — Write Session Note
 
