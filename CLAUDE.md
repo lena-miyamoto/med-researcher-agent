@@ -107,7 +107,7 @@ Literature archive for medical, nutritional, or endometriosis research.
 
 ### Canonical Commands
 
-See `.agents/agents/resources/med-db-commands.md` for the complete `uv run` parameter reference
+See `.agents/agents/rules/med-db-commands.md` for the complete `uv run` parameter reference
 covering all 9 entry points. Every command must be invoked as `uv run <entry-point>` from the repo root.
 
 ### Script Development

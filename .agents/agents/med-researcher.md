@@ -54,7 +54,7 @@ Agent-specific conventions:
 
 ### med-db Command Reference
 
-See [resources/med-db-commands.md](resources/med-db-commands.md) for the complete `uv run` parameter
+See [rules/med-db-commands.md](rules/med-db-commands.md) for the complete `uv run` parameter
 reference covering all 9 entry points (`med-db`, `med-db-lookup`, `med-db-query`,
 `med-db-lookup-icd11`, `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-setup-dsm5`,
 `med-db-setup-therapy-methods`, `med-db-integrity-check`).

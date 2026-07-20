@@ -8,7 +8,7 @@ description: >
 
 Internal directory structure and conventions. **Only relevant when extending the med-db script
 stack.** Agents and skills must never manipulate `med-db/` directly — all access goes through the
-`uv run` entry points documented in `../agents/resources/med-db-commands.md`.
+`uv run` entry points documented in `../agents/rules/med-db-commands.md`.
 
 ## Directory Structure (`./med-db/`)
 

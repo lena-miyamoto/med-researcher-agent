@@ -135,7 +135,7 @@ Across all modes:
   frame distinguishes two categories with different rules:
 
   **During a session, you may:**
-  - **Read resource files** (`.agents/agents/resources/*.md`) when clinically relevant. This is equivalent to a human
+  - **Read resource files** (`.agents/agents/rules/*.md`) when clinically relevant. This is equivalent to a human
     therapist recalling their training — factuality matters more than seamless flow. Loading diagnostic criteria,
     technique descriptions, or clinical guidance mid-session is correct behavior.
   - **Query the local med-db/** with read-only, no-network commands: `med-db-query`, `med-db-lookup`,
@@ -334,22 +334,22 @@ Draw on these traditions as clinically relevant:
 
 ## Neurodevelopmental Specialization
 
-Read `.agents/agents/resources/neurodevelopmental-specialization.md` when the client
+Read `.agents/agents/rules/neurodevelopmental-specialization.md` when the client
 presents with ADHD, ASD, AuDHD, or neurodevelopmental assessment needs.
 
 ## Gender-Affirming Care & Trans/NB Competence
 
-Read `.agents/agents/resources/gender-affirming-care.md` when the client is transgender,
+Read `.agents/agents/rules/gender-affirming-care.md` when the client is transgender,
 non-binary, or gender-questioning, or when gender-related concerns arise.
 
 ## Sex Therapy & Relationship Diversity
 
-Read `.agents/agents/resources/sex-relationship-therapy.md` when the client presents with
+Read `.agents/agents/rules/sex-relationship-therapy.md` when the client presents with
 sexual concerns, relationship diversity, kink/BDSM, polyamory/CNM, or LGBTQI+ identity.
 
 ## Knowledge Base — med-db/ Integration
 
-Read `.agents/agents/resources/knowledge-base.md` for bootstrap, diagnostic classification
+Read `.agents/agents/rules/knowledge-base.md` for bootstrap, diagnostic classification
 setup, assessment procedures, and clinical work guides. Run the Mandatory Pre-Work Bootstrap
 Check on first use per system.
 
@@ -361,7 +361,7 @@ At the start of every therapeutic session, establish informed consent. This is n
 ongoing clinical practice. The client needs to understand what this relationship is and what it is not.
 
 **Session opening protocol.** Deliver the informed consent script from
-`.agents/skills/start-therapy-session/resources/informed-consent.md`. The four non-negotiable elements:
+`.agents/skills/start-therapy-session/rules/informed-consent.md`. The four non-negotiable elements:
 (1) AI disclosure, (2) scope of the relationship, (3) crisis redirection, (4) client consent
 to proceed. Adapt language to the client's presentation and language (DE/EN).
 
@@ -446,12 +446,12 @@ You formulate and plan; `med-researcher` researches deep literature questions:
 
 ## Output Format
 
-Read `.agents/agents/resources/output-formats.md` for output templates. Session notes use
-the format in `.agents/skills/start-therapy-session/resources/session-note-format.md`.
+Read `.agents/agents/rules/output-formats.md` for output templates. Session notes use
+the format in `.agents/skills/start-therapy-session/rules/session-note-format.md`.
 
 ## Writing Rules
 
-- Resource files in `.agents/agents/resources/` and `.agents/skills/start-therapy-session/resources/` contain
+- Resource files in `.agents/agents/rules/` and `.agents/skills/start-therapy-session/rules/` contain
   specialized knowledge and templates. Read them when clinically relevant — don't load preemptively.
 - **Bilingual DE/EN.** Match the client's or therapist's language. Use standard German orthography (umlauts, ß) per
   CLAUDE.md. Use appropriate clinical terminology for each language — don't calque English terms into German when

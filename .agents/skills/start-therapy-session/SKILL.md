@@ -295,7 +295,7 @@ unfolds in the session, but you need to know where the door is before you open i
 
 ### 2. Informed Consent — Set the Frame
 
-Read `.agents/skills/start-therapy-session/resources/informed-consent.md` (scripts from the psychotherapist agent's
+Read `.agents/skills/start-therapy-session/rules/informed-consent.md` (scripts from the psychotherapist agent's
 Safety Rules) and deliver the appropriate protocol:
 
 - **New client:** full protocol (includes note about session history file).
@@ -326,7 +326,7 @@ Past history of these is not a contraindication. The red line is *acute and immi
 
 ### 4. Hand Off — Dispatch the Agent
 
-Read `.agents/skills/start-therapy-session/resources/handoff-prompt.md` for the dispatch template. Assemble the prompt
+Read `.agents/skills/start-therapy-session/rules/handoff-prompt.md` for the dispatch template. Assemble the prompt
 with this client's details from Steps 0–3,
 then dispatch the `psychotherapist` agent with it.
 
@@ -351,14 +351,14 @@ file and degrades future sessions.
 > **Post-Session Checklist — complete all five steps, in order, before ending the conversation:**
 >
 > - [ ] **Step 5:** Write session note to `sessions/<client-slug>.md` (prepend below frontmatter, newest first).
->       Update `sessions` count in frontmatter. Read `resources/session-note-format.md`.
+>       Update `sessions` count in frontmatter. Read `rules/session-note-format.md`.
 > - [ ] **Step 5b:** Review session for Permanent Client Profile updates (new/changed diagnoses, medication,
 >       life context, key metaphors, language change). Update profile if needed.
 > - [ ] **Step 5c:** Save full session protocol to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md`.
 >       Use bold speaker labels (**Therapeutin:** / **Client:** for DE; **Therapist:** / **Client:** for EN).
 >       Exclude skill orchestrator output (intake, informed consent, crisis screen, meta-commentary).
 > - [ ] **Step 6:** Compress history file (Session Log only — Permanent Client Profile is never compressed).
->       Read `resources/compression-rules.md` and apply all rules.
+>       Read `rules/compression-rules.md` and apply all rules.
 > - [ ] **Step 7:** Deliver brief closing statement to client (a statement, not a question — door closed warmly).
 
 ### 5. After Session — Write Session Note
@@ -368,7 +368,7 @@ natural conversational close). **The session is over.** Do NOT add a closing ref
 observation, or "one more thought" after the client has ended. Do NOT re-engage the client in a post-session
 conversation. The client's signal to end is a boundary — respect it immediately.
 
-Read `.agents/skills/start-therapy-session/resources/session-note-format.md` for the note template and procedure. Write
+Read `.agents/skills/start-therapy-session/rules/session-note-format.md` for the note template and procedure. Write
 a compact session note to the client's history
 file, prepended below the YAML frontmatter (newest sessions at top). Update the `sessions` count in the frontmatter.
 
@@ -451,7 +451,7 @@ be loaded into context unless the user explicitly requests it.
 
 ### 6. Compress History File
 
-Read `.agents/skills/start-therapy-session/resources/compression-rules.md` and apply all rules to the history file.
+Read `.agents/skills/start-therapy-session/rules/compression-rules.md` and apply all rules to the history file.
 Goal: minimize token count without losing clinically important information — the file is read into context at the
 start of every session.
 
@@ -492,7 +492,7 @@ boundary — all three.
 - Full session protocols are saved to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` after every
   session (Step 5c). These are NOT auto-read by the agent — they exist for client reference and explicit lookback only.
 
-- Reference files (`.agents/skills/start-therapy-session/resources/informed-consent.md`, `handoff-prompt.md`,
+- Reference files (`.agents/skills/start-therapy-session/rules/informed-consent.md`, `handoff-prompt.md`,
   `session-note-format.md`, `compression-rules.md`) contain templates and rule sets. Read them when the procedure
   instructs — don't load
   them preemptively.
