@@ -33,7 +33,7 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 | Shared agent behavior | `.agents/agents/<name>.md`; role, routing, and repo-specific behavior. |
 | Copilot agent wrappers | `.github/agents/<name>.agent.md`; harness metadata plus pointer. |
 | Claude agent wrappers | `.claude/agents/<name>.md`; harness metadata plus pointer. |
-| Agent/skill resource dirs | `.agents/agents/resources/` or `.agents/skills/<name>/`; on-demand reference files for oversized instruction files (see 800-line rule). |
+| Agent/skill resource dirs | `.agents/agents/rules/` or `.agents/skills/<name>/`; on-demand reference files for oversized instruction files (see 500-line rule). |
 | Human onboarding | `README.md`; install/bootstrap/command examples, not policy detail. |
 
 ## Reference Ownership
@@ -64,15 +64,15 @@ Skills and docs must point to these owner files instead of restating their rules
    - Check `git status --short`.
    - Count relevant instruction lines with `wc -l CLAUDE.md README.md .agents/skills/*/SKILL.md
    .github/skills/*/SKILL.md .claude/skills/*/SKILL.md .agents/agents/*.md .github/agents/* .claude/agents/*`.
-   - Flag any instruction file over ~800 lines for splitting (see 800-line rule in audit step 4).
+   - Flag any instruction file over ~500 lines for splitting (see 500-line rule in audit step 4).
    - Read changed files before patching; assume user/formatter edits are intentional unless they break the task.
 4. Audit against the structure above:
-   - `CLAUDE.md` should stay under about 150 lines and keep command reference as a table.
+   - `CLAUDE.md` should ideally stay under 80 lines but must never exceed 150 lines and keep command reference as a table.
    - Wrapper files should stay about 10 lines: frontmatter, heading, pointer.
    - Shared skills should contain input parsing, delegated calls, procedure, validation, and output only.
    - Agent files should be one focused role; evidence and safety rules stay in the shared agent file.
-   - **800-line rule:** Any instruction file over ~800 lines must be split into a slim core file (~200–500 lines
-     of always-needed content) plus a `resources/` subdirectory holding self-contained reference files. Each
+   - **500-line rule:** Any instruction file over ~500 lines must be split into a slim core file (~200–500 lines
+     of always-needed content) plus a `rules/` subdirectory holding self-contained reference files. Each
      resource file gets minimal YAML frontmatter (`description`) and is read on-demand via explicit "Read
      `<path>` when `<condition>`" instructions in the core file. Resource files hold: domain-specific
      knowledge, output templates, bootstrap/setup procedures — anything not needed every invocation.
@@ -84,11 +84,11 @@ Skills and docs must point to these owner files instead of restating their rules
    - Delete padded explanation when a command, table row, or owner-doc pointer carries the meaning.
    - Convert command lists to tables when agents need to scan operation → command quickly.
    - Keep command examples in `CLAUDE.md` and README synchronized in spirit, but do not duplicate every policy note.
-   - **Split oversized files (>~800 lines):** Identify self-contained sections that aren't needed every invocation
+   - **Split oversized files (>~500 lines):** Identify self-contained sections that aren't needed every invocation
      (domain-specific knowledge, output templates, bootstrap/setup procedures). Extract each to a resource file in a
-     `resources/` subdirectory with YAML frontmatter (`description`). Replace with an explicit "Read `<path>` when
+     `rules/` subdirectory with YAML frontmatter (`description`). Replace with an explicit "Read `<path>` when
      `<condition>`" instruction. Keep core identity, safety rules, writing rules, and always-needed procedures inline.
-     Follow the pattern in `.agents/agents/psychotherapist.md` + `.agents/agents/resources/`.
+     Follow the pattern in `.agents/agents/psychotherapist.md` + `.agents/agents/rules/`.
 6. Keep discovery-critical frontmatter concise:
    - Skill descriptions should identify when to invoke the skill, not explain policy.
    - Argument hints should show input shape only.
