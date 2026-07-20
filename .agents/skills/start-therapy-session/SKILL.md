@@ -127,78 +127,11 @@ Skip Step 1's name question — greet the client by the name in the history file
 
 **For returning clients only** (history file exists with ≥1 prior sessions). Skip this step for new clients.
 
-Before the session begins, the agent must fill any knowledge gaps identified in previous sessions. This is not optional —
-a therapist who never learns from their clients is a deteriorating one. Each client should leave the knowledge base broader
-than it was before.
-
-#### 0b-i. Scan for Knowledge Gaps
-
-Read the full session history. For every session note, identify:
-
-- **Conditions mentioned** — any diagnosis, symptom cluster, or clinical presentation discussed
-- **Techniques and modalities referenced** — any therapeutic approach named or applied
-- **Concepts and terminology** — any clinical concept, framework, or specialized term that appeared
-- **Medications named** — any psychopharmacological agent the client mentioned (even in passing)
-- **Life experiences and contexts** — any social, cultural, or experiential domain that is clinically relevant (e.g.,
-  a specific form of discrimination, a cultural practice, a health condition, a relationship structure)
-- **Topics flagged in "Gaps flagged" fields** — anything the agent explicitly admitted it didn't know enough about
-  during a previous session and committed to researching
-
-#### 0b-ii. Check Coverage
-
-For each identified item, check whether the knowledge base has adequate coverage:
-
-1. **med-db/ coverage**: Is there at least one relevant paper archived under a matching topic? Query with
-   `uv run med-db-query --search-keyword "<term>"` or `uv run med-db-query --list-topics` to check topic presence.
-2. **Resource file coverage**: Do the agent's resource files (`neurodevelopmental-specialization`,
-   `gender-affirming-care`, `sex-relationship-therapy`, `knowledge-base`) cover this? Read the relevant file and check.
-3. **Therapy methodology coverage**: Do the bootstrapped therapy methodology guidelines
-   (`med-db/guidelines/therapy-methodologies/`) cover techniques or modalities mentioned?
-
-An item has **adequate coverage** if at least one of these three sources provides substantive clinical information —
-not just a passing mention, but enough to inform competent therapeutic work.
-
-#### 0b-iii. Dispatch Research for Gaps
-
-For every item with inadequate coverage, dispatch the `med-researcher` agent with a focused, well-scoped prompt. Examples:
-
-> "Research and archive evidence on [condition X] in adults. Focus on: prevalence, diagnostic criteria, evidence-based
-> treatments, and any relevant clinical practice guidelines. Archive the top 3–5 most relevant papers in med-db/ under a
-> new or existing topic."
->
-> "Research and archive evidence on [technique Y] for [population Z]. What is the evidence base, effect sizes,
-> limitations, and adaptations needed? Archive key papers."
->
-> "Client mentioned [medication M]. Research and archive: mechanism of action, indications, common side effects, evidence
-> quality, and interactions relevant to [client's other conditions/medications]."
-
-Run these research dispatches **before proceeding to Step 1**. The med-researcher agent archives papers in med-db/,
-populating the knowledge base for this and all future sessions. This takes a few minutes — the client is not waiting yet;
-this is pre-session preparation.
-
-If the med-researcher agent cannot find adequate evidence on a topic, note this honestly: "Research was attempted on [X]
-but no high-quality evidence was found. This limitation should be disclosed to the client if the topic arises."
-
-#### 0b-iv. Prepare Session Context
-
-After the gap analysis is complete (or if skipped for a new client), extract key information for the session:
-
-- Client name and slug
-- Session language (from frontmatter `language` field)
-- Number of previous sessions (`sessions` in frontmatter)
-- Last session date and the key thread noted for follow-up
-- Recurring themes across sessions
-- Client's own language for their experience (verbatim phrases from past notes)
-- Interventions that have been used and how they landed
-- Any known diagnoses, important life context, or standing concerns
-- **Knowledge gaps newly filled** — brief summary of what was researched and archived this cycle (so the agent knows what
-  new knowledge is available)
-- **Unresolved gaps** — topics flagged in previous sessions that still lack coverage (so the agent can be honest with the
-  client if they come up)
-
-Assemble this into a brief context block (keep it compact — the agent will read the full file itself if needed).
-
-Update the frontmatter session count: increment `sessions` by 1 (this will be written after the session).
+Read `.agents/skills/start-therapy-session/rules/knowledge-gap-analysis.md` and execute the full procedure:
+scan session history for knowledge gaps (conditions, techniques, concepts, medications, life contexts, flagged gaps),
+check coverage across med-db/, resource files, and therapy methodology guidelines, dispatch the med-researcher agent
+for every uncovered gap, then assemble the session context block with newly filled and unresolved gaps. Update the
+frontmatter session count: increment `sessions` by 1 (this will be written after the session).
 
 ### 1. Welcome — Intake
 
@@ -206,83 +139,13 @@ Update the frontmatter session count: increment `sessions` by 1 (this will be wr
 these structured questions are asked — the answers populate the Permanent Client Profile and persist across all future
 sessions.
 
-Deliver the questions conversationally, one at a time, not as a form. **After each question, stop and wait for the
-client to respond.** Do not batch multiple questions in one message. Do not anticipate, assume, or fabricate the
-client's answer. Adapt language to the client's presentation and language (DE/EN). Don't push for detail the client
-isn't ready to share — every question can be declined. If a question is declined, note it and move to the next without
-probing.
-
-#### 1a. Name
-
-Already collected in Step 0. Confirm with the client: "I'll use [name] — is that what you'd like me to call you?"
-**Wait for confirmation** before proceeding to 1b.
-
-#### 1b. Gender and Pronouns
-
-"Could you tell me your gender or gender identity, and what pronouns you use?"
-**Wait for the client's response** before proceeding to 1c.
-
-**Queer-affirming stance.** This question is asked warmly and without assumption. Accept and normalize all responses:
-
-- Binary cis or trans identities with corresponding pronouns (she/her, he/him)
-- Non-binary identities with they/them, a combination (she/they, he/they), or any other pronoun set
-- Neo-pronouns (ze/zir, xe/xem, ey/em, etc.) — use them consistently and without comment
-- No pronouns — the client prefers to be referred to by name only. Honor this.
-- The client does not wish to disclose their gender/gender identity — note "not disclosed" and move on without
-  further inquiry. Never pressure for disclosure.
-- The client is questioning or unsure — note "questioning" or "exploring" in their own words.
-
-Record the client's exact response in the Permanent Client Profile. Use the client's pronouns correctly and consistently
-from this point forward. If the client later shares that their gender identity or pronouns have changed, update the
-profile immediately — this is not a "preference," it is who they are.
-
-#### 1c. Age
-
-"May I ask how old you are?" If the client prefers not to share their exact age, an age range is fine. Note "not
-disclosed" if they decline entirely. **Wait for the client's response.** Record in the Permanent Client Profile.
-
-#### 1d. Previous Psychiatric Diagnoses
-
-"Do you have any psychiatric diagnoses you're aware of — past or present? For example, ADHD, autism, depression, an
-anxiety disorder, a personality disorder, or anything else that's been part of your history?"
-
-Accept the client's own language. They may use formal diagnostic terms, descriptive phrases, or both. They may have been
-diagnosed by a professional, self-identified through community and research, or be unsure. All are valid starting points.
-Note what they share verbatim. If they say they don't have any or don't know, record "none disclosed" — don't probe
-further. This is intake, not assessment. **Wait for the client's response.**
-
-Record in the Permanent Client Profile.
-
-#### 1e. Psychoactive Medication
-
-"Are you currently taking any psychoactive medication — for example, Ritalin, an antidepressant like an SSRI, a mood
-stabilizer, or anything else that affects your mental state? This is just so I have the context — I won't advise on
-medication."
-
-Accept whatever the client shares: medication names, dosages if offered, "something for anxiety but I forget the name,"
-herbal or over-the-counter substances they consider relevant. If they say no or decline to answer, note "none disclosed."
-**Wait for the client's response.**
-
-Record in the Permanent Client Profile.
-
-#### 1f. Opening — What Brings You Here
-
-"What brings you here today?" Client's own words. Can be specific or broad. Both are valid.
-**Wait for the client's response.**
-
-#### 1g. Anything Else Before We Start
-
-"Is there anything else you'd like me to know before we begin?" Optional. Relevant context — ongoing life situation,
-current stressors, previous therapy experience.
-**Wait for the client's response.**
+Read `.agents/skills/start-therapy-session/rules/intake-questions.md` for the exact question wording, delivery rules,
+and the queer-affirming stance for gender/pronouns. The questions cover: 1a name confirmation, 1b gender and pronouns,
+1c age, 1d previous psychiatric diagnoses, 1e psychoactive medication, 1f what brings them here, and 1g anything else
+before starting. Each question has its own wait point — never batch them. Every question can be declined.
 
 After the client has answered 1g (or declined), write the completed Permanent Client Profile to the history file
-immediately (before proceeding to informed consent). This ensures the profile is persisted even if the session is
-interrupted. Do not write the profile until the client has finished answering the intake questions.
-
-This structured intake covers file-management and persistence concerns. The therapist may ask a few additional
-introductory questions at the start of the session — informed by its therapeutic framework — when it deems them
-useful for understanding the client's context, strengths, or what they want from therapy.
+immediately (before proceeding to informed consent). Do not write the profile until the client has finished answering.
 
 **Returning client (history file exists):** Skip all intake questions. Instead: "Welcome back. When we last spoke on
 [date], you were [brief thread from last session]. Would you like to pick up from there, or is there something else on
