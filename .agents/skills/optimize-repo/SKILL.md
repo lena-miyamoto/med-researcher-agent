@@ -33,7 +33,7 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 | Shared agent behavior | `.agents/agents/<name>.md`; role, routing, and repo-specific behavior. |
 | Copilot agent wrappers | `.github/agents/<name>.agent.md`; harness metadata plus pointer. |
 | Claude agent wrappers | `.claude/agents/<name>.md`; harness metadata plus pointer. |
-| Agent/skill resource dirs | `.agents/agents/rules/` or `.agents/skills/<name>/`; on-demand reference files for oversized instruction files (see 500-line rule). |
+| Agent/skill resource dirs | `.agents/agents/rules/` or `.agents/skills/<name>/rules/`; on-demand reference files for oversized instruction files (see 500-line rule). |
 | Human onboarding | `README.md`; install/bootstrap/command examples, not policy detail. |
 
 ## Reference Ownership
@@ -50,6 +50,7 @@ Skills and docs must point to these owner files instead of restating their rules
 | Evidence hierarchy, quality standards, search protocol | `.agents/agents/med-researcher.md` |
 | Harms/safety search, counter-evidence requirements | `.agents/agents/med-researcher.md` |
 | Research output format | `.agents/agents/med-researcher.md` |
+| Context engineering best practices | `.agents/skills/optimize-repo/rules/context-engineering-best-practices.md` |
 | Shared Python utilities | `.agents/scripts/utils.py` |
 
 ## Procedure
@@ -66,8 +67,14 @@ Skills and docs must point to these owner files instead of restating their rules
    .github/skills/*/SKILL.md .claude/skills/*/SKILL.md .agents/agents/*.md .github/agents/* .claude/agents/*`.
    - Flag any instruction file over ~500 lines for splitting (see 500-line rule in audit step 4).
    - Read changed files before patching; assume user/formatter edits are intentional unless they break the task.
-4. Audit against the structure above:
+4. Audit against the structure above. **Before evaluating any file, read
+   `.agents/skills/optimize-repo/rules/context-engineering-best-practices.md`** — it is the authoritative
+   standard for all instruction files in this repo. Every audit criterion below derives from it. Violations
+   are findings that MUST be fixed or explicitly justified in the affected file (with reason). "The file was
+   already long" is not a justification — split it. "It's convenient to keep everything together" is not a
+   justification — separate concerns into the correct mechanism.
    - `CLAUDE.md` should ideally stay under 80 lines but must never exceed 150 lines and keep command reference as a table.
+   - Confirm `CLAUDE.md` references the context-engineering-best-practices file — add the pointer if missing.
    - Wrapper files should stay about 10 lines: frontmatter, heading, pointer.
    - Shared skills should contain input parsing, delegated calls, procedure, validation, and output only.
    - Agent files should be one focused role; evidence and safety rules stay in the shared agent file.
@@ -134,6 +141,9 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 
 ## Writing Rules
 
+- **Context engineering best practices are mandatory.** Read and follow
+  `.agents/skills/optimize-repo/rules/context-engineering-best-practices.md` when writing or editing any
+  instruction file. Deviations require explicit justification in the affected file.
 - Match the repo's direct procedural tone.
 - Never sacrifice meaning or expressiveness for shorter prose.
 - Strict source-of-truth ownership.
@@ -146,16 +156,18 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 
 ## Validation
 
-1. Run Markdown/frontmatter diagnostics on every changed file.
-2. Run `git diff --check`.
-3. Confirm no file or folder excluded by `.gitignore` was touched.
-4. Re-run the redundancy-pattern grep and account for every remaining match.
-5. Compare paired skill wrappers: `.github/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md` should match
+1. **Confirm `.agents/skills/optimize-repo/rules/context-engineering-best-practices.md` was read** before any instruction file was evaluated. The audit is incomplete without it.
+2. Run Markdown/frontmatter diagnostics on every changed file.
+3. Run `git diff --check`.
+4. Confirm no file or folder excluded by `.gitignore` was touched.
+5. Re-run the redundancy-pattern grep and account for every remaining match.
+6. Compare paired skill wrappers: `.github/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md` should match
 except for deliberate harness differences.
-6. Re-read changed `*.md` for padding, repeated phrases, stale owner references, and accidental second sources of truth.
-7. Confirm `CLAUDE.md` is compact and command tables remain tables.
-8. After completing edits to any `*.md` file, run `uv run lint-md`.
-9. If any `*.py` file changed, run `uv run test`.
+7. Re-read changed `*.md` for padding, repeated phrases, stale owner references, and accidental second sources of truth.
+8. Confirm `CLAUDE.md` is compact and command tables remain tables.
+9. **Log every best-practice deviation** with the affected file and the explicit justification provided. If no justification was provided, the deviation is an unresolved finding.
+10. After completing edits to any `*.md` file, run `uv run lint-md`.
+11. If any `*.py` file changed, run `uv run test`.
 
 ## Output
 

@@ -52,6 +52,10 @@ any other Python code.
 
 ## Architecture (Claude-Specific)
 
+Context engineering: `.agents/skills/optimize-repo/rules/context-engineering-best-practices.md` —
+authoritative standard for all instruction files in this repo. Every agent writing or editing `*.md` files
+loaded into context must follow it. Deviations require explicit justification.
+
 Skills that say "dispatch the X agent" → invoke via Agent tool with `subagent_type: "X"`. Agent name = `name`
 field in the shared agent file's YAML frontmatter (e.g., `med-researcher`, `fitness-coach`, `dietologist`,
 `psychotherapist`). Agents inherit `CLAUDE.md` — don't restate repo conventions in agent files.
