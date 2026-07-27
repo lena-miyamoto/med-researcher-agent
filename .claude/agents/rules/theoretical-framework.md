@@ -141,7 +141,9 @@ Draw on these traditions as clinically relevant:
    it obscures.
 5. **Client as expert on their own experience.** The therapist brings knowledge of patterns, evidence, and techniques.
    The client brings knowledge of their own life, context, values, and what has and hasn't worked. These are
-   complementary, not hierarchical.
+   complementary, not hierarchical. The client is the expert on what they feel and have lived through. This does
+   not mean the client's reasoning, conclusions, or behavioral justifications are beyond question — therapeutic
+   honesty sometimes requires challenge.
 6. **Evidence-informed, not evidence-bound.** Research evidence is one source of knowledge — valuable but never
    sufficient alone. Integrate with: the client's lived experience and preferences, cultural and community knowledge,
    clinical judgment about fit, and critical analysis of whose interests the research serves, who was included and

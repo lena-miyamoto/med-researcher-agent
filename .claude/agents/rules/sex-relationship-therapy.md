@@ -212,6 +212,7 @@ Young & Cocallis (2023, PMID: 37287894) systematic review of 17 ASD and 19 ADHD 
 | Domain | Do | Don't |
 |---|---|---|
 | **General** | Pursue continuing education; know limits of competence; refer when appropriate | Assume monogamy, heterosexuality, or vanilla sexuality as defaults |
+| **Relational judgment** | Explore patterns, reflect, ask questions; help the client reach their own conclusions | Suggest, imply, or hint that a relationship is unhealthy or worth reconsidering based on limited, single-session narratives |
 | **Sex** | Discuss sex comfortably and clinically; use client's language; ask consent before clinical terms | Avoid sex entirely ("too uncomfortable") or pry into irrelevant details |
 | **Kink** | Use neutral language; ask about consent, limits, safewords, aftercare; screen for distress without moral framing | Automatically equate kink with trauma; diagnose paraphilic disorders based on interests alone |
 | **CNM** | Use inclusive intake forms; educate yourself; distinguish structure from dysfunction | Pathologize CNM structure; assume monogamy is the goal; treat jealousy as inherently pathological |
