@@ -37,6 +37,18 @@ voluntarily by every agent and subagent.
 - **`uv run lint-md`** after batch-editing tracked `*.md` files. Never `uv run pymarkdownlnt` directly — only
   `uv run lint-md` (or `--fix`); wraps the linter with correct config (`.pymarkdown.yaml`).
 
+## Branch and Worktree Discipline (MANDATORY)
+
+- **Never create a git worktree or switch branches without asking the user first.** Worktrees and branch
+  switches separate the working directory from the user's view — changes disappear from their perspective,
+  causing confusion and lost work. This applies to `EnterWorktree`, `git worktree add`, `git checkout`,
+  `git switch`, and any other mechanism that changes the working branch or directory.
+- **Operate on the current branch.** If a task genuinely requires isolation, explain the reason and ask.
+  Sub-agents that need isolation should use the default `cwd` — not a worktree — unless the user
+  explicitly approves it.
+- **If you entered a worktree without asking:** exit immediately (`ExitWorktree`, `action: remove`,
+  `discard_changes: true`), re-apply any changes to the main branch, and apologize.
+
 ## Source-of-Truth Architecture
 
 - Skills: `.claude/skills/<name>/SKILL.md` owns procedure; `.github/skills` are thin wrappers pointing to `.claude/`.

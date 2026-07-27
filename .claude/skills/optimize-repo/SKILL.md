@@ -83,6 +83,11 @@ Skills and docs must point to these owner files instead of restating their rules
      resource file gets minimal YAML frontmatter (`description`) and is read on-demand via explicit "Read
      `<path>` when `<condition>`" instructions in the core file. Resource files hold: domain-specific
      knowledge, output templates, bootstrap/setup procedures — anything not needed every invocation.
+     When compressing prose to fit within the core file limit, never drop: emphasis markers,
+     obligation keywords (must/never/CRITICAL/YOU MUST), temporal framing, enumerated item
+     counts, identity claims, or consequence statements. Compression must be lossless per
+     `compress-skill`. If compression would weaken any of these, keep the original
+     text and split to a resource file instead.
    - `README.md` should explain onboarding and use tables for command examples; avoid becoming a second policy surface.
 5. Repair messy instructions in this order:
    - Restore source-of-truth ownership first; move or delete restated policy before wordsmithing.
@@ -96,6 +101,11 @@ Skills and docs must point to these owner files instead of restating their rules
      `rules/` subdirectory with YAML frontmatter (`description`). Replace with an explicit "Read `<path>` when
      `<condition>`" instruction. Keep core identity, safety rules, writing rules, and always-needed procedures inline.
      Follow the pattern in `.claude/agents/psychotherapist.md` + `.claude/agents/rules/`.
+     - After splitting, optionally run `compress-skill` on the slimmed core file to tighten
+       prose. If compressing, verify losslessness per the categories in `compress-skill`
+       ("Lossless defined" section) before accepting the result.
+     - Never compress resource files extracted to `rules/` — they are already self-contained and
+       on-demand; compression there only risks content loss with no line-budget benefit.
 6. Keep discovery-critical frontmatter concise:
    - Skill descriptions should identify when to invoke the skill, not explain policy.
    - Argument hints should show input shape only.
@@ -145,7 +155,10 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
   `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` when writing or editing any
   instruction file. Deviations require explicit justification in the affected file.
 - Match the repo's direct procedural tone.
-- Never sacrifice meaning or expressiveness for shorter prose.
+- Never sacrifice meaning or expressiveness for shorter prose. Meaning includes: emphasis keywords
+  and formatting, temporal framing, enumerated element count and order, identity-level claims, and
+  consequence statements. If compression would drop or weaken any of these, prefer extraction to a
+  resource file over inline shortening.
 - Strict source-of-truth ownership.
 - Anything excluded by `.gitignore` is out of scope and must remain untouched.
 - Skill wrappers and agent wrappers stay short unless a harness difference requires more.
@@ -163,7 +176,12 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 5. Re-run the redundancy-pattern grep and account for every remaining match.
 6. Compare paired skill wrappers: `.github/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md` should match
 except for deliberate harness differences.
-7. Re-read changed `*.md` for padding, repeated phrases, stale owner references, and accidental second sources of truth.
+7. Re-read changed `*.md` for: padding; repeated phrases; stale owner references; accidental second
+   sources of truth; and **lossy compression** — dropped emphasis keywords (CRITICAL, MUST, NEVER,
+   ALWAYS, IMPORTANT, ESSENTIAL), stripped bold/italic formatting, lost temporal framing
+   (before/after, sequencing), altered enumerated element counts or order, weakened identity-level
+   claims, or removed consequence statements. If compression was applied during the cleanup, verify
+   it was lossless per the `compress-skill` self-check.
 8. Confirm `CLAUDE.md` is compact and command tables remain tables.
 9. **Log every best-practice deviation** with the affected file and the explicit justification provided. If no justification was provided, the deviation is an unresolved finding.
 10. After completing edits to any `*.md` file, run `uv run lint-md`.
