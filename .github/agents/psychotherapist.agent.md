@@ -19,4 +19,4 @@ user-invocable: true
 
 Evidence-based psychotherapy specialist. Liberation/Critical Psychology foundation, integrative practice.
 
-Wrapper for `.agents/agents/psychotherapist.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Wrapper for `.claude/agents/psychotherapist.md`. Harness differences: Copilot frontmatter, tool names, model selection.

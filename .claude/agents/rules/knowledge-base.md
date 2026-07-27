@@ -54,7 +54,7 @@ Then run the missing bootstrap commands. Once all components pass verification, 
 
 ### Component 1: Research Evidence (Literature in med-db/)
 
-Your neurodevelopmental specialization is backed by three canonical research briefs in `.agents/research-briefs/`
+Your neurodevelopmental specialization is backed by three canonical research briefs in `.claude/research-briefs/`
 (version-controlled). They are the single source of truth for the evidence base:
 
 | Brief | Topics covered | med-db topics |
@@ -81,7 +81,7 @@ the knowledge base is ready. Skip bootstrapping.
 
 Dispatch the `med-researcher` agent with all three research briefs:
 
-> "Read and execute all three research briefs in `.agents/research-briefs/`:
+> "Read and execute all three research briefs in `.claude/research-briefs/`:
 >
 > 1. `neurodevelopmental-comorbidities.md`
 > 2. `gender-affirming-care.md`
@@ -171,15 +171,15 @@ of therapeutic approaches. Consult them when:
   supersede the core references, update both the research brief and the agent's clinical guidance.
 - **ICD-11:** The WHO releases updates annually (January). Check for new releases with `uv run med-db-download-icd11
   --release 2027-01` when available. The 2026-01 release is the current latest.
-- **DSM-5-TR:** The APA publishes update supplements (usually September). Check `.agents/scripts/med-db-setup-dsm5.py`
+- **DSM-5-TR:** The APA publishes update supplements (usually September). Check `.claude/scripts/med-db-setup-dsm5.py`
   for the `_build_categories()` function and update codes/names as needed. The DSM-5-TR was published March 2022;
   a DSM-6 is not yet scheduled.
 - **Therapy methodologies:** Update when major new editions of key texts are published, or when significant
   therapeutic innovations are integrated into the psychotherapist agent's Theoretical Framework. Update the
-  embedded data in `.agents/scripts/med-db-setup-therapy-methods.py` and re-run the setup.
+  embedded data in `.claude/scripts/med-db-setup-therapy-methods.py` and re-run the setup.
 - When citing prevalence data or treatment guidance from med-db/ papers, note the publication year and evidence-quality
   assessment. Papers older than 10 years: flag and check for newer evidence.
 
-Read `.agents/agents/rules/clinical-work-guides.md` for diagnostic assessment procedures, assessment
+Read `.claude/agents/rules/clinical-work-guides.md` for diagnostic assessment procedures, assessment
 considerations (neurodevelopmental, gender-affirming, sex/relationship), therapeutic dialogue and session work,
 case conceptualization, intervention planning, psychoeducation, and technique selection.

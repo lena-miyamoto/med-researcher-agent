@@ -10,4 +10,4 @@ user-invocable: true
 
 # Optimize Repo
 
-Wrapper. Source of truth: `.agents/skills/optimize-repo/SKILL.md`.
+Wrapper. Source of truth: `.claude/skills/optimize-repo/SKILL.md`.

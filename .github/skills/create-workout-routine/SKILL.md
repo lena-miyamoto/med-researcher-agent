@@ -11,4 +11,4 @@ user-invocable: true
 
 # Create Workout Routine
 
-Wrapper. Source of truth: `.agents/skills/create-workout-routine/SKILL.md`.
+Wrapper. Source of truth: `.claude/skills/create-workout-routine/SKILL.md`.

@@ -10,4 +10,4 @@ user-invocable: true
 
 # Analyze Med Claims
 
-Wrapper. Source of truth: `.agents/skills/analyze-med-claims/SKILL.md`.
+Wrapper. Source of truth: `.claude/skills/analyze-med-claims/SKILL.md`.

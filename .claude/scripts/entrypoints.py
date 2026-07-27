@@ -65,7 +65,7 @@ def med_db_integrity_check():
 def lint_md(args=None):
     """Run pymarkdownlnt on repo markdown files.
 
-    Falls back to scanning AGENTS.md, README.md, CLAUDE.md, .agents, .github,
+    Falls back to scanning AGENTS.md, README.md, CLAUDE.md, .github,
     and .claude when no paths are given.  Pass --fix to auto-fix violations.
     """
     import subprocess
@@ -84,7 +84,6 @@ def lint_md(args=None):
             str(repo_root / "AGENTS.md"),
             str(repo_root / "README.md"),
             str(repo_root / "CLAUDE.md"),
-            str(repo_root / ".agents"),
             str(repo_root / ".github"),
             str(repo_root / ".claude"),
         ]

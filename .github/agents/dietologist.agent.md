@@ -15,4 +15,4 @@ user-invocable: true
 
 Evidence-based nutrition specialist. Clinical-scientist, precise and cautious.
 
-Wrapper for `.agents/agents/dietologist.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Wrapper for `.claude/agents/dietologist.md`. Harness differences: Copilot frontmatter, tool names, model selection.

@@ -12,4 +12,4 @@ user-invocable: true
 
 # Start Therapy Session
 
-Wrapper. Source of truth: `.agents/skills/start-therapy-session/SKILL.md`.
+Wrapper. Source of truth: `.claude/skills/start-therapy-session/SKILL.md`.

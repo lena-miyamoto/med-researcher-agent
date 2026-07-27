@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "med-researcher-agent"
 version = "0.1.0"
-description = "Reusable medical research agent configuration for both GitHub Copilot and Claude Code."
+description = "Reusable medical research agent configuration for Claude Code."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
@@ -27,7 +27,7 @@ test = "entrypoints:test"
 py-modules = ["entrypoints"]
 
 [tool.setuptools.package-dir]
-"" = ".agents/scripts"
+"" = ".claude/scripts"
 
 [dependency-groups]
 dev = [

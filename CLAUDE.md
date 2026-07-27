@@ -39,20 +39,20 @@ voluntarily by every agent and subagent.
 
 ## Source-of-Truth Architecture
 
-- Skills: `.agents/skills/<name>/SKILL.md` owns procedure; `.github/skills` and `.claude/skills` are thin wrappers.
-- Agents: `.agents/agents/<name>.md` owns behavior; `.github/agents` and `.claude/agents` are thin wrappers.
-- Shared utilities: `.agents/scripts/utils.py`. Extract helpers used by ≥2 scripts; don't pre-emptively generalize.
+- Skills: `.claude/skills/<name>/SKILL.md` owns procedure; `.github/skills` are thin wrappers pointing to `.claude/`.
+- Agents: `.claude/agents/<name>.md` owns behavior; `.github/agents` are thin wrappers pointing to `.claude/`.
+- Shared utilities: `.claude/scripts/utils.py`. Extract helpers used by ≥2 scripts; don't pre-emptively generalize.
 - German prose: standard orthography (umlauts, `ß`), not ASCII substitutions, unless requested.
 
 ## Coding Style
 
-Read `.agents/agents/rules/coding-style.md` before writing or editing any Python file in this repo.
-Naming (no abbreviations) and functional programming by default — applies to `.agents/scripts/` and
+Read `.claude/agents/rules/coding-style.md` before writing or editing any Python file in this repo.
+Naming (no abbreviations) and functional programming by default — applies to `.claude/scripts/` and
 any other Python code.
 
 ## Architecture (Claude-Specific)
 
-Context engineering: `.agents/skills/optimize-repo/rules/context-engineering-best-practices.md` —
+Context engineering: `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` —
 authoritative standard for all instruction files in this repo. Every agent writing or editing `*.md` files
 loaded into context must follow it. Deviations require explicit justification.
 
@@ -84,11 +84,11 @@ Literature archive for medical, nutritional, or endometriosis research.
 
 ### Canonical Commands
 
-See `.agents/agents/rules/med-db-commands.md` for the complete `uv run` parameter reference
+See `.claude/agents/rules/med-db-commands.md` for the complete `uv run` parameter reference
 covering all 9 entry points. Every command must be invoked as `uv run <entry-point>` from the repo root.
 
 ### Script Development
 
-Read `.agents/scripts/DEVELOPER.md` before modifying any file in `.agents/scripts/`. Internal
+Read `.claude/scripts/DEVELOPER.md` before modifying any file in `.claude/scripts/`. Internal
 directory structure and conventions — only relevant when extending the med-db script stack,
 not when using `uv run` entry points.

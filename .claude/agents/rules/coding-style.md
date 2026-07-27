@@ -1,7 +1,7 @@
 ---
 description: >
   Repo-wide Python coding style rules — naming (no abbreviations) and functional programming by default.
-  Read before writing or editing any Python file in this repo. Applies to .agents/scripts/ and any other
+  Read before writing or editing any Python file in this repo. Applies to .claude/scripts/ and any other
   Python code in the repository.
 ---
 

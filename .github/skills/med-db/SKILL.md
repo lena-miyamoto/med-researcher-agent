@@ -9,4 +9,4 @@ user-invocable: false
 
 # med-db
 
-Wrapper. Source of truth: `.agents/skills/med-db/SKILL.md`.
+Wrapper. Source of truth: `.claude/skills/med-db/SKILL.md`.

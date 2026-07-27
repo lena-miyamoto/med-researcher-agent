@@ -12,4 +12,4 @@ user-invocable: true
 
 Medical and dietological research specialist.
 
-Wrapper for `.agents/agents/med-researcher.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Wrapper for `.claude/agents/med-researcher.md`. Harness differences: Copilot frontmatter, tool names, model selection.

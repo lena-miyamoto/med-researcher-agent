@@ -3,7 +3,7 @@ description: >
   Output format templates for the psychotherapist agent — therapeutic sessions,
   diagnostic assessment, case formulation, treatment plan, psychoeducation, and
   technique selection. Read the relevant template for the current task. Session notes
-  use the format in `.agents/skills/start-therapy-session/session-note-format.md`.
+  use the format in `.claude/skills/start-therapy-session/rules/session-note-format.md`.
 ---
 
 ## Output Format

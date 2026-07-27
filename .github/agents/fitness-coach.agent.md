@@ -14,4 +14,4 @@ user-invocable: true
 
 Science-backed fitness coach. Warm mentor, serious about the science.
 
-Wrapper for `.agents/agents/fitness-coach.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Wrapper for `.claude/agents/fitness-coach.md`. Harness differences: Copilot frontmatter, tool names, model selection.

@@ -1,6 +1,6 @@
 # med-researcher-agent
 
-Reusable medical research agent configuration for both GitHub Copilot and Claude Code.
+Reusable medical research agent configuration for Claude Code.
 
 The repository includes a local `med-db/` workflow for archiving structured literature from PubMed, Europe PMC, and web
 discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Journals, OpenMD, Trip Database).
@@ -45,13 +45,13 @@ diagnostic classification) is in `CLAUDE.md` (Medical DB section).
 | `CLAUDE.md`                                                        | Repo-wide workflow, command contract, Medical DB reference |
 | `AGENTS.md`                                                        | Copilot-specific instructions, thin pointer to `CLAUDE.md`  |
 | `.github/copilot-instructions.md`                                  | Copilot-specific routing                                   |
-| `.agents/agents/<name>.md`                                         | Shared agent behavior (source of truth)                    |
-| `.github/agents/<name>.agent.md`, `.claude/agents/<name>.md`       | Thin harness wrappers                                      |
-| `.agents/skills/<name>/SKILL.md`                                   | Shared skill procedure (source of truth)                   |
-| `.github/skills/<name>/SKILL.md`, `.claude/skills/<name>/SKILL.md` | Thin harness wrappers                                      |
-| `.agents/scripts/`                                                 | Local tooling used by both harnesses                       |
+| `.claude/agents/<name>.md`                                         | Shared agent behavior (source of truth)                    |
+| `.github/agents/<name>.agent.md`                                   | Thin Copilot harness wrappers                              |
+| `.claude/skills/<name>/SKILL.md`                                   | Shared skill procedure (source of truth)                   |
+| `.github/skills/<name>/SKILL.md`                                   | Thin Copilot harness wrappers                              |
+| `.claude/scripts/`                                                 | Local tooling for Claude Code                              |
 
-Wrappers stay aligned; differences are limited to harness frontmatter, tool names, and model selection.
+Wrappers stay aligned; differences are limited to harness frontmatter, tool names, and model selection. `.claude/` is the source of truth.
 
 ## Claude Code Usage
 

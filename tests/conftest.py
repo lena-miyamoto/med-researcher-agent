@@ -2,7 +2,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
-SCRIPTS_DIR = Path(__file__).resolve().parent.parent / ".agents" / "scripts"
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent / ".claude" / "scripts"
 
 
 def _load_module(name: str, filename: str):

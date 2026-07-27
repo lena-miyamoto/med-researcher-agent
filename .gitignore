@@ -1,6 +1,5 @@
 # Personal data directories
 med-db/
-!.agents/skills/med-db/
 !.claude/skills/med-db/
 !.github/skills/med-db/
 

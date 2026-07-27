@@ -12,4 +12,4 @@ user-invocable: true
 
 # Create Diet Plan
 
-Wrapper. Source of truth: `.agents/skills/create-diet-plan/SKILL.md`.
+Wrapper. Source of truth: `.claude/skills/create-diet-plan/SKILL.md`.
