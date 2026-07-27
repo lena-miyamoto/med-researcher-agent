@@ -27,12 +27,10 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 | Repo workflow, command contract, bootstrap, command table | `CLAUDE.md`; keep compact and table-first. |
 | Copilot entrypoint | `.github/copilot-instructions.md`; thin pointer to `CLAUDE.md` and Copilot wrappers. |
 | Claude entrypoint | `CLAUDE.md`; main instruction file — all shared rules live here. |
-| Shared skills | `.claude/skills/<name>/SKILL.md`; owns actual procedure. |
+| Shared skills (also Claude entrypoint) | `.claude/skills/<name>/SKILL.md`; owns actual procedure. Claude loads directly. |
 | Copilot skill wrappers | `.github/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
-| Claude skill wrappers | `.claude/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
-| Shared agent behavior | `.claude/agents/<name>.md`; role, routing, and repo-specific behavior. |
+| Shared agent behavior (also Claude entrypoint) | `.claude/agents/<name>.md`; role, routing, and repo-specific behavior. Claude loads directly. |
 | Copilot agent wrappers | `.github/agents/<name>.agent.md`; harness metadata plus pointer. |
-| Claude agent wrappers | `.claude/agents/<name>.md`; harness metadata plus pointer. |
 | Agent/skill resource dirs | `.claude/agents/rules/` or `.claude/skills/<name>/rules/`; on-demand reference files for oversized instruction files (see 500-line rule). |
 | Human onboarding | `README.md`; install/bootstrap/command examples, not policy detail. |
 
