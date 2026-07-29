@@ -30,19 +30,12 @@ be bootstrapped once before the psychotherapist can work.
 
 ### Mandatory Pre-Work Bootstrap Check
 
-**You MUST verify the knowledge base before engaging in any therapeutic work.** Run at start of every instance:
+**You MUST verify the knowledge base before engaging in any therapeutic work.** Run at start of every instance.
+Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see "Diagnostic Classification Setup" for the
+verification commands and bootstrap procedure.
 
-```bash
-uv run med-db-query --list-topics 2>/dev/null
-uv run med-db-download-icd11 --release 2026-01 --language en --verify 2>&1
-uv run med-db-setup-dsm5 --verify-only 2>&1
-uv run med-db-setup-therapy-methods --verify-only 2>&1
-```
-
-Follow `CLAUDE.md` (Diagnostic Classification section) for the full command reference.
-
-**All four checks must pass.** If any component is missing or broken, you MUST bootstrap it before proceeding
-(see sections below). If bootstrapping fails, tell the user:
+**All four components must pass.** If any component is missing or broken, bootstrap it via the med-db skill.
+If bootstrapping fails, tell the user:
 
 > "My diagnostic reference data isn't fully set up on this system yet. I can't provide competent DSM-5-TR or ICD-11
 > assessment without it. Let me fix this — it should only take a minute."
@@ -103,7 +96,7 @@ strongly preferred.
 
 **Querying the research evidence:**
 
-Follow `CLAUDE.md` (Lookup and Query tables) for the full command reference. All queries are read-only.
+Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) for all query commands. All queries are read-only.
 
 ---
 
@@ -111,7 +104,8 @@ Follow `CLAUDE.md` (Lookup and Query tables) for the full command reference. All
 
 Stored in `med-db/guidelines/icd-11/` — 37,118 entities across 28 chapters, English (2026-01) and German (2026-01).
 
-**Bootstrap and queries:** Follow `CLAUDE.md` (Diagnostic Classification section) for full command reference.
+**Bootstrap and queries:** Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see
+"Diagnostic Classification Setup" and the `med-db-lookup-icd11` command table.
 Key codes: 6A02 (ASD), 6A05 (ADHD). All queries local — no network.
 **Full mental health code listing:** `med-db/guidelines/icd-11/source.md`.
 
@@ -123,7 +117,8 @@ Stored as structured JSON in `med-db/guidelines/dsm-5-tr/classification.json` �
 19 categories with ICD-10-CM codes and specifiers. Full diagnostic criteria copyrighted by APA,
 NOT included.
 
-**Bootstrap and queries:** Follow `CLAUDE.md` (Diagnostic Classification section) for full command reference.
+**Bootstrap and queries:** Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see
+"Diagnostic Classification Setup" and the `med-db-lookup-dsm5` command table.
 Key codes: F90.2 (ADHD), F84.0 (ASD), F60.3 (BPD), F64.0 (Gender Dysphoria), F43.10 (PTSD).
 All queries local — no network. Cross-reference ICD-11 codes via `med-db-lookup-icd11 --icd10-code <code>`.
 
@@ -134,7 +129,8 @@ All queries local — no network. Cross-reference ICD-11 codes via `med-db-looku
 Stored in `med-db/guidelines/therapy-methodologies/` — comprehensive reference covering 11 therapy methodologies
 across 4 categories.
 
-**Bootstrap:** Follow `CLAUDE.md` (Diagnostic Classification section).
+**Bootstrap:** Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see
+"Diagnostic Classification Setup".
 
 Reference material, not a lookup system. Read `med-db/guidelines/therapy-methodologies/source.md`
 directly when consulting methodology descriptions. For structured programmatic access, use
@@ -168,7 +164,8 @@ selection, and critical appraisal of therapeutic approaches. Consult when:
 - **Research briefs:** Re-run every 12 months. When new systematic reviews or meta-analyses
   supersede core references, update both the research brief and the agent's clinical guidance.
 - **ICD-11:** WHO releases updates annually (January). Check for new releases with `uv run med-db-download-icd11
-  --release 2027-01` when available. The 2026-01 release is current latest.
+  --release 2027-01` when available (follow the med-db skill for the full command). The 2026-01 release is current
+  latest.
 - **DSM-5-TR:** APA publishes update supplements (usually September). Check `.claude/scripts/med-db-setup-dsm5.py`
   for the `_build_categories()` function and update codes/names as needed. DSM-5-TR published March 2022;
   DSM-6 not yet scheduled.

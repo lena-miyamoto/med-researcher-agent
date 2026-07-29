@@ -84,15 +84,10 @@ procedure after that persona's work is done.
 
 Literature archive for medical, nutritional, or endometriosis research.
 
-### Bootstrap after fresh checkout
-
-- `./med-db/` is gitignored — **do not create it by hand.** Run any archival command (e.g.
-  `uv run med-db --pmid 12345678 --validate`); tooling auto-creates the full tree
-  (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`) plus `index.json`.
-- Verify with `uv run med-db-integrity-check --med-db med-db`. An empty archive passes if all five directories
-  and `index.json` exist.
-- Query tools (`med-db-query`, `med-db-lookup`) are read-only — they report "directory not found"
-  if `med-db/` is missing. Run an archival command first.
+**All med-db access must go through the med-db skill** (`.claude/skills/med-db/SKILL.md`).
+The skill owns the black-box rule, forbidden patterns, bootstrap, archival conventions,
+command reference, diagnostic classification setup, and during-session usage rules.
+Invoke via `Skill: "med-db"` or follow the skill file directly.
 
 ### Canonical Commands
 

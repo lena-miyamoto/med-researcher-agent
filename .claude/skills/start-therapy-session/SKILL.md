@@ -32,9 +32,9 @@ when to start a session.
 
 ### Knowledge Base Bootstrap (First Use Per System)
 
-The psychotherapist agent requires a local knowledge base in `med-db/` (gitignored) with three components:
-research evidence, ICD-11 classification, and DSM-5-TR classification. Run the Mandatory Pre-Work Bootstrap
-Check from `.claude/agents/psychotherapist.md` (Knowledge Base section). If the client prefers to proceed
+The psychotherapist agent requires a local knowledge base in `med-db/` (gitignored). Follow the med-db skill
+(`.claude/skills/med-db/SKILL.md`) for bootstrap and diagnostic classification setup. Run the Mandatory
+Pre-Work Bootstrap Check from `.claude/agents/rules/knowledge-base.md`. If the client prefers to proceed
 without bootstrapping, note the limitation — diagnostic assessment will use training knowledge rather than
 structured local reference data.
 

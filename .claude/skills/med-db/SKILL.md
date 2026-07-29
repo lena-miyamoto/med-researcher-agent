@@ -33,6 +33,21 @@ Other skills (analyze-med-claims, create-diet-plan, start-therapy-session) and a
   `uv run med-db-setup-* ...` or `uv run med-db-download-* ...`. There are zero exceptions.
 - Do not run repo scripts with `python`, `python3`, direct script paths, absolute paths,
   or shebang execution. All repo Python tools run through `uv run ...` from the repo root.
+- **If the `uv run` tools don't support a query pattern you need, report it — do not work
+  around it with inline code.**
+
+### Forbidden Patterns — Never Do Any of These
+
+These patterns violate the Command Invocation Contract. Each one has been observed
+in real sessions. **None of them are acceptable.**
+
+| Forbidden | Why | Use Instead |
+|---|---|---|
+| `python3 -c "import json; ..."` reading `index.json` | Bypasses validation layer | `uv run med-db-query --search-keyword "..."` |
+| `python3 -c "..."` for any med-db operation | Direct file access, no integrity checks | `uv run med-db-lookup --pmid ...` |
+| `jq` / `cat` / `grep` on `med-db/index.json` | Bypasses the tool layer | `uv run med-db-query --list-topics` |
+| `python3` or `python` in any form | Forbidden by CLAUDE.md contract | `uv run <entry-point>` |
+| `node -e`, `perl -e` touching med-db files | Same bypass, different language | `uv run med-db-*` tools |
 
 ## Bootstrap
 
@@ -46,9 +61,30 @@ Other skills (analyze-med-claims, create-diet-plan, start-therapy-session) and a
   passes if all five directories and `index.json` exist.
 - Query and lookup tools are read-only. If they report that `med-db/` is missing, run an
   archival command first.
-- For the full knowledge base: also run `uv run med-db-download-icd11`,
-  `uv run med-db-setup-dsm5`, and `uv run med-db-setup-therapy-methods`. See
-  `.claude/agents/rules/knowledge-base.md` for the mandatory pre-work bootstrap check.
+
+### Diagnostic Classification Setup
+
+Three optional components add structured diagnostic reference data to `med-db/guidelines/`.
+Each is independent — set up only what you need:
+
+| Component | Bootstrap command | Lookup tool |
+|---|---|---|
+| ICD-11 classification | `uv run med-db-download-icd11 --release 2026-01` | `uv run med-db-lookup-icd11` |
+| DSM-5-TR classification | `uv run med-db-setup-dsm5` | `uv run med-db-lookup-dsm5` |
+| Therapy methodologies | `uv run med-db-setup-therapy-methods` | Read `med-db/guidelines/therapy-methodologies/source.md` |
+
+To verify all components at once:
+
+```bash
+uv run med-db-query --list-topics 2>/dev/null
+uv run med-db-download-icd11 --release 2026-01 --verify 2>&1
+uv run med-db-setup-dsm5 --verify-only 2>&1
+uv run med-db-setup-therapy-methods --verify-only 2>&1
+```
+
+All checks must pass. If any component is missing, run its bootstrap command above.
+See `.claude/agents/rules/knowledge-base.md` for the psychotherapist agent's full knowledge
+base bootstrap procedure including research briefs.
 
 ## Source Policies
 
@@ -62,6 +98,34 @@ querying, or analyzing evidence from the archive:
 | Evidence quality standards and search protocol      | `.claude/agents/med-researcher.md`            |
 | Script development conventions                      | `.claude/scripts/DEVELOPER.md`                |
 | Overall integration and CLI contract                | `CLAUDE.md`                                   |
+
+## Archival Conventions
+
+- Always include `--topic <name>` on archival commands (human-readable name, e.g. `adhd`,
+  `endometriosis`). The tool derives the kebab-case slug automatically.
+- Use `--topic-slug` only when automatic derivation fails.
+- Always include `--validate` when archiving by PMID, DOI, or EPMC record.
+- Integrity check runs automatically after every archival, setup, or download operation.
+  Errors block completion (exit code 1) and must be fixed immediately.
+
+## During-Session / Real-Time Use
+
+When operating in a live session (e.g., therapy, coaching, consultation), only **read-only,
+local, no-network** commands are permitted during the session:
+
+| Permitted during session | Must wait until after session |
+|---|---|
+| `uv run med-db-query --search-keyword "..."` | `uv run med-db --pmid ...` (archival — writes) |
+| `uv run med-db-query --list-topics` | `uv run med-db --source pubmed --query "..."` (network search) |
+| `uv run med-db-query --read-metadata "..."` | `uv run med-db-download-icd11` (setup — writes) |
+| `uv run med-db-lookup --pmid ...` | `uv run med-db-setup-dsm5` (setup — writes) |
+| `uv run med-db-lookup-icd11 --code "..."` | `uv run med-db-setup-therapy-methods` (setup — writes) |
+| `uv run med-db-lookup-dsm5 --code "..."` | `uv run med-db-integrity-check` (harmless but unnecessary mid-session) |
+| `uv run med-db-lookup --doi ...` | `WebSearch`, `WebFetch` for new papers (network) |
+| Reading `med-db/guidelines/therapy-methodologies/source.md` | Dispatching `med-researcher` agent (writes to med-db/) |
+
+Read-only commands are sub-second, local, and equivalent to consulting a reference shelf.
+Network searches and archival are between-session work.
 
 ## Command Reference
 

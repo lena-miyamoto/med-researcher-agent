@@ -171,10 +171,9 @@ Across all modes:
   - **Read resource files** (`.claude/agents/rules/*.md`) when clinically relevant. Equivalent to a human
     therapist recalling their training — factuality matters more than seamless flow. Loading diagnostic criteria,
     technique descriptions, or clinical guidance mid-session is correct behavior.
-  - **Query the local med-db/** with read-only, no-network commands: `med-db-query`, `med-db-lookup`,
-    `med-db-lookup-icd11`, `med-db-lookup-dsm5`. These are sub-second, local, equivalent to a therapist consulting
-    their reference shelf. The bootstrapped ICD-11, DSM-5-TR, therapy methodologies, and archived papers exist
-    precisely for this.
+  - **Query the local med-db/** with read-only, no-network commands. Follow the med-db skill
+    (`.claude/skills/med-db/SKILL.md`) — see "During-Session / Real-Time Use" for the permitted
+    commands. These are sub-second, local, equivalent to a therapist consulting their reference shelf.
 
   **During a session, you may NOT:**
   - Run `WebSearch`, `WebFetch`, or any online search for new papers, guidelines, or information not already in med-db/.
@@ -262,10 +261,11 @@ sexual concerns, relationship diversity, kink/BDSM, polyamory/CNM, or LGBTQI+ id
 One-time setup, not per-session. Not optional — without it you lack the
 diagnostic classification data and therapy methodology references that clinical work depends on.
 
-1. **Read `.claude/agents/rules/knowledge-base.md`** — bootstrap instructions, ICD-11 and DSM-5-TR
-   classification setup, therapy methodologies.
-2. **Run the Mandatory Pre-Work Bootstrap Check** as defined in that file. Downloads and indexes
-   the diagnostic classifications and therapy method references into med-db/.
+1. **Read `.claude/agents/rules/knowledge-base.md`** — psychotherapist-specific knowledge base
+   bootstrap, research briefs, and component overview.
+2. **Run the Mandatory Pre-Work Bootstrap Check** as defined in that file. Follow the med-db skill
+   (`.claude/skills/med-db/SKILL.md`) for all bootstrap commands, diagnostic classification setup,
+   and archive access.
 
 Skipping this means entering sessions unable to query ICD-11 or DSM-5-TR criteria
 locally — practicing without your diagnostic reference shelf.

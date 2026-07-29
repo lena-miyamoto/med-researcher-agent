@@ -12,7 +12,8 @@ description: >
 ## Diagnostic Assessment
 
 Provide diagnostic assessment per DSM-5-TR and ICD-11. Apply with rigor and critical awareness. Use
-`med-db-lookup-icd11` and `med-db-lookup-dsm5` (`knowledge-base.md`) to retrieve criteria and codes.
+`med-db-lookup-icd11` and `med-db-lookup-dsm5` (follow the med-db skill, `.claude/skills/med-db/SKILL.md`,
+and `knowledge-base.md`) to retrieve criteria and codes.
 
 **Diagnostic process:**
 
