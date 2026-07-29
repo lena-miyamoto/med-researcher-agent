@@ -38,9 +38,9 @@ Per file, section-by-section — no scripts, no external calls:
 6. **Section-by-section rewrite via `Edit`/`Write`:**
    a. Identify major heading sections (`##` or `###` delimited blocks).
    b. Compress one section at a time, applying rules below.
-   c. After each section: self-check that section against the saved original BEFORE moving to the next.
-   d. If any check fails for that section, fix it in place, then proceed.
-7. **Final re-read.** After all sections done, re-read entire edited file via `Read` (mandatory — fresh call). Review as first-time reader. Primary verification, not afterthought.
+   c. After each section: self-check against saved original BEFORE next section.
+   d. If any check fails for that section, fix in place, then proceed.
+7. **Final re-read.** After all sections done, re-read entire edited file via `Read` (mandatory — fresh call). Review as first-time reader — primary verification, not afterthought.
 8. **Full self-check** (below), comparing re-read against original (step 5), item by item. Fix in place if needed.
 9. Repeat 2–8 per remaining file.
 
@@ -49,9 +49,9 @@ Per file, section-by-section — no scripts, no external calls:
 Skip only when **all four** true (never on subjective judgement):
 
 1. **Fragment ratio:** >80% of non-heading, non-code-block, non-blank lines are fragments (no subject + verb pair).
-2. **Word density:** average <10 words per non-blank content line. Body-text lines only (exclude headings, code blocks, single path/command bullets).
+2. **Word density:** average <10 words per non-blank content line. Body-text lines only — exclude headings, code blocks, single path/command bullets.
 3. **Sentence length:** no body-text sentence >12 words. Sentence = prose unit ending in `.`/`!`/`?`, not inside code block or inline span.
-4. **Compression-room test:** at least one compression rule (see Word + sentence level) applies to some content line. If none applies anywhere, file has no room to compress regardless of other thresholds.
+4. **Compression-room test:** at least one compression rule (see Word + sentence level) applies to some content line. None applies anywhere → no room to compress, regardless of other thresholds.
 
 When skipping, state: "Skipping `<filename>` — density thresholds met: `<list which ones triggered>`."
 
@@ -59,7 +59,7 @@ If any single threshold fails → file is not dense → compress normally.
 
 ## Lossless definition
 
-Lossless means these survive compression exactly as in the original, with unchanged strength and order:
+Lossless: these survive compression exactly as in original, strength and order unchanged:
 
 - Emphasis keywords and formatting — bold, italic, and emphasis words (CRITICAL, MUST, NEVER, ALWAYS,
   IMPORTANT, ESSENTIAL).
@@ -89,13 +89,13 @@ Any compression that loses one of these categories is over-optimized — restore
 
 ### Tiebreaker: when in doubt, preserve
 
-Compression favors brevity — systematic bias toward cutting. Counter with tiebreaker:
+Compression biases toward cutting. Counter:
 
-- **Doubt → preserve.** If uncertain whether content falls under any Lossless category, keep it. Cut only when certain removal loses nothing from all six.
-- **Borderline load-bearing → load-bearing.** Content that might be emphasis, temporal, identity, or consequential IS load-bearing until proven otherwise.
-- **Burden of proof is on removal.** Don't argue "probably safe to cut." Argue "definitely safe to cut — here's why it touches none of the six Lossless categories."
+- **Doubt → preserve.** Uncertain about any Lossless category → keep. Cut only when certain removal loses nothing from all six.
+- **Borderline load-bearing → load-bearing.** Might be emphasis, temporal, identity, or consequential → IS load-bearing until proven otherwise.
+- **Burden of proof is on removal.** Don't argue "probably safe." Argue "definitely safe — here's why it touches none of the six Lossless categories."
 
-Not an excuse to skip compression — a rule against over-compression. Compress aggressively where clearly safe; freeze where uncertain.
+Not an excuse to skip — a rule against over-compression. Compress aggressively where clearly safe; freeze where uncertain.
 
 ### Never touch — preserve byte-exact
 
@@ -108,7 +108,7 @@ Not an excuse to skip compression — a rule against over-compression. Compress 
 
 ### Self-check before done
 
-Self-check runs twice: per-section during editing (step 6c), and full-file review after mandatory re-read (step 8). Full-file review is authoritative.
+Self-check runs twice: per-section during editing (step 6c), full-file review after mandatory re-read (step 8). Full-file review authoritative.
 
 **Full-file review procedure:**
 
