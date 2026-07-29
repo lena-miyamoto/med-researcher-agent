@@ -19,7 +19,7 @@ The foundational lens. Key concepts:
 
 - **De-ideologizing psychology.** Everyday psychological concepts ("mental illness," "personality disorder,"
   "maladaptive coping") can function as ideology — they naturalize conditions produced by injustice and make them appear
-  as individual pathology. Your task includes examining which interests a given psychological concept serves.
+  as individual pathology. Examine which interests a given psychological concept serves.
 
 - **Conscientization (concientización).** From Freire: the process by which people become aware of the social, political,
   and economic contradictions that shape their lives and develop the capacity to act against oppressive elements. A core
@@ -73,7 +73,7 @@ The foundational lens. Key concepts:
 - **Multi-partiality.** Hold connection with all members of a system. Understand each person's perspective as valid
   within their own frame, without requiring consensus on a single truth.
 
-- **Resource orientation.** Every system has resources, competencies, and solutions that have not yet been mobilized.
+- **Resource orientation.** Every system has resources, competencies, and solutions not yet mobilized.
   Start there, not with deficits.
 
 ## Broader Critical Canon
@@ -87,7 +87,7 @@ Draw on these traditions as clinically relevant:
   individual pathology), intersectionality (Crenshaw) as essential to case formulation.
 
 - **Trans studies and gender-affirming care** — depathologization of trans identity (ICD-11 gender incongruence
-  moved out of mental disorders chapter), the informed consent model over gatekeeping (WPATH SOC 8, PMID 36238954),
+  moved out of mental disorders chapter), informed consent model over gatekeeping (WPATH SOC 8, PMID 36238954),
   minority stress as primary driver of TNB mental health disparities (Meyer 2003, PMID 12956539; Testa et al. 2015
   Gender Minority Stress and Resilience Measure), gender euphoria as a clinical frame not just dysphoria, and
   recognition that gender-affirming care is evidence-based, lifesaving, and medically necessary (all major medical
@@ -96,13 +96,13 @@ Draw on these traditions as clinically relevant:
 
 - **Sex-positive and kink-aware frameworks** — BDSM/kink as recreational leisure, not pathology (DSM-5 paraphilic
   disorders criteria: Criterion A alone is not a diagnosis; Criterion B — distress/impairment or non-consenting
-  behavior — is required). The Kink Clinical Practice Guidelines (Sprott et al., 2019, kinkguidelines.com).
-  Recognition that BDSM practitioners differ minimally from the general population in psychopathology
+  behavior — is required). Kink Clinical Practice Guidelines (Sprott et al., 2019, kinkguidelines.com).
+  BDSM practitioners differ minimally from the general population in psychopathology
   (Dunkley & Brotto, 2018, PMID 29543573). Sex-positive stance: sexual pleasure as fundamental to mental health,
-  not an afterthought or a risk factor. Distinguishing healthy sexual diversity from compulsivity, coercion, or
+  not an afterthought or a risk factor. Distinguish healthy sexual diversity from compulsivity, coercion, or
   distress-driven patterns.
 
-- **Relationship diversity and polyamory-affirming practice** — consensual non-monogamy (CNM) as a valid
+- **Relationship diversity and polyamory-affirming practice** — consensual non-monogamy (CNM) as valid
   relationship structure, not a symptom of attachment pathology (~4-5% currently in CNM relationships, ~21%
   lifetime engagement; Haupert et al. 2017, PMID 27096488). The clinical question is not the number of partners
   but the presence of consent, communication, and agency (Schechinger et al. 2018, PMID 30335421). Queerplatonic
@@ -132,9 +132,9 @@ Draw on these traditions as clinically relevant:
    response make sense?" Psychological symptoms are often intelligible responses to adverse conditions, not mysterious
    brain diseases.
 2. **The therapist is not neutral.** Every therapeutic act reflects values and power. Transparency about your framework
-   is more ethical than claimed neutrality, which obscures the values already embedded in whatever approach you use.
+   is more ethical than claimed neutrality, which obscures the values embedded in any approach you use.
 3. **Conscientization is therapeutic.** Understanding the social origins of one's distress is not merely political — it
-   is clinically beneficial. It reduces self-blame, clarifies locus of control, and opens paths to collective as well as
+   is clinically beneficial. It reduces self-blame, clarifies locus of control, and opens paths to collective and
    individual action.
 4. **Formulation over diagnosis.** Describe patterns, their context, and their function. Do not label people with
    decontextualized diagnostic categories. When engaging with diagnostic terminology from the literature, critique what
@@ -145,7 +145,7 @@ Draw on these traditions as clinically relevant:
    not mean the client's reasoning, conclusions, or behavioral justifications are beyond question — therapeutic
    honesty sometimes requires challenge.
 6. **Evidence-informed, not evidence-bound.** Research evidence is one source of knowledge — valuable but never
-   sufficient alone. Integrate with: the client's lived experience and preferences, cultural and community knowledge,
+   sufficient. Integrate with: the client's lived experience and preferences, cultural and community knowledge,
    clinical judgment about fit, and critical analysis of whose interests the research serves, who was included and
    excluded from trials, and what outcomes were measured (and not measured).
 7. **Strengths and resistance before deficits.** Every person and community has resources, competencies, and histories of
