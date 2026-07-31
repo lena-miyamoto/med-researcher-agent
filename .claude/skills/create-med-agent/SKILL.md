@@ -1,8 +1,8 @@
 ---
 name: create-med-agent
 description: >
-             Create a new repo agent for this workspace, with shared role instructions in .claude/agents and thin
-             .github/.claude wrappers. Use when adding a new agent for both Copilot and Claude.
+             Create a new repo agent for this workspace, with shared role instructions in .claude/agents and a thin
+             .github wrapper. Use when adding a new agent for both Copilot and Claude.
 argument-hint: >
                Provide the new agent name, role, trigger description, tool scope, and whether it should be
                user-invocable or subagent-only
@@ -14,8 +14,7 @@ user-invocable: true
 ## When to Use
 
 - User wants a custom agent available in both Copilot and Claude.
-- Follow the architecture in `CLAUDE.md`: shared behavior in `.claude/agents/`, thin wrappers in `.github/agents/` and
-  `.claude/agents/`.
+- Follow the architecture in `CLAUDE.md`: shared behavior in `.claude/agents/`, thin Copilot wrapper in `.github/agents/`.
 - If the request is a skill, not an agent, stop and route to `create-med-skill`.
 
 ## Procedure
@@ -29,15 +28,13 @@ put the role, stable behavior, and output expectations here. Don't restate the m
 covers that. Don't add "this file is the shared source of truth" boilerplate — it's implicit in where the file lives.
 4. Write the Copilot wrapper at `.github/agents/<name>.agent.md` with valid Copilot frontmatter and minimal Copilot tool
 aliases. Point the body at the shared agent file.
-5. Write the Claude wrapper at `.claude/agents/<name>.md` with Claude-compatible tools and model behavior. Point the
-body at the shared agent file.
-6. Keep wrappers aligned. Differences are limited to harness frontmatter, tool names, model settings, invocation fields,
+5. Keep wrappers aligned. Differences are limited to harness frontmatter, tool names, model settings, invocation fields,
 and brief runtime notes.
-7. Push broader workflow out of the agent: repo-wide behavior into `CLAUDE.md`, reusable procedure into
+6. Push broader workflow out of the agent: repo-wide behavior into `CLAUDE.md`, reusable procedure into
 `.claude/skills/`. Agent wrappers stay short.
-8. Reuse repo tooling: `med-db/` workflow and `.claude/scripts/`. Keep evidence and safety rules in repo-level
+7. Reuse repo tooling: `med-db/` workflow and `.claude/scripts/`. Keep evidence and safety rules in repo-level
 instructions unless the shared agent file needs specialization.
-9. Update `README.md` only if the agent should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md`
+8. Update `README.md` only if the agent should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md`
 only when routing boundaries change.
 
 ## Writing Rules
@@ -51,7 +48,7 @@ only when routing boundaries change.
 
 ## Validation
 
-1. All three files exist: `.claude/agents/<name>.md`, `.github/agents/<name>.agent.md`, `.claude/agents/<name>.md`.
+1. Both files exist: `.claude/agents/<name>.md` (source of truth), `.github/agents/<name>.agent.md` (Copilot wrapper).
 2. Frontmatter valid in each file.
 3. Shared file holds stable role boundaries and output expectations.
 4. Wrappers point at the shared file and do not duplicate its procedure.

@@ -42,8 +42,8 @@ diagnostic classification) is in `CLAUDE.md` (Medical DB section).
 
 | File                                                               | Purpose                                                    |
 | ------------------------------------------------------------------ | ---------------------------------------------------------- |
-| `CLAUDE.md`                                                        | Repo-wide workflow, command contract, Medical DB reference |
-| `AGENTS.md`                                                        | Copilot-specific instructions, thin pointer to `CLAUDE.md`  |
+| `CLAUDE.md`                                                        | Shared constitution — workflow, command contract, Medical DB reference |
+| `AGENTS.md`                                                        | Copilot-specific instructions; thin pointer to `CLAUDE.md` |
 | `.github/copilot-instructions.md`                                  | Copilot-specific routing                                   |
 | `.claude/agents/<name>.md`                                         | Shared agent behavior (source of truth)                    |
 | `.github/agents/<name>.agent.md`                                   | Thin Copilot harness wrappers                              |

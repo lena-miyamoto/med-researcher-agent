@@ -1,8 +1,8 @@
 ---
 name: create-med-skill
 description: >
-             Create a new shared repo skill for this workspace, with the source of truth in .claude/skills and thin
-             .github/.claude wrappers. Use when adding a new skill that must work cleanly in both Copilot and Claude.
+             Create a new shared repo skill for this workspace, with the source of truth in .claude/skills and a thin
+             .github wrapper. Use when adding a new skill that must work cleanly in both Copilot and Claude.
 argument-hint: >
                Provide the new skill name and what it should do; include description keywords, optional argument hint,
                and any routing or doc updates needed
@@ -14,8 +14,7 @@ user-invocable: true
 ## When to Use
 
 - User wants to add a skill available through both Copilot and Claude.
-- Follow the architecture in `CLAUDE.md`: shared procedure in `.claude/skills/`, thin wrappers in `.github/skills/` and
-  `.claude/skills/`.
+- Follow the architecture in `CLAUDE.md`: shared procedure in `.claude/skills/`, thin Copilot wrapper in `.github/skills/`.
 - If the request is an agent, not a skill, stop and route to `create-med-agent`.
 
 ## Procedure
@@ -30,11 +29,10 @@ user-invocable: true
      — it's implicit in the repo pattern.
 3. Write the Copilot wrapper at `.github/skills/<name>/SKILL.md`: mirror discovery frontmatter, point body at the shared
 file.
-4. Write the Claude wrapper at `.claude/skills/<name>/SKILL.md`: same as Copilot wrapper.
-5. Never duplicate procedure across `.agents`, `.github`, `.claude`. Wrappers only discover and redirect.
-6. Reuse repo tooling: `.claude/scripts/` and the `med-db/` workflow. Keep medical-research workflow in `CLAUDE.md` and
+4. Never duplicate procedure across `.github` and `.claude`. The `.claude/skills/` file is the sole source of truth.
+5. Reuse repo tooling: `.claude/scripts/` and the `med-db/` workflow. Keep medical-research workflow in `CLAUDE.md` and
 the `med-researcher` agents, not in generic skills.
-7. Update `README.md` only if the skill should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md`
+6. Update `README.md` only if the skill should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md`
 only when routing boundaries change.
 
 ## Writing Rules
@@ -46,7 +44,7 @@ only when routing boundaries change.
 
 ## Validation
 
-1. All three files exist: `.claude/`, `.github/`, `.claude/` `skills/<name>/SKILL.md`.
+1. Both files exist: `.claude/skills/<name>/SKILL.md` (source of truth), `.github/skills/<name>/SKILL.md` (Copilot wrapper).
 2. Frontmatter parses in each.
 3. Shared file holds the procedure; wrappers do not duplicate it.
 4. Wrapper bodies cite the shared file path exactly.

@@ -5,7 +5,7 @@ description: >
              neurodevelopmental comorbidities, gender-affirming care for trans/NB adults, and sex/relationship
              therapy). Maintains a compact per-client session history file for continuity across sessions. Collects
              client intake, establishes informed consent, then hands off to the psychotherapist agent for direct
-             therapeutic dialogue. After the session, writes a compressed session note to the history file.
+             therapeutic dialogue. After the session, delegates to end-therapy-session skill for documentation.
 argument-hint: "Optional: path to a session history file (continues previous work), or nothing for a new client"
 user-invocable: true
 ---

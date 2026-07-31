@@ -2,12 +2,14 @@
   "permissions": {
     "allow": [
       "Skill(analyze-med-claims)",
+      "Skill(compress-skill)",
       "Skill(create-diet-plan)",
       "Skill(create-med-agent)",
       "Skill(create-med-skill)",
       "Skill(create-workout-routine)",
-      "Skill(optimize-repo)",
       "Skill(start-therapy-session)",
+      "Skill(end-therapy-session)",
+      "Skill(optimize-repo)",
       "Skill(med-db)"
     ]
   }

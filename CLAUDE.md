@@ -51,9 +51,10 @@ voluntarily by every agent and subagent.
 
 ## Source-of-Truth Architecture
 
-- Skills: `.claude/skills/<name>/SKILL.md` owns procedure; `.github/skills` are thin wrappers pointing to `.claude/`.
-- Agents: `.claude/agents/<name>.md` owns behavior; `.github/agents` are thin wrappers pointing to `.claude/`.
+- Skills: `.claude/skills/<name>/SKILL.md` owns the full procedure; `.github/skills` are thin wrappers pointing to `.claude/`.
+- Agents: `.claude/agents/<name>.md` owns the behavior; `.github/agents` are thin wrappers pointing to `.claude/`.
 - Shared utilities: `.claude/scripts/utils.py`. Extract helpers used by ≥2 scripts; don't pre-emptively generalize.
+- `.claude/` is the sole source of truth for all shared instruction files. No separate `.agents/` directory.
 - German prose: standard orthography (umlauts, `ß`), not ASCII substitutions, unless requested.
 
 ## Coding Style
@@ -61,24 +62,6 @@ voluntarily by every agent and subagent.
 Read `.claude/agents/rules/coding-style.md` before writing or editing any Python file in this repo.
 Naming (no abbreviations) and functional programming by default — applies to `.claude/scripts/` and
 any other Python code.
-
-## Architecture (Claude-Specific)
-
-Context engineering: `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` —
-authoritative standard for all instruction files in this repo. Every agent writing or editing `*.md` files
-loaded into context must follow it. Deviations require explicit justification.
-
-Skills that say "dispatch the X agent" → invoke via Agent tool with `subagent_type: "X"`. Agent name = `name`
-field in the shared agent file's YAML frontmatter (e.g., `med-researcher`, `fitness-coach`, `dietologist`,
-`psychotherapist`). Agents inherit `CLAUDE.md` — don't restate repo conventions in agent files.
-
-**Skill procedure completion (mandatory).** When executing a skill that defines post-work steps —
-documentation, cleanup, compression, profile updates — those steps are part of the procedure, not optional
-afterthoughts. A skill has not been fully executed until every step in its SKILL.md has been completed.
-This is especially critical for the therapy session skill (Steps 5–7: session note, protocol save,
-compression, closing statement), but applies to any skill with a multi-step procedure. Switching into
-an agentic persona (e.g., therapist) does not relieve you of the obligation to complete the full
-procedure after that persona's work is done.
 
 ## Medical DB (`./med-db/`)
 
@@ -94,8 +77,34 @@ Invoke via `Skill: "med-db"` or follow the skill file directly.
 See `.claude/agents/rules/med-db-commands.md` for the complete `uv run` parameter reference
 covering all 9 entry points. Every command must be invoked as `uv run <entry-point>` from the repo root.
 
-### Script Development
+## Skill Procedure Completion (Mandatory)
+
+When executing a skill that defines post-work steps — documentation, cleanup, compression, profile
+updates — those steps are part of the procedure, not optional afterthoughts. A skill has not been
+fully executed until every step in its SKILL.md has been completed. This is especially critical
+for the therapy session skills (`start-therapy-session` delegates post-session documentation to
+`end-therapy-session`, which must complete all five steps), but applies to any skill with a
+multi-step procedure. Switching into an agentic persona
+(e.g., therapist) does not relieve you of the obligation to complete the full procedure after that
+persona's work is done.
+
+## Script Development
 
 Read `.claude/scripts/DEVELOPER.md` before modifying any file in `.claude/scripts/`. Internal
 directory structure and conventions — only relevant when extending the med-db script stack,
 not when using `uv run` entry points.
+
+## Architecture (Claude-Specific)
+
+Context engineering: `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` — authoritative standard for all instruction files in this repo.
+Agent dispatch: invoke via Agent tool with `subagent_type: "<name>"` per YAML frontmatter `name` field.
+Skills that say "dispatch the X agent" → invoke via Agent tool with `subagent_type: "X"`.
+
+## Harness Entrypoints
+
+- `CLAUDE.md` — Claude Code routing (this file)
+- `.github/copilot-instructions.md` — GitHub Copilot routing
+- `.github/agents/<name>.agent.md` — Copilot agent wrappers
+- `.claude/agents/<name>.md` — Claude Code agents (source of truth)
+- `.claude/skills/<name>/SKILL.md` — Skill procedures (source of truth)
+- `.github/skills/<name>/SKILL.md` — Copilot skill wrappers

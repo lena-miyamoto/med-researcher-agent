@@ -5,7 +5,7 @@ description: >
              neurodevelopmental comorbidities, gender-affirming care for trans/NB adults, and sex/relationship
              therapy). Maintains a compact per-client session history file for continuity across sessions. Collects
              client intake, establishes informed consent, then hands off to the psychotherapist agent for direct
-             therapeutic dialogue. After the session, writes a compressed session note to the history file.
+             therapeutic dialogue. After the session, delegates to end-therapy-session skill for documentation.
 argument-hint: "Optional: path to a session history file (continues previous work), or nothing for a new client"
 user-invocable: true
 ---
@@ -200,130 +200,33 @@ responses. Every client response is real person typing, not you writing their pa
 
 **CRITICAL — Post-Session Routine Mandatory:** Moment client signals they want to end (e.g.,
 "I'd like to end here," "that's all for today," "Good talk!," natural conversational close),
-therapeutic persona is DROPPED. You are now skill orchestrator. You MUST execute every step below
-before conversation ends. Not optional — skipping documentation corrupts client's history
-file and degrades future sessions.
+the psychotherapist agent will output its closing message followed by the exact string `SESSION_ENDED`
+on its own line. This is the machine-readable signal that the therapeutic session is over.
 
-> **Post-Session Checklist — complete all five steps, in order, before ending conversation:**
->
-> - [ ] **Step 5:** Write session note to `sessions/<client-slug>.md` (prepend below frontmatter, newest first).
->       Update `sessions` count in frontmatter. Read `rules/session-note-format.md`.
-> - [ ] **Step 5b:** Review session for Permanent Client Profile updates (new/changed diagnoses, medication,
->       life context, key metaphors, language change). Update profile if needed.
-> - [ ] **Step 5c:** Save full session protocol to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md`.
->       Use bold speaker labels (**Therapeutin:** / **Client:** for DE; **Therapist:** / **Client:** for EN).
->       Exclude skill orchestrator output (intake, informed consent, crisis screen, meta-commentary).
-> - [ ] **Step 6:** Compress history file (Session Log only — Permanent Client Profile never compressed).
->       Read `rules/compression-rules.md` and apply all rules.
-> - [ ] **Step 7:** Deliver brief closing statement to client (statement, not question — door closed warmly).
+**When you detect `SESSION_ENDED`:**
 
-### 5. After Session — Write Session Note
+1. **Drop the therapeutic persona immediately.** You are now the skill orchestrator.
+2. **Do NOT write session notes, update profiles, save protocols, compress files, or deliver closing
+   statements yourself.** All documentation is delegated.
+3. **Invoke the `end-therapy-session` skill** with the client slug:
 
-Client signalled they want to end session (e.g., "I'd like to end here," "that's all for today," natural
-conversational close). **Session is over.** Do NOT add closing reflection, final therapeutic
-observation, or "one more thought" after client ended. Do NOT re-engage client in post-session
-conversation. Client's signal to end is boundary — respect it immediately.
+   ```text
+   Skill: "end-therapy-session", args: "<client-slug>"
+   ```
 
-Read `.claude/skills/start-therapy-session/rules/session-note-format.md` for note template and procedure. Write
-compact session note to client's history
-file, prepended below YAML frontmatter (newest sessions at top). Update `sessions` count in frontmatter.
+   The skill will execute all five documentation steps (session note, profile update, protocol save,
+   compression, closing statement) in order and deliver the closing statement to the client.
 
-### 5b. Update Permanent Client Profile
+**If `SESSION_ENDED` does not appear** after the client signals they want to end, the agent failed to
+emit the marker. In that case, invoke `end-therapy-session` anyway — the marker is a convenience, not
+a gate. The client ending the session is the true trigger.
 
-After writing session note, review session for information belonging in Permanent Client Profile:
+### Reference: Post-Session Documentation
 
-- Did client disclose or update gender identity or pronouns?
-- Did they request change of session language?
-- Did they reveal previously undisclosed diagnosis or receive new one?
-- Did they start, stop, or change psychoactive medication?
-- Did they share life context so significant it will shape all future therapeutic work (e.g., major loss,
-  trauma history becoming clinically central, chronic health condition, immigration or displacement history,
-  experiences of systemic oppression core to their presentation)?
-- Did they use metaphor, framing, or self-description capturing something essential about how they experience
-  the world — something you'd want every future session to know?
-
-If yes, update relevant field in Permanent Client Profile. For observations not fitting existing field,
-append under **Permanently retained observations** as concise bullet points with session date:
-
-```markdown
-- **Permanently retained observations:**
-  - [2026-07-17] Client describes their anxiety as "a radio that never turns off" — central metaphor for their experience.
-  - [2026-07-17] Disclosed history of workplace discrimination related to neurodivergence — key context for career-related distress.
-```
-
-Be judicious. Section stays compact — distilled essence of what every future session needs to know.
-Routine session content stays in session log. When in doubt, ask: "Would missing this information in session 20
-degrade therapeutic work?" If yes, it belongs here.
-
-### 5c. Save Full Session Protocol
-
-After session note and profile update written, save complete session dialog as standalone protocol file
-for long-term traceability. Separate from compact session note — protocol preserves every word of
-therapeutic dialogue.
-
-Create protocols directory if it doesn't exist (auto-bootstraps):
-
-```text
-sessions/protocols/
-```
-
-Save full transcript as markdown file:
-
-```text
-sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md
-```
-
-Example: `sessions/protocols/2026-07-19_S4_lena.md`
-
-**Format:**
-
-```markdown
-# S<session-no>: <YYYY-MM-DD> — <Client Name>
-
-**Session language:** <de|en|...>
-
----
-
-**Therapist:** [first message]
-
-**Client:** [response]
-
-**Therapist:** [next message]
-
-...
-```
-
-- Bold speaker labels: **Therapeutin:** / **Client:** (DE sessions) or **Therapist:** / **Client:** (EN sessions).
-- Separate turns with blank lines.
-- Capture complete dialog — every client response and every therapist message, verbatim.
-- Include agent's opening message (from Step 4) as first **Therapeutin:** entry.
-- Exclude skill orchestrator's non-therapeutic output (intake questions, informed consent delivery, crisis
-  screen, research dispatches, meta-commentary).
-
-**Protocol files NOT automatically read by agent at session start.** Agent reads only compact
-history file (`sessions/<client-slug>.md`). Protocol files exist for client reference and explicit lookback
-when user asks agent to review specific prior session. They consume significant token budget — must not
-be loaded into context unless user explicitly requests.
-
-### 6. Compress History File
-
-Read `.claude/skills/start-therapy-session/rules/compression-rules.md` and apply all rules to history file.
-Goal: minimize token count without losing clinically important information — file read into context at
-start of every session.
-
-**Permanent Client Profile section never compressed.** Exempt from all compression rules. Only
-Session Log section compressed.
-
-### 7. Confirm — Brief Summary
-
-Tell client session documented:
-
-"[Name], I've saved today's session notes. Take care of yourself — today covered some [meaningful/heavy/important]
-ground. I'm here whenever you'd like to continue."
-
-Door-closing statement, not question. Do not invite response or re-open therapeutic material. After
-delivering, session is over. Do not add "How are you feeling now?" or follow-up question. Warmth, closure,
-boundary — all three.
+All post-session documentation (session note, profile update, protocol save, compression, closing statement)
+is handled by the `end-therapy-session` skill. See `.claude/skills/end-therapy-session/SKILL.md` for the
+complete procedure. The rule files (`rules/session-note-format.md`, `rules/compression-rules.md`) remain
+the authoritative format reference — the `end-therapy-session` skill reads and applies them.
 
 ## Writing Rules
 
@@ -337,16 +240,15 @@ boundary — all three.
 - Every intake question can be declined. Client sets pace of disclosure.
 - Never skip informed consent, even for returning clients (shortened version fine).
 - Crisis screen mandatory. Acute risk → redirection, not therapy.
-- Session notes written after session, Never during. Immersion is sacred.
+- Session notes, profile updates, protocol saves, compression, and closing statements are delegated to
+  the `end-therapy-session` skill after every session. Never perform these steps inline — always invoke the skill.
 - **"Gaps flagged" field in session notes mandatory.** Every session note must record topics agent admitted
   not knowing enough about and committed to researching. Primary input to pre-session knowledge gap
   analysis (Step 0b). "none" acceptable when nothing flagged.
-- Compression mandatory after every session. Token efficiency is clinical requirement — bloated history files
-  degrade session quality by consuming context window.
+- Compression mandatory after every session — handled by `end-therapy-session` skill.
 - **Permanent Client Profile section never compressed.** Exempt from all compression rules.
-- Update Permanent Client Profile after every session if clinically significant information surfaced (Step 5b).
 - Full session protocols saved to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` after every
-  session (Step 5c). NOT auto-read by agent — exist for client reference and explicit lookback only.
+  session — handled by `end-therapy-session` skill. NOT auto-read by agent — exist for client reference and explicit lookback only.
 
 - Reference files (`.claude/skills/start-therapy-session/rules/informed-consent.md`, `handoff-prompt.md`,
   `session-note-format.md`, `compression-rules.md`) contain templates and rule sets. Read them when procedure
@@ -373,17 +275,13 @@ boundary — all three.
 7. Crisis screen passed — no acute risk detected, or appropriately redirected.
 8. Agent dispatched with session prompt including history context and gap analysis results.
 9. Agent's opening displayed verbatim — no framing commentary, stage directions, or emotional narration added.
-10. Session note written to history file (after session, not during — no closing reflection added after client's
-    end signal) — includes "Gaps flagged" field.
-11. Permanent Client Profile reviewed and updated with clinically essential information from session (Step 5b).
-12. History file compressed per compression rules — Permanent Client Profile untouched.
-13. Closing message delivered as statement, not question. Door closed warmly, no invitation to re-engage.
-14. No duplication of agent's therapeutic methodology in skill's own output.
-15. **At no point was client's side of conversation fabricated, implied, or assumed.**
-16. Full session protocol saved to `sessions/protocols/` with correct filename format (Step 5c).
+10. **`SESSION_ENDED` marker detected** (or client end signal received) → `end-therapy-session` skill invoked
+    with client slug. Post-session documentation delegated — not performed inline.
+11. No duplication of agent's therapeutic methodology in skill's own output.
+12. **At no point was client's side of conversation fabricated, implied, or assumed.**
+13. Post-session documentation verified by `end-therapy-session` skill's own validation checklist.
 
 ## Output
 
 - Complete therapeutic session — dialogue between client and AI therapist.
-- `sessions/<client-slug>.md` — updated and compressed session history file.
-- `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` — full transcript of therapeutic dialogue.
+- Post-session: `end-therapy-session` skill invoked → session note, profile update, protocol save, compression, closing statement all handled by delegated skill.

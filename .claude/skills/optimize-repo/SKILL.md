@@ -24,9 +24,10 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 
 | Surface | Owner / Shape |
 |---------|---------------|
-| Repo workflow, command contract, bootstrap, command table | `CLAUDE.md`; keep compact and table-first. |
+| Repo workflow, command contract, bootstrap, command table | `CLAUDE.md`; shared constitution, keep compact (under 150 lines hard max per context-engineering-best-practices). |
 | Copilot entrypoint | `.github/copilot-instructions.md`; thin pointer to `CLAUDE.md` and Copilot wrappers. |
-| Claude entrypoint | `CLAUDE.md`; main instruction file — all shared rules live here. |
+| Claude entrypoint | `CLAUDE.md`; shared constitution loaded directly. |
+| Copilot router | `AGENTS.md`; thin Copilot-specific pointer to `CLAUDE.md`. |
 | Shared skills (also Claude entrypoint) | `.claude/skills/<name>/SKILL.md`; owns actual procedure. Claude loads directly. |
 | Copilot skill wrappers | `.github/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
 | Shared agent behavior (also Claude entrypoint) | `.claude/agents/<name>.md`; role, routing, and repo-specific behavior. Claude loads directly. |
@@ -41,9 +42,9 @@ Skills and docs must point to these owner files instead of restating their rules
 | Domain | Owner |
 |--------|-------|
 | Archive layout, naming, frontmatter, required tools | `CLAUDE.md` (Medical DB section) |
-| Command invocation contract (`uv run ...` only) | `CLAUDE.md` (Shared section) |
+| Command invocation contract (`uv run ...` only) | `CLAUDE.md` (Command Invocation Contract section) |
 | Bootstrap after fresh checkout | `CLAUDE.md` (Medical DB section) |
-| Canonical markdown lint command (`uv run lint-md`) | `CLAUDE.md` (Shared section) |
+| Canonical markdown lint command (`uv run lint-md`) | `CLAUDE.md` (Command Invocation Contract section) |
 | Markdown lint config | `.pymarkdown.yaml` |
 | Evidence hierarchy, quality standards, search protocol | `.claude/agents/med-researcher.md` |
 | Harms/safety search, counter-evidence requirements | `.claude/agents/med-researcher.md` |
@@ -61,8 +62,8 @@ Skills and docs must point to these owner files instead of restating their rules
    - If a requested cleanup would require touching an ignored path, stop and report that it is intentionally excluded.
 3. Capture the current state before editing:
    - Check `git status --short`.
-   - Count relevant instruction lines with `wc -l CLAUDE.md README.md .claude/skills/*/SKILL.md
-   .github/skills/*/SKILL.md .claude/skills/*/SKILL.md .claude/agents/*.md .github/agents/* .claude/agents/*`.
+   - Count relevant instruction lines with `wc -l AGENTS.md CLAUDE.md README.md .claude/skills/*/SKILL.md
+   .github/skills/*/SKILL.md .claude/agents/*.md .github/agents/*.agent.md`.
    - Flag any instruction file over ~500 lines for splitting (see 500-line rule in audit step 4).
    - Read changed files before patching; assume user/formatter edits are intentional unless they break the task.
 4. Audit against the structure above. **Before evaluating any file, read
@@ -71,8 +72,12 @@ Skills and docs must point to these owner files instead of restating their rules
    are findings that MUST be fixed or explicitly justified in the affected file (with reason). "The file was
    already long" is not a justification — split it. "It's convenient to keep everything together" is not a
    justification — separate concerns into the correct mechanism.
-   - `CLAUDE.md` should ideally stay under 80 lines but must never exceed 150 lines and keep command reference as a table.
-   - Confirm `CLAUDE.md` references the context-engineering-best-practices file — add the pointer if missing.
+   - `CLAUDE.md` is the shared constitution: keep compact (under 80 lines ideal, 150 lines hard max per
+     context-engineering-best-practices). Contains command contract, workflow rules, architecture, and pointers
+     to other source-of-truth files. Procedural instructions belong in skills, not CLAUDE.md.
+   - Confirm `CLAUDE.md` is a shared constitution referencing context-engineering-best-practices and routing to
+     source-of-truth files.
+   - `AGENTS.md` is a thin Copilot-specific pointer (~3 lines).
    - Wrapper files should stay about 10 lines: frontmatter, heading, pointer.
    - Shared skills should contain input parsing, delegated calls, procedure, validation, and output only.
    - Agent files should be one focused role; evidence and safety rules stay in the shared agent file.
@@ -144,7 +149,7 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 - Use tables for command matrices, routing maps, source-of-truth maps, source priority, and platform/mirror status.
 - Use bullets for short behavior rules and validation checks.
 - Do not nest bullets deeper than one level unless the existing file already requires it for readability.
-- Avoid long prose in wrappers and entrypoints; `CLAUDE.md` is the main instruction file and may be longer.
+- Avoid long prose in wrappers and entrypoints; `CLAUDE.md` is the shared constitution and may be longer.
 - Preserve non-ASCII already used for German terms, arrows, and source names; do not add decorative symbols.
 
 ## Writing Rules
@@ -180,7 +185,7 @@ except for deliberate harness differences.
    (before/after, sequencing), altered enumerated element counts or order, weakened identity-level
    claims, or removed consequence statements. If compression was applied during the cleanup, verify
    it was lossless per the `compress-skill` self-check.
-8. Confirm `CLAUDE.md` is compact and command tables remain tables.
+8. Confirm `CLAUDE.md` is compact under 150 lines and command tables remain tables.
 9. **Log every best-practice deviation** with the affected file and the explicit justification provided. If no justification was provided, the deviation is an unresolved finding.
 10. After completing edits to any `*.md` file, run `uv run lint-md`.
 11. If any `*.py` file changed, run `uv run test`.

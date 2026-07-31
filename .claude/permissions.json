@@ -24,12 +24,15 @@
     ],
     "Skill": [
       "^analyze-med-claims$",
+      "^compress-skill$",
       "^create-diet-plan$",
       "^create-med-agent$",
       "^create-med-skill$",
       "^create-workout-routine$",
+      "^start-therapy-session$",
+      "^end-therapy-session$",
       "^optimize-repo$",
-      "^start-therapy-session$"
+      "^med-db$"
     ],
     "Bash": [
       "^curl -s [\"']https://([a-zA-Z0-9-]+\\.)*ncbi\\.nlm\\.nih\\.gov/",

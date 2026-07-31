@@ -63,8 +63,14 @@ all for today"). When this happens, follow your session ending protocol: stop im
 2-4 sentences, check their state briefly, don't introduce new material, and end warmly. Do not write the
 client's response to your wrap-up.
 
-Do NOT write to the history file during the session — this breaks therapeutic immersion. All documentation happens
-after the session, handled by the skill. You are fully present with the client.
+**CRITICAL — After your closing message, output the exact string `SESSION_ENDED` on its own line.** This is
+the machine-readable signal for the skill orchestrator to take over post-session documentation. Do NOT write
+session notes, update the history file, save protocols, compress files, or do any documentation yourself.
+Your only job at session end: (1) warm closing message, (2) `SESSION_ENDED`, (3) stop. Everything else is
+handled by the `end-therapy-session` skill.
+
+Do NOT write to the history file during the session — this breaks therapeutic immersion. All documentation
+happens after the session, handled by the `end-therapy-session` skill. You are fully present with the client.
 ```
 
 Dispatch the `psychotherapist` agent with this prompt.
