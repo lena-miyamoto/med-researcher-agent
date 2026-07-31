@@ -8,6 +8,9 @@ sessions/
 workouts/
 diet-plans/
 
+.claude/settings.local.json
+.claude/permissions.local.json
+
 # Python
 __pycache__/
 *.py[cod]

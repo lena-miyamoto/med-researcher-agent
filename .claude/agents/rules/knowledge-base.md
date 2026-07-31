@@ -10,11 +10,11 @@ description: >
 
 ## Knowledge Base — med-db/ Integration
 
-Clinical work backed by a structured, reproducible evidence base in `med-db/`. Every instance of the
-psychotherapist agent operates from the same root knowledge, regardless of the system.
+Clinical work backed by structured, reproducible evidence in `med-db/`. Every psychotherapist agent
+instance shares same root knowledge.
 
-**Four independent components**, each with its own bootstrap method. All four must be verified
-before therapeutic work begins.
+**Four independent components**, each own bootstrap method. All four must be verified
+before therapeutic work.
 
 ### Component Overview
 
@@ -25,29 +25,29 @@ before therapeutic work begins.
 | DSM-5-TR classification | `med-db/guidelines/dsm-5-tr/` | `uv run med-db-setup-dsm5` | `med-db-lookup-dsm5` |
 | Therapy methodologies | `med-db/guidelines/therapy-methodologies/` | `uv run med-db-setup-therapy-methods` | Read `source.md` directly |
 
-`med-db/` is gitignored — created locally, does **not** ship with the repo. On every system, all components must
-be bootstrapped once before the psychotherapist can work.
+`med-db/` gitignored — created locally, does **not** ship with repo. All components must be
+bootstrapped once per system before psychotherapist can work.
 
 ### Mandatory Pre-Work Bootstrap Check
 
 **You MUST verify the knowledge base before engaging in any therapeutic work.** Run at start of every instance.
-Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see "Diagnostic Classification Setup" for the
+Follow med-db skill (`.claude/skills/med-db/SKILL.md`) — "Diagnostic Classification Setup" for
 verification commands and bootstrap procedure.
 
-**All four components must pass.** If any component is missing or broken, bootstrap it via the med-db skill.
-If bootstrapping fails, tell the user:
+**All four components must pass.** Missing or broken → bootstrap via med-db skill.
+If bootstrapping fails, tell user:
 
 > "My diagnostic reference data isn't fully set up on this system yet. I can't provide competent DSM-5-TR or ICD-11
 > assessment without it. Let me fix this — it should only take a minute."
 
-Run missing bootstrap commands. Once all components pass verification, proceed with therapeutic work.
+Run missing bootstrap commands. All pass → proceed with therapeutic work.
 
 ---
 
 ### Component 1: Research Evidence (Literature in med-db/)
 
-Neurodevelopmental specialization backed by three canonical research briefs in `.claude/research-briefs/`
-(version-controlled). Single source of truth for the evidence base:
+Neurodevelopmental specialization backed by three canonical research briefs in `.claude/agents/rules/research-briefs/`
+(version-controlled). Single source of truth for evidence base:
 
 | Brief | Topics covered | med-db topics |
 |---|---|---|
@@ -55,9 +55,9 @@ Neurodevelopmental specialization backed by three canonical research briefs in `
 | `gender-affirming-care.md` | WPATH SOC 8, minority stress, TNB mental health, non-binary care, socio-political context, neurodivergence overlap | `gender-affirming-care`, `trans-nb-mental-health` |
 | `sex-relationship-therapy.md` | Sex therapy, kink/BDSM-affirming practice, CNM/polyamory, LGBTQI+ affirmative therapy, relationship diversity, neurodivergence intersection | `sex-therapy`, `relationship-diversity` |
 
-Each brief contains: core PMIDs with archival commands, DOI-only references with resolution fallbacks, PubMed search
-queries, topic organization, and validation steps. The med-researcher agent reads a brief and populates `med-db/`
-with the full evidence base.
+Each brief: core PMIDs with archival commands, DOI-only references with resolution fallbacks, PubMed search
+queries, topic organization, validation steps. med-researcher agent reads brief, populates `med-db/`
+with full evidence base.
 
 **Bootstrap check:**
 
@@ -65,15 +65,15 @@ with the full evidence base.
 uv run med-db-query --list-topics
 ```
 
-If all seven topics (`adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap`,
-`gender-affirming-care`, `trans-nb-mental-health`, `sex-therapy`, `relationship-diversity`) appear with papers,
-knowledge base is ready. Skip bootstrapping.
+All seven topics (`adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap`,
+`gender-affirming-care`, `trans-nb-mental-health`, `sex-therapy`, `relationship-diversity`) appear with papers →
+ready. Skip bootstrapping.
 
-**If any topic is missing or empty, bootstrap:**
+**If any topic missing or empty, bootstrap:**
 
-Dispatch the `med-researcher` agent with all three research briefs:
+Dispatch `med-researcher` agent with all three research briefs:
 
-> "Read and execute all three research briefs in `.claude/research-briefs/`:
+> "Read and execute all three research briefs in `.claude/agents/rules/research-briefs/`:
 >
 > 1. `neurodevelopmental-comorbidities.md`
 > 2. `gender-affirming-care.md`
@@ -81,8 +81,8 @@ Dispatch the `med-researcher` agent with all three research briefs:
 > Follow each brief's instructions to bootstrap the med-db/ knowledge base. Archive all core PMIDs and run all
 > search queries. Validate when done. Report what was archived and under which topics."
 
-The med-researcher checks what's already archived, fetches missing papers, runs search queries, and validates
-the result. Takes several minutes — run before a therapy session, not during one.
+med-researcher checks existing archives, fetches missing papers, runs queries, validates.
+Takes several minutes — run before therapy session, not during.
 
 **Alternative — manual bootstrap command:**
 
@@ -91,12 +91,12 @@ uv run med-db --pmid 28830387 --pmid 33515606 --pmid 27859581 --pmid 22303520 --
 ```
 
 Archives core PMIDs for neurodevelopmental comorbidities only. Full bootstrapping of all three
-specializations requires running all three research briefs. The med-researcher agent approach (above)
+specializations requires running all three research briefs. med-researcher approach (above)
 strongly preferred.
 
-**Querying the research evidence:**
+**Querying research evidence:**
 
-Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) for all query commands. All queries are read-only.
+Follow med-db skill (`.claude/skills/med-db/SKILL.md`) for all query commands. All queries read-only.
 
 ---
 
@@ -104,8 +104,8 @@ Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) for all query command
 
 Stored in `med-db/guidelines/icd-11/` — 37,118 entities across 28 chapters, English (2026-01) and German (2026-01).
 
-**Bootstrap and queries:** Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see
-"Diagnostic Classification Setup" and the `med-db-lookup-icd11` command table.
+**Bootstrap and queries:** Follow med-db skill (`.claude/skills/med-db/SKILL.md`) — "Diagnostic Classification Setup"
+and `med-db-lookup-icd11` command table.
 Key codes: 6A02 (ASD), 6A05 (ADHD). All queries local — no network.
 **Full mental health code listing:** `med-db/guidelines/icd-11/source.md`.
 
@@ -117,8 +117,8 @@ Stored as structured JSON in `med-db/guidelines/dsm-5-tr/classification.json` �
 19 categories with ICD-10-CM codes and specifiers. Full diagnostic criteria copyrighted by APA,
 NOT included.
 
-**Bootstrap and queries:** Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see
-"Diagnostic Classification Setup" and the `med-db-lookup-dsm5` command table.
+**Bootstrap and queries:** Follow med-db skill (`.claude/skills/med-db/SKILL.md`) — "Diagnostic Classification Setup"
+and `med-db-lookup-dsm5` command table.
 Key codes: F90.2 (ADHD), F84.0 (ASD), F60.3 (BPD), F64.0 (Gender Dysphoria), F43.10 (PTSD).
 All queries local — no network. Cross-reference ICD-11 codes via `med-db-lookup-icd11 --icd10-code <code>`.
 
@@ -126,15 +126,12 @@ All queries local — no network. Cross-reference ICD-11 codes via `med-db-looku
 
 ### Component 4: Therapy Methodology Guidelines
 
-Stored in `med-db/guidelines/therapy-methodologies/` — comprehensive reference covering 11 therapy methodologies
-across 4 categories.
+Stored in `med-db/guidelines/therapy-methodologies/` — 11 therapy methodologies across 4 categories.
 
-**Bootstrap:** Follow the med-db skill (`.claude/skills/med-db/SKILL.md`) — see
-"Diagnostic Classification Setup".
+**Bootstrap:** Follow med-db skill (`.claude/skills/med-db/SKILL.md`) — "Diagnostic Classification Setup".
 
 Reference material, not a lookup system. Read `med-db/guidelines/therapy-methodologies/source.md`
-directly when consulting methodology descriptions. For structured programmatic access, use
-`methodologies.json` in the same directory.
+directly. For structured access, use `methodologies.json` in same directory.
 
 The 11 methodologies:
 
@@ -148,33 +145,32 @@ The 11 methodologies:
 Each entry covers: key figures, historical context, core concepts, therapeutic stance, key techniques,
 evidence base, critique and limitations, and relationship to other methodologies.
 
-Codified form of the Theoretical Framework. Reference foundation for modality integration, technique
+Codified Theoretical Framework. Reference foundation for modality integration, technique
 selection, and critical appraisal of therapeutic approaches. Consult when:
 
-- Selecting modalities for a specific clinical presentation
-- Adapting techniques for a client's context (cultural, neurodevelopmental, gender, relationship structure)
-- Evaluating evidence base and limitations of a proposed approach
-- Understanding how different methodologies relate to and inform each other
-- Grounding clinical reasoning in the theoretical traditions that inform the agent's practice
+- Selecting modalities for clinical presentation
+- Adapting techniques for client context (cultural, neurodevelopmental, gender, relationship structure)
+- Evaluating evidence base and limitations of proposed approach
+- Understanding how methodologies relate to and inform each other
+- Grounding clinical reasoning in theoretical traditions that inform agent's practice
 
 ---
 
-### Keeping the Knowledge Base Current
+### Keeping Knowledge Base Current
 
-- **Research briefs:** Re-run every 12 months. When new systematic reviews or meta-analyses
-  supersede core references, update both the research brief and the agent's clinical guidance.
-- **ICD-11:** WHO releases updates annually (January). Check for new releases with `uv run med-db-download-icd11
-  --release 2027-01` when available (follow the med-db skill for the full command). The 2026-01 release is current
-  latest.
+- **Research briefs:** Re-run every 12 months. New systematic reviews or meta-analyses superseding core
+  references → update research brief and clinical guidance.
+- **ICD-11:** WHO releases updates annually (January). Check with `uv run med-db-download-icd11
+  --release 2027-01` when available (follow med-db skill). 2026-01 release is current latest.
 - **DSM-5-TR:** APA publishes update supplements (usually September). Check `.claude/scripts/med-db-setup-dsm5.py`
-  for the `_build_categories()` function and update codes/names as needed. DSM-5-TR published March 2022;
+  `_build_categories()` function, update codes/names as needed. DSM-5-TR published March 2022;
   DSM-6 not yet scheduled.
-- **Therapy methodologies:** Update when major new editions of key texts publish, or when significant
-  therapeutic innovations integrate into the psychotherapist agent's Theoretical Framework. Update
-  embedded data in `.claude/scripts/med-db-setup-therapy-methods.py` and re-run setup.
-- When citing prevalence data or treatment guidance from med-db/ papers, note publication year and evidence-quality
-  assessment. Papers older than 10 years: flag and check for newer evidence.
+- **Therapy methodologies:** Update when major new editions publish or significant
+  therapeutic innovations integrate into Theoretical Framework. Update
+  embedded data in `.claude/scripts/med-db-setup-therapy-methods.py`, re-run setup.
+- Citing prevalence data or treatment guidance from med-db/ papers: note publication year and evidence-quality
+  assessment. Papers >10 years: flag, check for newer evidence.
 
-See `.claude/agents/rules/clinical-work-guides.md` for diagnostic assessment procedures, assessment
+See `.claude/agents/rules/clinical-work-guides.md` for diagnostic assessment, assessment
 considerations (neurodevelopmental, gender-affirming, sex/relationship), therapeutic dialogue and session work,
 case conceptualization, intervention planning, psychoeducation, and technique selection.

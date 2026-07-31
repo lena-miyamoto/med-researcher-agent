@@ -1,51 +1,47 @@
 # med-db Command Reference
 
-Every command must be invoked as `uv run <entry-point> …` from the repo root. Default output is JSON
-unless noted; use `--format text` for human-readable output.
+Invoke as `uv run <entry-point> …` from repo root. Default JSON; `--format text` for readable output.
 
-`python3`, `python`, and any direct Python invocation are **forbidden**. All access must go through the
-`uv run` entry points so validation, indexing, and integrity checks are always applied.
+Direct Python invocation **forbidden**. All access through `uv run` entry points — validation, indexing, integrity checks always applied.
 
 Supported web discovery sources: `google-scholar`, `doaj`, `open-science-directory`,
 `free-medical-journals`, `openmd`, `trip-database`. Prefer PubMed and Europe PMC for structured records.
 
-Full-text fallback: follow the Sci-Hub policy in `.claude/agents/med-researcher.md`. Prefer official
+Full-text fallback: follow Sci-Hub policy in `.claude/agents/med-researcher.md`. Prefer official
 open-access sources first.
 
-Integrity enforcement: `med-db-integrity-check` runs automatically after every archival, setup, or
-download operation. Errors block completion (exit code 1) and must be fixed immediately.
+`med-db-integrity-check` runs automatically after every archival, setup, or download operation. Errors block completion (exit code 1) — fix immediately.
 
 ---
 
 ## `uv run med-db` — Archival (PubMed, Europe PMC, web discovery)
 
-Archives searches, PMIDs, DOIs, and EPMC records into the local `med-db/` tree. Always include
-`--topic` (human-readable name, e.g. `adhd`). Integrity check runs automatically on completion.
+Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always include
+`--topic` (human-readable name, e.g. `adhd`). Integrity check runs on completion.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `--source` | choice | `pubmed` | Primary source: `pubmed`, `europe-pmc`, `google-scholar`, `doaj`, `open-science-directory`, `free-medical-journals`, `openmd`, `trip-database` |
 | `--query` | str | — | Search query for the selected source |
-| `--search-slug` | str | — | Optional slug for the saved search file |
-| `--topic` | str | `uncategorized` | Medical topic for grouping output (e.g. `endometriosis`, `adhd`). Tool derives kebab-case slug automatically |
+| `--search-slug` | str | — | Optional slug for saved search file |
+| `--topic` | str | `uncategorized` | Medical topic for grouping output (e.g. `endometriosis`, `adhd`). Kebab-case slug derived automatically |
 | `--topic-slug` | str | — | Explicit kebab-case slug; overrides `--topic` |
 | `--pmid` | str[] | `[]` | PMID to archive; repeatable (`--pmid 1 --pmid 2`) |
 | `--epmc-record` | str[] | `[]` | Europe PMC record as `SOURCE:ID`; repeatable |
-| `--doi` | str[] | `[]` | DOI to resolve and archive; repeatable. Tries PubMed first, then Europe PMC |
+| `--doi` | str[] | `[]` | DOI to resolve and archive; repeatable. Tries PubMed, then Europe PMC |
 | `--archive-first` | int | `0` | Also archive first N PMIDs returned by `--query` |
-| `--retmax` | int | `20` | Machine-readable hits to request for the archived search JSON |
+| `--retmax` | int | `20` | Machine-readable hits to request for archived search JSON |
 | `--med-db` | str | `med-db` | Target `med-db/` directory path |
 | `--email` | str | — | Contact email for NCBI E-utilities |
 | `--delay` | float | `0.34` | Delay between PMID fetches (seconds) |
-| `--migrate` | flag | off | Migrate flat `med-db/` structure to topic-based per-paper folders |
+| `--migrate` | flag | off | Migrate flat `med-db/` to topic-based per-paper folders |
 | `--migrate-dry-run` | flag | off | Preview `--migrate` without copying files |
 
 ---
 
 ## `uv run med-db-integrity-check` — Validation
 
-Runs automatically after every archival, setup, or download operation. Errors block completion (exit
-code 1) and must be fixed immediately.
+Runs after every archival, setup, or download operation. Errors block completion (exit code 1) — fix immediately.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -56,8 +52,7 @@ code 1) and must be fixed immediately.
 
 ## `uv run med-db-lookup` — External Lookup (read-only, no archival)
 
-Queries PubMed, Europe PMC, or resolves DOIs. At least one of `--pmid`, `--epmc-record`, or `--doi`
-is required.
+Query PubMed, Europe PMC, or resolve DOIs. At least one of `--pmid`, `--epmc-record`, or `--doi` required.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -72,8 +67,7 @@ is required.
 
 ## `uv run med-db-query` — Local Archive Query (read-only)
 
-Queries the local `med-db/` archive. Exactly one operation flag from the mutually exclusive group is
-required.
+Query local `med-db/` archive. Exactly one operation flag required (mutually exclusive group).
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -106,8 +100,7 @@ required.
 
 ## `uv run med-db-download-icd11` — ICD-11 Setup
 
-Downloads ICD-11 MMS data from the WHO CDN into `med-db/`. Integrity check runs automatically on
-completion.
+Download ICD-11 MMS data from WHO CDN into `med-db/`. Integrity check runs on completion.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -120,8 +113,7 @@ completion.
 
 ## `uv run med-db-setup-dsm5` — DSM-5-TR Setup
 
-Generates the DSM-5-TR classification data in `med-db/`. Integrity check runs automatically on
-completion.
+Generate DSM-5-TR classification data in `med-db/`. Integrity check runs on completion.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -132,8 +124,7 @@ completion.
 
 ## `uv run med-db-setup-therapy-methods` — Therapy Methodology Setup
 
-Generates therapy methodology guideline files in `med-db/`. Integrity check runs automatically on
-completion.
+Generate therapy methodology guideline files in `med-db/`. Integrity check runs on completion.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -144,7 +135,7 @@ completion.
 
 ## `uv run med-db-lookup-icd11` — ICD-11 Lookup (local, read-only)
 
-Fast local ICD-11 MMS lookup from downloaded WHO data. At least one query parameter is required.
+Fast local ICD-11 MMS lookup from downloaded WHO data. At least one query parameter required.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -165,7 +156,7 @@ Fast local ICD-11 MMS lookup from downloaded WHO data. At least one query parame
 ## `uv run med-db-lookup-dsm5` — DSM-5-TR Lookup (local, read-only)
 
 Fast local DSM-5-TR classification lookup. At least one of `--code`, `--keyword`, `--category`, or
-`--list-categories` is required.
+`--list-categories` required.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
