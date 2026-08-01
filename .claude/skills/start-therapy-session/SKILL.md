@@ -195,38 +195,46 @@ reaction — you do not describe it.
 After displaying agent's opening, **continue therapeutic dialogue in this conversation**
 by adopting psychotherapist agent's persona and methodology (see `.claude/agents/psychotherapist.md`).
 Maintain therapeutic frame, voice, clinical grounding throughout. Agent's opening is start —
-session continues here until client signals they want to end. Do NOT fabricate or simulate client's
-responses. Every client response is real person typing, not you writing their part.
+session continues until client signals they want to end. Do NOT fabricate or simulate client's
+responses. Every response is real person typing, not you writing their part.
 
 **CRITICAL — Post-Session Routine Mandatory:** Moment client signals they want to end (e.g.,
 "I'd like to end here," "that's all for today," "Good talk!," natural conversational close),
-the psychotherapist agent will output its closing message followed by the exact string `SESSION_ENDED`
-on its own line. This is the machine-readable signal that the therapeutic session is over.
+end the session in a **single, atomic response** containing all three components:
 
-**When you detect `SESSION_ENDED`:**
-
-1. **Drop the therapeutic persona immediately.** You are now the skill orchestrator.
-2. **Do NOT write session notes, update profiles, save protocols, compress files, or deliver closing
-   statements yourself.** All documentation is delegated.
-3. **Invoke the `end-therapy-session` skill** with the client slug:
+1. The therapeutic closing message (warm, brief, no new material)
+2. The exact string `SESSION_ENDED` on its own line
+3. A Skill invocation to `end-therapy-session` with the client slug:
 
    ```text
    Skill: "end-therapy-session", args: "<client-slug>"
    ```
 
-   The skill will execute all five documentation steps (session note, profile update, protocol save,
-   compression, closing statement) in order and deliver the closing statement to the client.
+**These three components are indivisible.** Never output `SESSION_ENDED` without also invoking
+the skill in the same tool call batch. No separate step, no "wait for the marker and then act,"
+no "drop persona first and then invoke." The closing message, the marker, and the skill
+invocation travel together in one response. The persona only drops *after* the response is
+complete — the `end-therapy-session` skill runs next and takes over.
 
-**If `SESSION_ENDED` does not appear** after the client signals they want to end, the agent failed to
-emit the marker. In that case, invoke `end-therapy-session` anyway — the marker is a convenience, not
-a gate. The client ending the session is the true trigger.
+If the psychotherapist agent (subagent dispatched in Step 4) produced the opening turn only and
+you have been carrying the therapeutic dialogue since: you are the one ending the session. Apply
+the atomic-response rule yourself.
+
+The `end-therapy-session` skill executes all five documentation steps (session note, profile
+update, protocol save, compression, closing statement) in order and delivers the closing
+statement to the client.
+
+**Fallback: If you or the subagent accidentally output `SESSION_ENDED` without invoking the
+skill** — i.e., a previous response contained the marker but the skill was not called — invoke
+`end-therapy-session` immediately upon realizing the omission. The marker is a signal, not a
+gate. Client ending the session is the true trigger.
 
 ### Reference: Post-Session Documentation
 
 All post-session documentation (session note, profile update, protocol save, compression, closing statement)
-is handled by the `end-therapy-session` skill. See `.claude/skills/end-therapy-session/SKILL.md` for the
-complete procedure. The rule files (`rules/session-note-format.md`, `rules/compression-rules.md`) remain
-the authoritative format reference — the `end-therapy-session` skill reads and applies them.
+handled by `end-therapy-session` skill. See `.claude/skills/end-therapy-session/SKILL.md` for
+complete procedure. Rule files (`rules/session-note-format.md`, `rules/compression-rules.md`) remain
+authoritative format reference — `end-therapy-session` skill reads and applies them.
 
 ## Writing Rules
 
@@ -240,8 +248,8 @@ the authoritative format reference — the `end-therapy-session` skill reads and
 - Every intake question can be declined. Client sets pace of disclosure.
 - Never skip informed consent, even for returning clients (shortened version fine).
 - Crisis screen mandatory. Acute risk → redirection, not therapy.
-- Session notes, profile updates, protocol saves, compression, and closing statements are delegated to
-  the `end-therapy-session` skill after every session. Never perform these steps inline — always invoke the skill.
+- Session notes, profile updates, protocol saves, compression, and closing statements delegated to
+  `end-therapy-session` skill after every session. Never perform these steps inline — always invoke the skill.
 - **"Gaps flagged" field in session notes mandatory.** Every session note must record topics agent admitted
   not knowing enough about and committed to researching. Primary input to pre-session knowledge gap
   analysis (Step 0b). "none" acceptable when nothing flagged.
@@ -275,8 +283,7 @@ the authoritative format reference — the `end-therapy-session` skill reads and
 7. Crisis screen passed — no acute risk detected, or appropriately redirected.
 8. Agent dispatched with session prompt including history context and gap analysis results.
 9. Agent's opening displayed verbatim — no framing commentary, stage directions, or emotional narration added.
-10. **`SESSION_ENDED` marker detected** (or client end signal received) → `end-therapy-session` skill invoked
-    with client slug. Post-session documentation delegated — not performed inline.
+10. **`SESSION_ENDED` marker output AND `end-therapy-session` skill invoked atomically in same response** (or client end signal received → skill invoked). Post-session documentation delegated — not performed inline.
 11. No duplication of agent's therapeutic methodology in skill's own output.
 12. **At no point was client's side of conversation fabricated, implied, or assumed.**
 13. Post-session documentation verified by `end-therapy-session` skill's own validation checklist.
