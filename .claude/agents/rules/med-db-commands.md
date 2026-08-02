@@ -6,17 +6,17 @@ description: >
 
 # med-db Command Reference
 
-Invoke as `uv run <entry-point> …` from repo root. Default JSON; `--format text` for readable output.
+`uv run <entry-point> …` from repo root. Default JSON; `--format text` for readable output.
 
-Direct Python invocation **forbidden**. All access through `uv run` entry points — validation, indexing, integrity checks always applied.
+Direct Python invocation **forbidden**. Access only through `uv run` entry points — validation, indexing, integrity checks always applied.
 
-Supported web discovery sources: `google-scholar`, `doaj`, `open-science-directory`,
-`free-medical-journals`, `openmd`, `trip-database`. Prefer PubMed and Europe PMC for structured records.
+Web discovery sources: `google-scholar`, `doaj`, `open-science-directory`,
+`free-medical-journals`, `openmd`, `trip-database`. Prefer PubMed/Europe PMC for structured records.
 
-Full-text fallback: follow Sci-Hub policy in `.claude/agents/med-researcher.md`. Prefer official
+Full-text fallback: per Sci-Hub policy in `.claude/agents/med-researcher.md`. Prefer official
 open-access sources first.
 
-`med-db-integrity-check` runs automatically after every archival, setup, or download operation. Errors block completion (exit code 1) — fix immediately.
+`med-db-integrity-check` runs after every archival, setup, or download. Errors block completion (exit code 1) — fix immediately.
 
 ---
 
@@ -28,9 +28,9 @@ Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always in
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `--source` | choice | `pubmed` | Primary source: `pubmed`, `europe-pmc`, `google-scholar`, `doaj`, `open-science-directory`, `free-medical-journals`, `openmd`, `trip-database` |
-| `--query` | str | — | Search query for the selected source |
+| `--query` | str | — | Search query for selected source |
 | `--search-slug` | str | — | Optional slug for saved search file |
-| `--topic` | str | `uncategorized` | Medical topic for grouping output (e.g. `endometriosis`, `adhd`). Kebab-case slug derived automatically |
+| `--topic` | str | `uncategorized` | Medical topic for grouping output (e.g. `endometriosis`, `adhd`). Kebab-case slug auto-derived |
 | `--topic-slug` | str | — | Explicit kebab-case slug; overrides `--topic` |
 | `--pmid` | str[] | `[]` | PMID to archive; repeatable (`--pmid 1 --pmid 2`) |
 | `--epmc-record` | str[] | `[]` | Europe PMC record as `SOURCE:ID`; repeatable |
@@ -47,7 +47,7 @@ Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always in
 
 ## `uv run med-db-integrity-check` — Validation
 
-Runs after every archival, setup, or download operation. Errors block completion (exit code 1) — fix immediately.
+Runs after every archival, setup, or download. Errors block (exit code 1) — fix immediately.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -88,7 +88,7 @@ Query local `med-db/` archive. Exactly one operation flag required (mutually exc
 | `--topic` | str | List all papers under a topic |
 | `--check-pmid` | str | Check if a PMID is already archived |
 | `--check-epmc` | str | Check if a Europe PMC record (`SOURCE:ID`) is archived |
-| `--pmids-from-search` | str | Extract PMID list from a search JSON file path |
+| `--pmids-from-search` | str | Extract PMID list from search JSON file path |
 | `--read-metadata` | str | Read metadata from a paper directory path |
 | `--search-keyword` | str | Search papers by keyword (case-insensitive) |
 | `--recent` | int | List N most recently added papers |

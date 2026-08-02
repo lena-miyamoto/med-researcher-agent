@@ -10,8 +10,8 @@ description: >
 
 ## Knowledge Base — med-db/ Integration
 
-Clinical work backed by structured, reproducible evidence in `med-db/`. Every psychotherapist agent
-instance shares same root knowledge.
+Clinical work backed by structured, reproducible evidence in `med-db/`. All instances share same root
+knowledge.
 
 **Four independent components**, each own bootstrap method. All four must be verified
 before therapeutic work.
@@ -26,7 +26,7 @@ before therapeutic work.
 | Therapy methodologies | `med-db/guidelines/therapy-methodologies/` | `uv run med-db-setup-therapy-methods` | Read `source.md` directly |
 
 `med-db/` gitignored — created locally, does **not** ship with repo. All components must be
-bootstrapped once per system before psychotherapist can work.
+bootstrapped once per system before therapeutic work.
 
 ### Mandatory Pre-Work Bootstrap Check
 
@@ -90,8 +90,7 @@ Takes several minutes — run before therapy session, not during.
 uv run med-db --pmid 28830387 --pmid 33515606 --pmid 27859581 --pmid 22303520 --pmid 29604351 --pmid 37913872 --pmid 30903940 --pmid 32873239 --validate
 ```
 
-Archives core PMIDs for neurodevelopmental comorbidities only. Full bootstrapping of all three
-specializations requires running all three research briefs. med-researcher approach (above)
+Archives core PMIDs for neurodevelopmental comorbidities only. Full bootstrapping needs all three research briefs. med-researcher approach (above)
 strongly preferred.
 
 **Querying research evidence:**
@@ -130,8 +129,8 @@ Stored in `med-db/guidelines/therapy-methodologies/` — 11 therapy methodologie
 
 **Bootstrap:** Follow med-db skill (`.claude/skills/med-db/SKILL.md`) — "Diagnostic Classification Setup".
 
-Reference material, not a lookup system. Read `med-db/guidelines/therapy-methodologies/source.md`
-directly. For structured access, use `methodologies.json` in same directory.
+Reference material, not lookup. Read `med-db/guidelines/therapy-methodologies/source.md`.
+Structured access: `methodologies.json` in same directory.
 
 The 11 methodologies:
 
@@ -142,8 +141,8 @@ The 11 methodologies:
 | Broader Critical Canon | Postcolonial/Decolonial Psychology, Feminist/Queer Psychology, Trauma-Informed Care, Disability Justice/Neurodiversity Paradigm, Mad Studies |
 | Clinical Modalities | CBT (Beck), ACT (Hayes) |
 
-Each entry covers: key figures, historical context, core concepts, therapeutic stance, key techniques,
-evidence base, critique and limitations, and relationship to other methodologies.
+Each entry: key figures, historical context, core concepts, therapeutic stance, key techniques,
+evidence base, critique/limitations, relationship to other methodologies.
 
 Codified Theoretical Framework. Reference foundation for modality integration, technique
 selection, and critical appraisal of therapeutic approaches. Consult when:
@@ -160,14 +159,13 @@ selection, and critical appraisal of therapeutic approaches. Consult when:
 
 - **Research briefs:** Re-run every 12 months. New systematic reviews or meta-analyses superseding core
   references → update research brief and clinical guidance.
-- **ICD-11:** WHO releases updates annually (January). Check with `uv run med-db-download-icd11
-  --release 2027-01` when available (follow med-db skill). 2026-01 release is current latest.
-- **DSM-5-TR:** APA publishes update supplements (usually September). Check `.claude/scripts/med-db-setup-dsm5.py`
-  `_build_categories()` function, update codes/names as needed. DSM-5-TR published March 2022;
-  DSM-6 not yet scheduled.
-- **Therapy methodologies:** Update when major new editions publish or significant
-  therapeutic innovations integrate into Theoretical Framework. Update
-  embedded data in `.claude/scripts/med-db-setup-therapy-methods.py`, re-run setup.
+- **ICD-11:** WHO updates annually (January). Check with `uv run med-db-download-icd11
+  --release 2027-01` when available (follow med-db skill). 2026-01 is current.
+- **DSM-5-TR:** APA update supplements (usually September). Check `.claude/scripts/med-db-setup-dsm5.py`
+  `_build_categories()`, update codes/names as needed. Published March 2022; DSM-6 not yet scheduled.
+- **Therapy methodologies:** Update on major new editions or significant innovations integrating
+  into Theoretical Framework. Update embedded data in
+  `.claude/scripts/med-db-setup-therapy-methods.py`, re-run setup.
 - Citing prevalence data or treatment guidance from med-db/ papers: note publication year and evidence-quality
   assessment. Papers >10 years: flag, check for newer evidence.
 

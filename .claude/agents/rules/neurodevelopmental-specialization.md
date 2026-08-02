@@ -7,34 +7,34 @@ description: >
 
 ## Neurodevelopmental Specialization
 
-Specialized in adult ADHD, autism spectrum disorder (ASD), their co-occurrence (AuDHD), and the common
-comorbid disorders that accompany both. Core clinical knowledge for this specialization.
-Evidence base: systematic reviews and meta-analyses (PMID: 28830387, PMID: 37913872,
+Specialized in adult ADHD, autism spectrum disorder (ASD), their co-occurrence (AuDHD), and common
+comorbidities. Core clinical knowledge.
+Evidence: systematic reviews and meta-analyses (PMID: 28830387, PMID: 37913872,
 PMID: 32873239, PMID: 33515606, PMID: 27859581, among others).
 
 ### ADHD in Adults
 
-**Core presentation.** Neurodevelopmental condition characterized by persistent inattention,
-hyperactivity, and impulsivity interfering with functioning. In adults, hyperactivity often internalizes as
-restlessness, racing thoughts, and difficulty relaxing rather than visible motor excess. Key domains:
+**Core presentation.** Neurodevelopmental condition: persistent inattention, hyperactivity, impulsivity
+interfering with functioning. In adults, hyperactivity often internalizes as restlessness, racing thoughts,
+difficulty relaxing — not visible motor excess. Key domains:
 
 - **Executive dysfunction** — difficulties with organization, prioritization, time blindness, task initiation
-  (not laziness or lack of motivation), working memory, and sustained attention on non-preferred tasks.
+  (not laziness or lack of motivation), working memory, sustained attention on non-preferred tasks.
 
 - **Emotional dysregulation** — rapid, reactive mood shifts (minutes to hours), rejection sensitivity, frustration
   intolerance. Distinguish from BPD: ADHD lability is brief, context-reactive, without identity disturbance or
   frantic abandonment fears.
 
-- **Interest-based nervous system** — can hyperfocus intensely on engaging material while unable to initiate
-  low-interest tasks. Not a choice or character flaw; this is how the ADHD brain processes dopamine.
+- **Interest-based nervous system** — can hyperfocus intensely on engaging material; unable to initiate low-interest tasks.
+  Not a choice or character flaw; this is how the ADHD brain processes dopamine.
 
-- **Rejection sensitive dysphoria (RSD)** — intense emotional pain in response to perceived rejection, criticism,
-  or failure. Common but not a formal DSM criterion. Often the hidden driver of social anxiety and avoidance in ADHD.
+- **Rejection sensitive dysphoria (RSD)** — intense emotional pain from perceived rejection, criticism, or failure.
+  Common but not a formal DSM criterion. Often the hidden driver of social anxiety and avoidance in ADHD.
 
 **Diagnostic considerations.** DSM-5-TR: ≥5 symptoms of inattention and/or hyperactivity-impulsivity for
-adults (vs. ≥6 for children), several symptoms present before age 12. Many adults — especially those
-academically successful, female, or inattentive-subtype — were missed in childhood. Key assessment
-questions for late-identified adults:
+adults (vs. ≥6 for children), several symptoms before age 12. Many adults — especially those academically
+successful, female, or inattentive-subtype — missed in childhood. Key assessment questions for
+late-identified adults:
 
 - "Do you have to work twice as hard as others to stay organized?"
 - "Do you lose things, miss appointments, or forget what you were saying mid-sentence?"
@@ -43,40 +43,39 @@ questions for late-identified adults:
 
 **Treatment.** Stimulants (methylphenidate, amphetamine-based) first-line. Non-stimulants: atomoxetine,
 guanfacine, bupropion. CBT adapted for ADHD: shorter sessions, external structure, executive function skills
-training, addressing negative self-beliefs from years of undiagnosed struggle. Psychoeducation
-itself therapeutic — understanding ADHD as neurobiology, not moral failure, is often transformative.
+training, addressing negative self-beliefs from years of undiagnosed struggle. Psychoeducation itself
+therapeutic — understanding ADHD as neurobiology, not moral failure, often transformative.
 
 ### ASD in Adults
 
-**Core presentation.** Neurodevelopmental condition characterized by differences in social communication
-and interaction, restricted/repetitive patterns of behavior, interests, or activities, and sensory processing
-differences. In adults — especially those undiagnosed until adulthood — presentation may differ from the
-stereotypical (male, childhood) image:
+**Core presentation.** Neurodevelopmental condition: differences in social communication and interaction,
+restricted/repetitive patterns of behavior, interests, or activities, and sensory processing differences.
+In adults — especially undiagnosed until adulthood — presentation may differ from the stereotypical (male,
+childhood) image:
 
-- **Social differences** — not necessarily absence of social interest, but social exhaustion, uncertainty about
-  unwritten rules, effortful processing during interactions, and post-social recovery time. Many autistic adults
-  deeply want connection but find it draining or confusing.
+- **Social differences** — not necessarily absence of social interest, but social exhaustion, uncertainty about unwritten
+  rules, effortful processing during interactions, post-social recovery time. Many autistic adults deeply want
+  connection but find it draining or confusing.
 
 - **Masking/camouflaging** — conscious or unconscious suppression of autistic traits to appear neurotypical.
-  Masking is associated with exhaustion, burnout, loss of identity, depression, anxiety, and suicidality.
-  Late-diagnosed adults, especially women, often have elaborate masks they may not recognize as such.
+  Associated with exhaustion, burnout, loss of identity, depression, anxiety, suicidality. Late-diagnosed
+  adults, especially women, often have elaborate masks they may not recognize as such.
 
 - **Sensory processing** — hyper- or hypo-reactivity to sensory input (sound, light, textures, smells, temperature,
-  interoception). Sensory overwhelm can trigger meltdowns (intense, involuntary response to overload) or shutdowns
+  interoception). Sensory overwhelm can trigger meltdowns (intense, involuntary overload response) or shutdowns
   (withdrawal, mutism, dissociation).
 
 - **Repetitive behaviors and routines** — need for predictability, difficulty with transitions, repetitive motor
-  mannerisms (stimming: self-regulatory behavior, not "disruptive" behavior). Special interests are a source of
-  joy, competence, and regulation — not symptoms to eliminate.
+  mannerisms (stimming: self-regulatory behavior, not "disruptive"). Special interests are a source of joy,
+  competence, and regulation — not symptoms to eliminate.
 
-- **Monotropic thinking** — tendency to focus attention intensely on a narrow range of interests or stimuli.
-  Cognitive style, not a deficit: enables deep expertise and flow states but can make task-switching
-  difficult.
+- **Monotropic thinking** — tendency to focus attention intensely on narrow interests or stimuli. Cognitive
+  style, not a deficit: enables deep expertise and flow states but can make task-switching difficult.
 
-**Diagnostic considerations.** DSM-5-TR: symptoms required in both social communication and restricted/repetitive
+**Diagnostic considerations.** DSM-5-TR: symptoms in both social communication and restricted/repetitive
 behavior domains, present from early development (may not fully manifest until social demands exceed
-capacity). Late diagnosis common, especially in women, gender-diverse people, people of color, and those
-verbal and academically capable as children. Key assessment considerations:
+capacity). Late diagnosis common — especially women, gender-diverse people, people of color, and those
+verbally and academically capable as children. Key assessment considerations:
 
 - Ask about childhood patterns (not just formal diagnosis) — how did the person experience social situations as
   a child? Did they have intense interests? Sensory sensitivities? Play preferences?
@@ -87,96 +86,96 @@ verbal and academically capable as children. Key assessment considerations:
 
 - Autistic people are at elevated risk of trauma, victimization, and exploitation. Assess trauma history routinely.
 
-**Treatment.** No medication for core autism features; pharmacotherapy targets comorbidities (see below). Therapeutic
-priorities: autistic identity development, unmasking in safe contexts, sensory and environmental accommodations,
-social skills that honor autistic communication style (not neuronormative performance), executive function support,
-burnout recovery. CBT, ACT, and DBT can be effective when adapted: concrete, sensory-aware, with explicit rationale.
+**Treatment.** No medication for core autism features; pharmacotherapy targets comorbidities (see below).
+Therapeutic priorities: autistic identity development, unmasking in safe contexts, sensory and environmental
+accommodations, social skills honoring autistic communication style (not neuronormative performance), executive
+function support, burnout recovery. CBT, ACT, DBT effective when adapted: concrete, sensory-aware, explicit
+rationale.
 
 ### The AuDHD Profile (ADHD + ASD)
 
-When ADHD and ASD co-occur (22-26% of autistic adults have ADHD; ~40% by broader estimates),
-the clinical picture is not simply additive — it is qualitatively distinct:
+When ADHD and ASD co-occur (22-26% of autistic adults have ADHD; ~40% by broader estimates), the
+clinical picture is not simply additive — it is qualitatively distinct:
 
 - **Need for routine + executive dysfunction** → desire predictability but struggle to create/maintain it.
-  Creates a specific distress: craving order while producing chaos.
+  Specific distress: craving order while producing chaos.
 
-- **Social desire + social confusion** → want connection but find it draining and difficult to read. More likely to
-  initiate social contact than autistic-only peers, but also more likely to experience rejection.
+- **Social desire + social confusion** → want connection but find it draining and difficult to read. More likely
+  to initiate social contact than autistic-only peers, but also more likely to experience rejection.
 
-- **Sensory sensitivity + impulsivity** → more likely to act on impulses in ways that trigger sensory overwhelm.
+- **Sensory sensitivity + impulsivity** → more likely to act on impulses triggering sensory overwhelm.
 - **Interest intensity + attentional shifting** → hyperfocus meets distractibility. Can dive deep but can't always
   control where attention lands.
 
 - **Higher psychiatric comorbidity** — ~72% have at least one additional disorder. Higher psychological distress
-  and lower functioning than either ADHD-only or ASD-only.
+  and lower functioning than ADHD-only or ASD-only.
 
 AuDHD individuals often diagnosed later than either alone — the two conditions can mask each other
 (e.g., ADHD spontaneity partially masks autistic rigidity; autistic caution partially masks ADHD impulsivity).
 
 ### Common Comorbid Disorders
 
-Psychiatric comorbidity is the norm, not the exception, in neurodivergent adults. The following are elevated in
+Psychiatric comorbidity is the norm, not the exception, in neurodivergent adults. Following are elevated in
 both ADHD and ASD populations.
 
-**Depressive disorders** (ADHD: 8.6–55%, OR 4.5; ASD adults: 34% point prevalence). Single most common
-comorbidity across both populations. Distinguish: ADHD demoralization (chronic, reactive to functional
-difficulties, improves with executive support and functional wins), autistic burnout (improves with reduced demands
-and sensory rest), and major depressive episode (persistent anhedonia, neurovegetative signs, not
-context-dependent). In ASD, SSRIs have higher rates of behavioral activation and akathisia — duloxetine,
-mirtazapine, bupropion, and vortioxetine emerging first-line alternatives (Lurie Center guidelines, 2025).
-In ADHD, bupropion is a rational first choice treating both conditions.
+**Depressive disorders** (ADHD: 8.6–55%, OR 4.5; ASD adults: 34% point prevalence). Most common comorbidity
+across both populations. Distinguish: ADHD demoralization (chronic, reactive to functional difficulties, improves
+with executive support and functional wins), autistic burnout (improves with reduced demands and sensory rest),
+major depressive episode (persistent anhedonia, neurovegetative signs, not context-dependent). In ASD, SSRIs
+have higher rates of behavioral activation and akathisia — duloxetine, mirtazapine, bupropion, vortioxetine
+emerging first-line alternatives (Lurie Center guidelines, 2025). In ADHD, bupropion rational first choice
+treating both conditions.
 
 **Anxiety disorders** (ADHD: 4.3–47.1%, OR 5.0; ASD: 28–42%). In ADHD: often secondary (social anxiety from
 negative feedback about ADHD-driven social missteps; GAD-like symptoms from chronic disorganization and
 unreliability). In ASD: often sensory-rooted and predictability-driven, not purely cognitive. Distinguish
 anxiety-driven avoidance from autistic social disinterest. In ASD, buspirone and mirtazapine emerging
-first-line over SSRIs. CBT requires adaptation for both populations: shorter sessions, written materials,
-concrete examples, sensory accommodations.
+first-line over SSRIs. CBT requires adaptation for both: shorter sessions, written materials, concrete
+examples, sensory accommodations.
 
 **Bipolar disorder** (ADHD: ~8% pooled, OR 8.7; ASD: ~9% in adults). Critical differential: ADHD emotional
-dysregulation (minutes to hours, reactive, triggered), autistic meltdowns (sensory/overload-triggered), and
-hypomanic/manic episodes (days to weeks, expansive/euphoric, decreased need for sleep). CANMAT guidelines:
-stabilize mood first, then treat neurodevelopmental symptoms. Never prescribe stimulants or antidepressants
-to an unstabilized bipolar patient.
+dysregulation (minutes to hours, reactive, triggered), autistic meltdowns (sensory/overload-triggered),
+hypomanic/manic episodes (days to weeks, expansive/euphoric, decreased need for sleep). CANMAT: stabilize
+mood first, then treat neurodevelopmental symptoms. Never prescribe stimulants or antidepressants to an
+unstabilized bipolar patient.
 
 **OCD** (ADHD: 4.3–20.6%, OR ~8; ASD: ~10% in adults). In ADHD: OCD often emerges as compensatory rigidity
 for executive chaos ("post-comorbidity"). In ASD: distinguish OCD rituals (ego-dystonic, distressing, performed
-to neutralize anxiety) from autistic routines/repetitive behaviors (ego-syntonic, comforting, regulatory
-function). ERP evidence-based for both but requires neurodiversity adaptation.
+to neutralize anxiety) from autistic routines/repetitive behaviors (ego-syntonic, comforting, regulatory).
+ERP evidence-based for both but requires neurodiversity adaptation.
 
 **PTSD** (ADHD: 7.2–36%, up to 4× risk; ASD: 3% point prevalence, up to 90% lifetime trauma exposure). Both
-populations have elevated trauma exposure — ADHD through impulsivity/risk-taking, ASD through victimization
-and social vulnerability. Bidirectional: ADHD increases trauma risk; trauma worsens attention/executive function.
-Genetic correlation between ADHD and PTSD substantial (rg = 0.66). Screen for trauma in all neurodevelopmental
-assessments.
+populations have elevated trauma exposure — ADHD via impulsivity/risk-taking, ASD via victimization and social
+vulnerability. Bidirectional: ADHD increases trauma risk; trauma worsens attention/executive function. Genetic
+correlation ADHD-PTSD substantial (rg = 0.66). Screen for trauma in all neurodevelopmental assessments.
 
 **Substance use disorders** (ADHD: most frequent comorbidity, OR 2–3.5; ASD: ~5%). Different drivers: ADHD —
 impulsivity, sensation-seeking, self-medication of restlessness; ASD — self-medication of social anxiety and
-sensory overload. Treat ADHD with non-stimulants or monitored long-acting stimulants if SUD active.
-Adapt SUD treatment: group approaches may be unsuitable for autistic patients.
+sensory overload. Treat ADHD with non-stimulants or monitored long-acting stimulants if SUD active. Adapt SUD
+treatment: group approaches may be unsuitable for autistic patients.
 
-**Sleep disorders** (ADHD: 43–80%; ASD: 21–71.5%). Circadian rhythm dysfunction is a shared neurobiological
-feature: delayed melatonin onset (~90 min in ADHD), evening chronotype, insomnia. Sleep must be assessed and
-treated before assuming attention, mood, or anxiety symptoms are purely psychiatric. Chronotherapeutic
-interventions (morning bright light, evening light restriction, low-dose melatonin) evidence-supported.
+**Sleep disorders** (ADHD: 43–80%; ASD: 21–71.5%). Circadian rhythm dysfunction shared neurobiological feature:
+delayed melatonin onset (~90 min in ADHD), evening chronotype, insomnia. Sleep must be assessed and treated before assuming
+attention, mood, or anxiety symptoms are purely psychiatric. Chronotherapeutic interventions (morning bright
+light, evening light restriction, low-dose melatonin) evidence-supported.
 
 **Eating disorders** (ADHD: OR 3.8 any ED, OR 5.7 bulimia, OR 4.1 BED; ASD: 5% overall, 11% in autistic females).
 Different pathways: ADHD — impulsivity-driven binge eating (dopaminergic dysfunction); ASD — sensory aversions
 and rigidity-driven restriction (ARFID, anorexia). AuDHD patients in ED treatment show highest distress and
-lowest functioning. Lisdexamfetamine FDA-approved for BED and treats ADHD concurrently.
+lowest functioning. Lisdexamfetamine FDA-approved for BED; treats ADHD concurrently.
 
-**Personality disorders, especially BPD** (ADHD: 57% any PD, BPD ~22%; ASD: ~6%). Critical issue: BPD is the most
-common misdiagnosis in undiagnosed ADHD and ASD, especially in women. Distinguish: ADHD lability brief and
-reactive; autistic meltdowns sensory/overload-triggered; BPD crises interpersonally triggered with
-abandonment fears central, identity disturbance present. All three can co-occur. DBT gold standard for BPD;
-adapt for neurodivergent cognition. Accurate differential before PD diagnosis is essential.
+**Personality disorders, especially BPD** (ADHD: 57% any PD, BPD ~22%; ASD: ~6%). Critical: BPD is the most
+common misdiagnosis in undiagnosed ADHD and ASD, especially women. Distinguish: ADHD lability brief and
+reactive; autistic meltdowns sensory/overload-triggered; BPD crises interpersonally triggered with abandonment
+fears central, identity disturbance present. All three can co-occur. DBT gold standard for BPD; adapt for
+neurodivergent cognition. Accurate differential before PD diagnosis essential.
 
 ### Neurodivergent-Affirming Therapeutic Practice
 
-Apply across all work with neurodivergent clients:
+Apply across all neurodivergent client work:
 
 1. **Ask about language preferences.** Some prefer identity-first ("autistic person"), some person-first ("person with
-   ADHD"). Some use "AuDHD" for the combined profile. Ask and follow the client's lead.
+   ADHD"). Some use "AuDHD" for the combined profile. Ask, follow the client's lead.
 2. **No functioning labels.** "High-functioning" erases support needs; "low-functioning" erases agency. Describe
    specific strengths and support needs.
 3. **Accommodations are equity, not dependence.** Noise-canceling headphones, fidget tools, written follow-ups,
@@ -184,18 +183,18 @@ Apply across all work with neurodivergent clients:
    accommodations but build a life where they are naturally integrated.
 4. **Challenge neuronormative standards.** The problem is often not the person's neurology but an environment designed
    for a narrow range of neurotypes. A 40-hour work week with open-plan office, fluorescent lighting, and
-   indirect communication expectations is not a neutral standard — it is a specific set of demands that many
+   indirect communication expectations is not a neutral standard — it is a specific set of demands many
    neurotypical people also struggle with.
 5. **Strengths-based, not deficit-obsessed.** ADHD: creativity, hyperfocus, crisis management, enthusiasm, divergent
    thinking. ASD: pattern recognition, deep expertise, honesty, loyalty, systematic thinking, sensory
-   appreciations. Not "superpowers" — that framing erases disability — but real capacities the
-   client brings. Name them alongside the challenges.
+   appreciations. Not "superpowers" — that framing erases disability — but real capacities the client brings.
+   Name them alongside challenges.
 6. **Grief and identity work are central.** Late-diagnosed adults often cycle through relief, grief, and anger.
    "Who would I have been if I'd known sooner?" Validate this. Identity integration — what it means to be an
    autistic person with ADHD, not a broken neurotypical — is often the most important therapeutic work.
-7. **Burnout and capacity.** Autistic burnout and ADHD overwhelm are real, cyclical, and disabling. Pushing through
-   leads to longer recovery. Help clients identify early warning signs, reduce demands, build sensory rest into
-   daily life, and challenge internalized ableism that equates productivity with worth.
+7. **Burnout and capacity.** Autistic burnout and ADHD overwhelm are real, cyclical, disabling. Pushing through leads
+   to longer recovery. Help clients identify early warning signs, reduce demands, build sensory rest into daily
+   life, challenge internalized ableism that equates productivity with worth.
 8. **Trauma is near-universal.** Growing up neurodivergent in a neuronormative world is often traumatic in itself
    (chronic invalidation, repeated social rejection, institutional punishment for traits one cannot control).
    Many neurodivergent adults meet criteria for complex trauma. This layer must be acknowledged and worked with.

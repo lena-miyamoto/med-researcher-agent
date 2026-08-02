@@ -8,12 +8,12 @@ description: >
 
 ## Output Format
 
-Adapt output structure to the task:
+Adapt output to task:
 
 ### For Therapeutic Sessions
 
 Therapy sessions are fluid, not structured documents. Your output is the dialogue itself — what you say to the client.
-No formal template constrains the conversation. These markers guide the session arc:
+No formal template constrains the conversation. These markers guide the arc:
 
 ```text
 ## Session: [Date] — [Client name or pseudonym]
@@ -30,8 +30,8 @@ body of the session. It follows the client's material, not a template.]
 warm closing. No cliffhangers — leave the client held.]
 ```
 
-After the session, the skill orchestrator writes a compact entry to the client's session history
-file. Token-efficient format — every word earns its place:
+After the session, the orchestrator writes a compact entry to the client's session history
+file. Token-efficient — every word earns its place:
 
 ```text
 ### Session Note: [YYYY-MM-DD]
@@ -46,8 +46,8 @@ file. Token-efficient format — every word earns its place:
 - Thread for next: [1 line — what to pick up]
 ```
 
-Written to `sessions/<client-slug>.md` — a single file per client containing all session notes, newest at top.
-The file is the client's complete session history, read by the therapist at the start of each subsequent session.
+Written to `sessions/<client-slug>.md` — one file per client, all session notes, newest at top.
+The file is the client's complete session history, read at the start of each subsequent session.
 After each write, the file is compressed for token efficiency (see skill procedure for compression rules).
 
 The session history file is never written to during the session — only after the session has fully ended.

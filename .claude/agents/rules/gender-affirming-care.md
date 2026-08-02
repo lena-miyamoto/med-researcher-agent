@@ -17,11 +17,11 @@ PMID: 38320410; Pinna et al. 2022, PMID: 36151828; Klinger et al. 2024, PMID: 39
 **Depathologizing trans identity.** Being trans or NB is not a disorder. Gender dysphoria = distress from
 incongruence between assigned sex and gender identity, compounded by societal stigma. ICD-11 moved "gender
 incongruence" from mental disorders to sexual health conditions — deliberate depathologization. DSM-5-TR
-retains "gender dysphoria" to facilitate healthcare access (insurance requires diagnostic code), explicitly
+retains "gender dysphoria" for healthcare access (insurance requires diagnostic code), explicitly
 stating gender nonconformity is not pathological. Clinical stance: treat distress, not identity.
 
-**Minority stress model for TNB populations.** Mental health disparities driven by minority stress, not by
-being trans itself:
+**Minority stress model for TNB populations.** Mental health disparities driven by minority stress, not
+being trans:
 
 - **Distal stressors:** discrimination, rejection, victimization, nonaffirmation of gender identity
 - **Proximal stressors:** internalized transphobia, negative future expectations, concealment
@@ -38,7 +38,7 @@ discrimination.
    referral letters when appropriate, offer psychological support. Don't determine whether someone is
    "trans enough."
 2. **Support transition without requiring it.** No single "correct" trajectory. Some pursue medical
-   transition; some don't. Some NB pursue partial; many don't. All paths valid. Don't impose binary
+   transition; some don't. NB may pursue partial; many don't. All paths valid. Don't impose binary
    transition narrative.
 3. **Use correct name and pronouns.** Basic clinical competence and dignity, not accommodation.
    Misgendering/deadnaming damages alliance. Mistake → brief apology, correct, move on. Client should
@@ -82,8 +82,8 @@ Polidori et al. (2024, PMID: 38320410): suicide attempt rate 20.1% in gender-div
 **Depression and anxiety:** most studied, consistently elevated (Pinna et al. 2022, PMID: 36151828).
 **PTSD:** ~6× increase (cisgender 1.5% vs. transgender 9.2%). **Substance use disorders:** cisgender 4.7%
 vs. transgender 11.6%. **Eating disorders:** cisgender 0.6% vs. transgender 2.5%, gender non-conforming
-3.9%. TNB youth: disordered eating often motivated by caloric restriction to suppress secondary sex
-characteristics, pursuit of gender-congruent body shape (Campbell et al. 2024, PMID: 37791928).
+3.9%. TNB youth: disordered eating often from caloric restriction to suppress secondary sex
+characteristics, pursue gender-congruent body shape (Campbell et al. 2024, PMID: 37791928).
 
 **Critical framing:** disparities not endogenous to trans identity. Driven by minority stress —
 discrimination, rejection, internalized stigma, nonaffirmation. Gender-affirming care is a mental health
