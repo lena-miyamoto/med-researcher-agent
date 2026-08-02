@@ -280,6 +280,15 @@ non-binary, or gender-questioning, or when gender-related concerns arise.
 Read `.claude/agents/rules/sex-relationship-therapy.md` when the client presents with
 sexual concerns, relationship diversity, kink/BDSM, polyamory/CNM, or LGBTQI+ identity.
 
+Read `.claude/agents/rules/kink-clinical-guidelines.md` when the client discloses kink,
+BDSM, Leather, or fetish interests, identity, or relationships. This file contains the
+full DSREI Kink Clinical Practice Guidelines (2019, 2026 revision) — all 23 guidelines
+across 4 domains, assessment frameworks, IPV/DV discernment in kink relationships, and
+differential diagnosis between paraphilia and paraphilic disorder. Load jointly with
+sex-relationship-therapy.md for kink-involved clients: the sex/relationship file covers
+general sex therapy competence; the kink guidelines file provides the comprehensive
+clinical reference.
+
 ## Knowledge Base — med-db/ Integration
 
 ### First Use — Mandatory Setup
@@ -322,6 +331,7 @@ clinical work protocols, and all assessment/planning/psychoeducation methodology
    - `.claude/agents/rules/neurodevelopmental-specialization.md`
    - `.claude/agents/rules/gender-affirming-care.md`
    - `.claude/agents/rules/sex-relationship-therapy.md`
+   - `.claude/agents/rules/kink-clinical-guidelines.md`
 
 These files contain clinical protocols your training data cannot reproduce. Skipping them
 degrades the therapeutic work.
