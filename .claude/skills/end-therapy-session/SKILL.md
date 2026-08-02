@@ -36,11 +36,33 @@ Read `sessions/<client-slug>.md`. Extract:
 - Session count (`sessions` frontmatter field) — this is the **previous** session count; new session number = `sessions + 1`
 - Date from the conversation context (today's date)
 
-### 1. Write Session Note
+### 1. Clinical Self-Reflection
+
+Before writing the session note, reflect on your therapeutic work. This produces the content
+for the "Therapist reflection" field in the session note (Step 2). Brief audit:
+
+1. **What went well?** A moment of genuine connection, an intervention that landed, a
+   pattern you named accurately.
+2. **What could have been better?** A missed cue, a question that landed wrong, a moment
+   you should have challenged but didn't — or challenged but shouldn't have.
+3. **Countertransference check.** Did you find yourself working too hard to "fix"
+   something? Backing off when the clinical moment called for presence? Feeling irritated,
+   helpless, or overly identified with the client? These are signals — note them.
+4. **Pattern to watch.** One thing to be mindful of in the next session with this client.
+
+This is not self-flagellation. The goal is continuous improvement — the same standard
+you would expect from any therapist committed to getting better at their work.
+
+Condense the reflection into a compact single line for the session note (Step 2). Example:
+"Went well: naming the avoidance pattern landed. Improve: should have challenged the
+self-dismissal at 0:20 instead of moving on. Countertransference: impulse to rescue —
+caught it. Watch: client deflects praise with humor — pattern may be clinically relevant."
+
+### 2. Write Session Note
 
 Read `.claude/skills/start-therapy-session/rules/session-note-format.md` for the note template. Derive the note
 contents from the therapeutic conversation that just ended — extract presenting issue, themes, interventions, key
-quotes, patterns, gaps flagged, state at close, and thread for next.
+quotes, patterns, gaps flagged, state at close, thread for next, and therapist reflection (from Step 1).
 
 Write the session note to `sessions/<client-slug>.md`, prepended below the YAML frontmatter (newest sessions at top).
 Update `sessions` count in frontmatter: increment by 1.
@@ -48,7 +70,7 @@ Update `sessions` count in frontmatter: increment by 1.
 **Every session note must include the "Gaps flagged" field.** "none" is acceptable when the agent did not flag
 anything for research.
 
-### 2. Update Permanent Client Profile
+### 3. Update Permanent Client Profile
 
 Review the session for information belonging in the Permanent Client Profile:
 
@@ -62,7 +84,7 @@ missing this information in session 20 degrade therapeutic work?" If yes, it bel
 
 **Permanent Client Profile section is never compressed.**
 
-### 3. Save Full Session Protocol
+### 4. Save Full Session Protocol
 
 Create `sessions/protocols/` if it does not exist. Save the complete therapeutic dialogue to:
 
@@ -83,7 +105,7 @@ Format:
 Protocol files are NOT auto-read by the agent at session start. They exist for client reference and explicit
 lookback only.
 
-### 4. Compress History File
+### 5. Compress History File
 
 Read `.claude/skills/start-therapy-session/rules/compression-rules.md` and apply all rules to the Session Log
 section only.
@@ -99,10 +121,13 @@ Key compression rules:
 - Collapse sessions older than 10 sessions ago to 1-2 lines each
 - No narrative connective tissue
 - Remove frontmatter fields that have grown stale
+- **Therapist reflection field preserved.** Never drop the reflection entirely — at minimum, keep the
+  "pattern to watch" portion so it transfers to future sessions. For sessions older than 5, compress to
+  the pattern-to-watch line only.
 
 Write the compressed file back to `sessions/<client-slug>.md`.
 
-### 5. Deliver Closing Statement
+### 6. Deliver Closing Statement
 
 Tell the client the session is documented. Use the client's language (DE/EN). Statement, not a question. Door
 closed warmly, no invitation to re-engage.
@@ -119,14 +144,17 @@ After delivering, the session is over. Do not add "How are you feeling now?" or 
 
 ## Validation
 
-1. Session note written to history file in correct position (below frontmatter, newest first)
-2. `sessions` count in frontmatter incremented
-3. "Gaps flagged" field present in session note
-4. Permanent Client Profile reviewed and updated if clinically essential information surfaced
-5. Full session protocol saved with correct filename format and speaker labels
-6. History file compressed — Session Log only, Permanent Client Profile untouched
-7. Closing statement delivered as statement, not question
-8. No therapeutic re-engagement after closing
+1. Clinical self-reflection completed and condensed — content ready for session note field
+2. Session note written to history file in correct position (below frontmatter, newest first)
+3. `sessions` count in frontmatter incremented
+4. "Gaps flagged" field present in session note
+5. "Therapist reflection" field present in session note — all four components addressed
+6. Permanent Client Profile reviewed and updated if clinically essential information surfaced
+7. Full session protocol saved with correct filename format and speaker labels
+8. History file compressed — Session Log only, Permanent Client Profile untouched, therapist reflection preserved
+   (at minimum pattern-to-watch line kept)
+9. Closing statement delivered as statement, not question
+10. No therapeutic re-engagement after closing
 
 ## Writing Rules
 

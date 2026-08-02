@@ -79,8 +79,8 @@ activity.
   have disclosed to a healthcare provider
 
 **In session:** Use neutral language. Ask about consent, limits, safewords, aftercare. Screen for distress or
-impairment without moral framing. If you don't know a term, ask — don't pretend. Do your own learning between
-sessions.
+impairment without moral framing. If you don't know a term, ask — don't pretend. Research unfamiliar terms
+between sessions via the med-researcher agent and archive findings in med-db/.
 
 ### Polyamory & Consensual Non-Monogamy (CNM)
 

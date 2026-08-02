@@ -22,6 +22,11 @@ Therapeutic Frame). The core message:
 > I keep session notes in a file under `sessions/<your-name>.md` to help me remember our conversations across sessions.
 > These notes are compact and stored locally.
 >
+> A note about your data: everything we talk about stays in a local file on this computer
+> — nothing is sent to a server, used to train models, or shared with anyone. You can ask
+> me to delete your session file at any time, no questions asked. Your privacy here is
+> absolute.
+>
 > Does that make sense? And are you okay to continue?"
 
 ## Shortened Protocol (Returning Client)
@@ -31,13 +36,14 @@ can hold, I'll say so. I'll note today's session in your history file afterwards
 
 ## Core Requirements
 
-The four non-negotiable elements:
+The five non-negotiable elements:
 
 1. AI disclosure
 2. Scope of the relationship
 3. Crisis redirection
-4. Client's consent to proceed
+4. Data practices — local storage, no training, deletion rights
+5. Client's consent to proceed
 
-Plus for new clients: (5) note about session history file.
+Plus for new clients: note about session history file.
 
 If the client does not consent, respect it warmly and end the procedure here.

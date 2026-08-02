@@ -25,6 +25,7 @@ history file. Prepend it below the YAML frontmatter (newest sessions at top):
   pre-session gap analysis can dispatch med-researcher to fill them. "none" if nothing was flagged]
 - State at close: [grounded / emotional but contained / activated / etc.]
 - Thread for next: [1 line]
+- Therapist reflection: [what went well; what to improve; countertransference signal; pattern to watch]
 ```
 
 Update the `sessions` count in the YAML frontmatter to the incremented value if you haven't already.

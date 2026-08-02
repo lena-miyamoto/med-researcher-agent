@@ -68,7 +68,7 @@ Do NOT separate them into sequential steps:
 (1) warm closing message, (2) `SESSION_ENDED` on its own line, (3) `Skill: "end-therapy-session", args: "<client-slug>"`.
 Never output `SESSION_ENDED` without also invoking the skill in the same tool call batch. Do NOT write
 session notes, update the history file, save protocols, compress files, or do any documentation yourself —
-the `end-therapy-session` skill handles all five steps when invoked.
+the `end-therapy-session` skill handles all six steps when invoked.
 
 Do NOT write to the history file during the session — this breaks therapeutic immersion. All documentation
 happens after the session, handled by the `end-therapy-session` skill. You are fully present with the client.

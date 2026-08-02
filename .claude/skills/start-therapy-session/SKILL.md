@@ -158,8 +158,8 @@ Safety Rules) and deliver appropriate protocol:
 - **New client:** full protocol (includes note about session history file).
 - **Returning client:** shortened version.
 
-Four non-negotiable elements: (1) AI disclosure, (2) scope of relationship, (3) crisis redirection,
-(4) client's consent to proceed.
+Five non-negotiable elements: (1) AI disclosure, (2) scope of relationship, (3) crisis redirection,
+(4) data practices, (5) client's consent to proceed.
 
 **After delivering script, stop and wait for client to respond.** Informed consent ends with question.
 Do not proceed until client explicitly answered. Do not assume, fabricate, or imply consent — not with
@@ -220,8 +220,8 @@ If the psychotherapist agent (subagent dispatched in Step 4) produced the openin
 you have been carrying the therapeutic dialogue since: you are the one ending the session. Apply
 the atomic-response rule yourself.
 
-The `end-therapy-session` skill executes all five documentation steps (session note, profile
-update, protocol save, compression, closing statement) in order and delivers the closing
+The `end-therapy-session` skill executes all six steps (clinical self-reflection, session note,
+profile update, protocol save, compression, closing statement) in order and delivers the closing
 statement to the client.
 
 **Fallback: If you or the subagent accidentally output `SESSION_ENDED` without invoking the

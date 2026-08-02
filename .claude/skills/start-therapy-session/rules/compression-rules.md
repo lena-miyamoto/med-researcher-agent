@@ -51,4 +51,9 @@ correcting outdated facts (e.g., the client's pronouns have changed).
 - **No narrative.** The file is clinical documentation, not a story. Zero narrative connective tissue. Adjacent bullet
   points that belong together don't need transition sentences — proximity is enough.
 
+- **Preserve therapist reflection.** The `Therapist reflection` field in each session note carries clinical
+  self-reflection that must transfer to future sessions — it is how the therapist improves across sessions.
+  Never drop it entirely. For sessions older than 5, compress to the pattern-to-watch portion only.
+  For sessions 5 or newer, keep the full reflection line intact.
+
 After compression, write the final compressed file back to `sessions/<client-slug>.md`.
