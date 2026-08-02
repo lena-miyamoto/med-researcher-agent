@@ -42,20 +42,19 @@ evidence.
    - Involves an intervention? The agent will automatically perform a harms search.
    - Asserts causation? The agent will require at least cohort-level evidence.
 
-3. **Dispatch research agents**: for each claim, dispatch a `med-researcher` agent with a focused prompt.
-   - **Supporting evidence**: "Research whether evidence supports the claim: [claim text]."
-   - **Counter-evidence**: "Research whether evidence contradicts the claim: [claim text]."
-   - **Harms** (for intervention or safety-asserting claims): "Research adverse events and safety data for:
-   [intervention]."
-   Run claims in parallel where the number permits.
+3. **Dispatch med-researcher agents**: for each claim, dispatch a `med-researcher` agent with a focused,
+   comprehensive prompt. med-researcher handles supporting evidence, counter-evidence, and harms/safety
+   searches per its mandatory Evidence Quality Standards — do not dispatch separate agents for each
+   question. When the claim matches Extraordinary Claims triggers, flag `extraordinary: true` in the
+   prompt. Run claims in parallel where the number permits.
 
-4. **Review agent findings**: each agent returns structured findings per the agent's Research Output Format (evidence
-quality rating, supporting evidence with quality assessment, risk measures, counter-evidence, harms, quality
-justification, applicability note, sources). Before accepting:
-   - Did the agent find the highest evidence level available? If the quality rating seems too low for the claim type,
-   re-dispatch with a refined prompt.
-   - Are there obvious gaps or conflicting studies not addressed? Cross-check with a targeted re-search if the question
-   is high-stakes.
+4. **Review agent findings**: each agent returns structured findings per med-researcher's Research Output
+   Format and Evidence Quality Standards. The agent handles evidence quality rating, quality assessment,
+   risk measures (ARR/RRR, NNT/NNH), counter-evidence, harms, and source identifiers. Before accepting:
+   - Did the agent find the highest evidence level available? If the quality rating seems too low for the
+     claim type, re-dispatch with a refined prompt.
+   - Are there obvious gaps or conflicting studies not addressed? Cross-check with a targeted re-search if
+     the question is high-stakes.
    - Did the harms search find safety signals that change the overall assessment?
 
 5. **Compile the report** — assign a verdict for each claim by weighing the supporting, counter, and harms evidence
@@ -114,7 +113,8 @@ not override or soften the agent's findings.
 ## Validation
 
 1. Every claim receives a verdict and references the agent's evidence quality rating.
-2. Every claim was researched with three prompts (supporting, counter, harms where applicable).
+2. Every claim was researched by a med-researcher agent (which handles supporting, counter, and harms
+   searches per its mandatory standards).
 3. Extraordinary claims were identified and flagged for the agent.
 4. Every verdict rests on the agent's quality-assessed evidence — no study is cited without passing the agent's
 mandatory criteria.

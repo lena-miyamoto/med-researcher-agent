@@ -1,3 +1,9 @@
+---
+description: >
+  Complete `uv run` parameter reference covering all med-db entry points. Command tables for
+  archival, lookup, query, ICD-11, DSM-5-TR, therapy methods, and integrity check operations.
+---
+
 # med-db Command Reference
 
 Invoke as `uv run <entry-point> …` from repo root. Default JSON; `--format text` for readable output.

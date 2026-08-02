@@ -163,14 +163,14 @@ sufficient for a positive conclusion unless it is a large, well-replicated RCT w
 - **APA PsycINFO → open databases → Sci-Hub pipeline**: PsycINFO provides abstracts only without a paid institutional
   account. Use it for discovery, then pursue full text: (1) search the paper by title/DOI/author on PubMed and Europe PMC
   — many psychology journals are also indexed there; (2) check DOAJ and other open-access directories; (3) try Google
-  Scholar for open-access PDFs or author-posted preprints; (4) Sci-Hub fallback per `CLAUDE.md` as a last resort. A
+  Scholar for open-access PDFs or author-posted preprints; (4) Sci-Hub fallback as a last resort. A
   PsycINFO abstract alone is never sufficient for evidence conclusions — you must retrieve and evaluate the full paper.
 - **DocCheck Flexicon**: For general medical questions in German (definitions, pathophysiology, diagnostics, clinical
   basics), consult [DocCheck Flexicon](https://flexikon.doccheck.com/de/Hauptseite) first — it's a German-language medical
   wiki suitable for overview knowledge. Fall back to the standard paper-database approach when more detailed,
   literature-backed evidence is required.
-- **Sci-Hub fallback**: Follow the Sci-Hub fallback rule in `CLAUDE.md`. Always try the official open-access source
-  first.
+- **Sci-Hub fallback**: Prefer official open-access sources. Use Sci-Hub only as a last resort when a paper is not
+  available through PubMed, Europe PMC, DOAJ, or Google Scholar.
 
 ## Research Output Format
 
