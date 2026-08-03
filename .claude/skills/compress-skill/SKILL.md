@@ -44,6 +44,10 @@ Per file, section-by-section — no scripts, no external calls:
    a. Identify major heading sections (`##` or `###` delimited blocks).
    b. Compress one section at a time, applying rules below.
    c. After each section: self-check against saved original BEFORE next section.
+   - Count content-bearing elements (bullets, labelled sub-items, standalone paragraphs)
+     in compressed vs. original. Fewer items → content silently dropped — even if bullets
+     were merged to prose or collapsed across labelled groups. Restore missing items.
+   - Verify compound qualifiers and resource references survived in that section.
    d. If any check fails for that section, fix in place, then proceed.
 7. **Final re-read.** After all sections done, re-read entire edited file via `Read` (mandatory — fresh call). Review as first-time reader — primary verification, not afterthought.
 8. **Full self-check** (below), comparing re-read against original (step 5), item by item. Fix in place if needed.
@@ -77,6 +81,13 @@ Lossless: these survive compression exactly as in original, strength and order u
   without...", "Skipping this means...").
 - Per-item symmetry — if every item in a list carries a shared emphasis phrase (e.g., "Never skip it"),
   all items must retain it equally.
+- Compound qualifiers — slash-separated modifiers (e.g., "social/medical", "verbal/non-verbal")
+  and parenthetical scope qualifiers (e.g., "(especially for custody issues)"). These
+  distinguish clinical categories or narrow domain-specific context. Neither half of a
+  slash-pair is decorative.
+- Resource references — named signposting references: campaign names, brochure titles,
+  directory entries, organization programs (e.g., "NCSF Consent Counts campaign", "Got Consent
+  for Kink brochure"). Actionable reader signposts, not filler prose.
 
 Any compression that loses one of these categories is over-optimized — restore the lost content.
 
@@ -96,9 +107,13 @@ Any compression that loses one of these categories is over-optimized — restore
 
 Compression biases toward cutting. Counter:
 
-- **Doubt → preserve.** Uncertain about any Lossless category → keep. Cut only when certain removal loses nothing from all six.
+- **Doubt → preserve.** Uncertain about any Lossless category → keep. Cut only when certain removal loses nothing from any Lossless category.
 - **Borderline load-bearing → load-bearing.** Might be emphasis, temporal, identity, or consequential → IS load-bearing until proven otherwise.
-- **Burden of proof is on removal.** Don't argue "probably safe." Argue "definitely safe — here's why it touches none of the six Lossless categories."
+- **Burden of proof is on removal.** Don't argue "probably safe." Argue "definitely safe — here's why it touches none of the Lossless categories."
+- **Directive rationale is load-bearing.** When a MUST/NEVER/ALWAYS directive is immediately
+  preceded or followed by its ethical/clinical rationale (e.g., "...this is conversion therapy
+  by another name"), the rationale is not "explanatory prose" — it establishes why the
+  directive is non-negotiable. Cut the rationale, and the directive loses its authority.
 
 Not an excuse to skip — a rule against over-compression. Compress aggressively where clearly safe; freeze where uncertain.
 
@@ -129,12 +144,14 @@ Self-check runs twice: per-section during editing (step 6c), full-file review af
 - No leaked meta-commentary, stray `---`, or fence artifacts?
 - Emphasis markers (bold `**`/`__`, italic `*`/`_`) and all emphasis keywords (CRITICAL, IMPORTANT, YOU MUST, NEVER, ALWAYS, ESSENTIAL, MANDATORY, NOT OPTIONAL, must, should, always, never) unchanged in presence, strength, and direction?
 - Temporal framing words (before/after, first/then, at session opening, sequencing) preserved?
-- Enumerated element count and order preserved when the enumeration defines a complete set or carries distinct meanings per item?
+- Element count per section (bullets, labelled items, standalone paragraphs) matches original? Enumerated element count and order preserved when the enumeration defines a complete set or carries distinct meanings per item?
 - Identity-level claims ("you are [not]...", "this is [not]...", category membership) unchanged?
 - Consequence statements ("Without X, Y", "You cannot... without...", "Skipping this means...", cause-effect chains) preserved in full?
 - Per-item symmetric emphasis (e.g., "Never skip it" on every item) preserved equally?
+- Compound qualifiers (slash-separated terms, parenthetical scope qualifiers) preserved?
+- Resource references (campaign names, brochure titles, directory/program names) preserved to exact wording?
 - Trailing newline still there?
-- **Diff scan:** review every removal. For each, confirm outside all six Lossless categories. Flag ambiguous removals — restore if not confidently safe.
+- **Diff scan:** review every removal. For each, confirm outside all Lossless categories. Flag ambiguous removals — restore if not confidently safe.
 
 Any check fails → fix directly. Don't restart from scratch. If 3+ checks fail, re-edit offending sections against original, re-run full-file review.
 
