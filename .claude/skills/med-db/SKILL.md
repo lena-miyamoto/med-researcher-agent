@@ -123,9 +123,16 @@ local, no-network** commands are permitted during the session:
 | `uv run med-db-lookup-dsm5 --code "..."` | `uv run med-db-integrity-check` (harmless but unnecessary mid-session) |
 | `uv run med-db-lookup --doi ...` | `WebSearch`, `WebFetch` for new papers (network) |
 | Reading `med-db/guidelines/therapy-methodologies/source.md` | Dispatching `med-researcher` agent (writes to med-db/) |
+| Dispatching Haiku sub-agent for read-only med-db queries | Dispatching any sub-agent other than Haiku for med-db access |
 
 Read-only commands are sub-second, local, and equivalent to consulting a reference shelf.
 Network searches and archival are between-session work.
+
+**Haiku sub-agent pattern for therapy sessions:** The psychotherapist agent may dispatch a
+Haiku-model sub-agent to run read-only med-db commands during a session. The sub-agent must
+use only commands from the "Permitted during session" column above. It must never run archival,
+network, or write commands. This pattern lets the therapist consult the reference shelf without
+breaking therapeutic presence.
 
 ## Command Reference
 

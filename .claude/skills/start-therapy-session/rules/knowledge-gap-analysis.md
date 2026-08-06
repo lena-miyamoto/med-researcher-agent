@@ -25,6 +25,11 @@ Read the full session history. For every session note, identify:
   a specific form of discrimination, a cultural practice, a health condition, a relationship structure)
 - **Topics flagged in "Gaps flagged" fields** — anything the agent explicitly admitted it didn't know enough about
   during a previous session and committed to researching
+- **Psychoeducation topics promised or requested** — any topic the client explicitly asked to learn more about,
+  or that the therapist promised to bring information on in a future session. Look for phrases in session notes
+  like "client asked about [X]," "promised to follow up on [Y]," "client wanted more information on [Z]," or
+  similar. These are clinical commitments that must be honored. If the therapist said "I'll look into that" or
+  "let me bring you more on that next time," it counts as a pending psychoeducation topic.
 
 ## 0b-ii. Check Coverage
 
@@ -75,6 +80,9 @@ After the gap analysis is complete (or if skipped for a new client), extract key
 - Any known diagnoses, important life context, or standing concerns
 - **Knowledge gaps newly filled** — brief summary of what was researched and archived this cycle (so the agent knows what
   new knowledge is available)
+- **Pending psychoeducation from previous sessions** — topics the client asked to learn more about or the
+  therapist promised to bring information on. Each topic should name what was requested and in which session.
+  "none" if no pending requests.
 - **Unresolved gaps** — topics flagged in previous sessions that still lack coverage (so the agent can be honest with the
   client if they come up)
 
