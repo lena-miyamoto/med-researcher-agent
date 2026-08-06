@@ -27,6 +27,21 @@ client slug. This skill must not be called during active therapeutic dialogue.
 
 ## Procedure
 
+### 0. Create Safety Backup
+
+Before making **any** edit to `sessions/<client-slug>.md`, create a direct safety copy:
+
+```bash
+cp sessions/<client-slug>.md "sessions/~<client-slug>.md"
+```
+
+Verify the copy succeeded: confirm `sessions/~<client-slug>.md` exists and has the same file size as the original.
+If the copy fails (disk full, permissions), **abort the entire procedure immediately** — the session file remains
+untouched.
+
+The backup is the rollback anchor. If any structural integrity check in Step 5b fails, restore from this copy.
+It must not be used as a reference during editing — it exists only for recovery.
+
 ### Input
 
 Read `sessions/<client-slug>.md`. Extract:
@@ -127,6 +142,165 @@ Key compression rules:
 
 Write the compressed file back to `sessions/<client-slug>.md`.
 
+**After writing, pause.** Do not proceed to Step 6 yet. Run the structural integrity verification
+in Step 5b first. The closing statement is only delivered after the file passes verification.
+
+### 5b. Structural Integrity Verification
+
+Read both files into context and compare:
+
+1. Read `sessions/~<client-slug>.md` (backup — pre-edit state)
+2. Read `sessions/<client-slug>.md` (modified — post-edit state)
+
+Run each check below. Every check must pass. If any check produces an ERROR that cannot be
+fixed in place, proceed to Rollback (Step 5b-R). If all checks pass with no remaining ERRORs,
+proceed to Cleanup (Step 5b-C) then Step 6.
+
+#### Check 1: YAML Frontmatter Integrity
+
+Compare the frontmatter block (text between opening `---` and closing `---`) in both files:
+
+- All required keys present in both files: `client`, `slug`, `language`, `first_session`, `sessions`
+- `client`, `slug`, `language`, `first_session` — values identical to backup
+- `sessions` in modified file == `sessions` in backup + 1
+  - **If not:** ERROR. Fix by setting the correct value.
+- No new frontmatter keys appeared that were not in the backup (removing stale keys per compression
+  rules is acceptable; adding undocumented keys is not)
+
+#### Check 2: Section Order and Presence
+
+Identify the major structural sections by their `##` headings. Verify this exact sequence, in this
+order, with no sections missing:
+
+1. `# <Name> — Session History` heading (or equivalent level-1 heading)
+2. Recent session notes block (one or more `### S<N>: <YYYY-MM-DD>` entries between the frontmatter
+   and the Permanent Client Profile)
+3. `## Permanent Client Profile`
+4. `## Session Log`
+
+- **Sections in wrong order:** ERROR. Most common: session notes appearing after or inside the
+  Permanent Client Profile. Fix by reordering.
+- **Section missing:** ERROR. Restore from backup, then re-apply edits.
+- **Unexpected `##` or `###` heading inside Permanent Client Profile:** ERROR. The profile section
+  must contain only bullet list items and blockquotes — no sub-headings. Remove the intruding heading.
+
+#### Check 3: Session Note Boundaries — No Cross-Contamination
+
+Verify that session note headings and profile content have not leaked across section boundaries:
+
+- No `### S<N>: <YYYY-MM-DD>` heading appears inside the `## Permanent Client Profile` section
+- No profile content (bullet list items, blockquotes with `>` prefix) appears inside `## Session Log`
+  or among recent session notes
+
+**If cross-contamination found:** ERROR. A session note was misplaced into the profile, or profile
+content leaked into the log. Move the content back to its correct section.
+
+#### Check 4: Field Completeness — Recent Session Notes
+
+For each `### S<N>: <YYYY-MM-DD>` heading above `## Permanent Client Profile` (uncompressed recent
+sessions), verify all 9 mandatory fields:
+
+| Field | Label |
+|---|---|
+| Presenting | `- Presenting:` |
+| Themes | `- Themes:` |
+| Interventions | `- Interventions:` |
+| Key quotes | `- Key quotes:` |
+| Patterns | `- Patterns:` |
+| Gaps flagged | `- Gaps flagged:` |
+| State at close | `- State at close:` |
+| Thread for next | `- Thread for next:` |
+| Therapist reflection | `- Therapist reflection:` |
+
+- **Any field missing from a recent session note:** ERROR. Identify which session and which field.
+  Restore the missing field content from the backup, or if this is the newly written session note,
+  verify it was written correctly.
+- "Gaps flagged" must be present even if value is "none".
+- "Therapist reflection" must contain content — never empty. For sessions older than 5, the
+  reflection may be compressed to the pattern-to-watch portion only (per compression rules), but
+  the field label must remain.
+
+#### Check 5: Field Completeness — Compressed Session Log
+
+For each `### S<N>: <YYYY-MM-DD>` heading under `## Session Log`:
+
+- Every compressed entry has a non-empty body after its heading (not a bare heading with no content)
+- **If compressed entry is empty (heading only, no body):** WARNING. Content was lost during
+  compression. Restore the entry body from the backup.
+
+#### Check 6: Permanent Client Profile — Untouched
+
+Compare the `## Permanent Client Profile` section against the backup:
+
+- Section heading `## Permanent Client Profile` present in both
+- Profile content (everything between the heading and the next `##` heading or end of file) is
+  identical to the backup, **except** for intentional additions made in Step 3 (new timestamped
+  observations, updated fields)
+- **If content was removed or altered that was NOT an intentional Step 3 addition:** ERROR.
+  Compression has leaked into the protected section. Restore profile content from backup, then
+  re-apply only the intentional additions.
+
+#### Check 7: Session Count — Self-Consistency
+
+Count the total number of unique `### S<N>:` headings across the entire file (both recent notes
+and session log). This count must equal the `sessions` value in the YAML frontmatter.
+
+- **Counts do not match:** ERROR. Either sessions were lost during compression, or the frontmatter
+  count was not updated. Fix by reconciling: count actual headings, update frontmatter to match,
+  or restore missing sessions from backup.
+
+#### Check 8: Gate Before Closing Statement
+
+All ERROR-level findings must be resolved before delivering the closing statement. WARNING-level
+findings must be acknowledged but do not block.
+
+- **Any ERROR remaining:** do NOT proceed to Step 6. Return to the failing check and fix, or
+  initiate rollback (Step 5b-R).
+
+#### 5b-C: Cleanup on Successful Verification
+
+All checks passed with no remaining ERRORs:
+
+1. Delete the backup file:
+
+   ```bash
+   rm "sessions/~<client-slug>.md"
+   ```
+
+2. Confirm deletion: `sessions/~<client-slug>.md` no longer exists.
+3. Proceed to Step 6 (Deliver Closing Statement).
+
+The backup file must not persist after a successful session. If deletion fails (file remains on
+disk), log a WARNING but proceed — the file is harmless but should be removed manually.
+
+#### 5b-R: Rollback on Verification Failure
+
+If any structural integrity check produces an ERROR that cannot be fixed in place:
+
+1. Restore the backup:
+
+   ```bash
+   cp "sessions/~<client-slug>.md" "sessions/<client-slug>.md"
+   ```
+
+2. Verify the restore: read the restored file and confirm it matches the backup (frontmatter
+   `sessions` count matches, `## Permanent Client Profile` section present, session notes intact).
+3. Delete the backup:
+
+   ```bash
+   rm "sessions/~<client-slug>.md"
+   ```
+
+4. Report the failure to the orchestrator:
+   > "Session documentation failed integrity verification. The session file has been restored to
+   > its pre-edit state. The full session protocol was saved to
+   > `sessions/protocols/<date>_S<N>_<slug>.md` and is preserved. Manual documentation review is
+   > needed before the next session."
+5. **Do not deliver a closing statement.** The session is in an error state — closing normally
+   would be misleading.
+6. The `start-therapy-session` orchestrator must note this failure so the agent is aware before
+   the next session that documentation for session `S<N>` is incomplete.
+
 ### 6. Deliver Closing Statement
 
 Tell the client the session is documented. Use the client's language (DE/EN). Statement, not a question. Door
@@ -144,17 +318,24 @@ After delivering, the session is over. Do not add "How are you feeling now?" or 
 
 ## Validation
 
-1. Clinical self-reflection completed and condensed — content ready for session note field
-2. Session note written to history file in correct position (below frontmatter, newest first)
-3. `sessions` count in frontmatter incremented
-4. "Gaps flagged" field present in session note
-5. "Therapist reflection" field present in session note — all four components addressed
-6. Permanent Client Profile reviewed and updated if clinically essential information surfaced
-7. Full session protocol saved with correct filename format and speaker labels
-8. History file compressed — Session Log only, Permanent Client Profile untouched, therapist reflection preserved
-   (at minimum pattern-to-watch line kept)
-9. Closing statement delivered as statement, not question
-10. No therapeutic re-engagement after closing
+All checks run in Step 5b (Structural Integrity Verification). This section summarizes what was verified
+for traceability.
+
+1. Clinical self-reflection completed (Step 1) — therapist reflection field populated in session note
+2. YAML frontmatter intact, `sessions` incremented correctly, no spurious keys (Check 1)
+3. Section structure in correct order: History header, recent notes, Permanent Client Profile, Session Log
+   (Check 2)
+4. No section cross-contamination — session notes not inside Profile, Profile content not inside Session Log
+   (Check 3)
+5. All 9 mandatory fields present in new session note and all recent session notes (Check 4)
+6. Compressed session log entries have non-empty bodies (Check 5)
+7. Permanent Client Profile untouched except for intentional Step 3 additions (Check 6)
+8. Session count in frontmatter matches actual session entries in file (Check 7)
+9. Full session protocol saved with correct filename format and speaker labels (Step 4)
+10. Backup file deleted after successful verification (Step 5b-C)
+11. Closing statement delivered as statement, not question; no therapeutic re-engagement after closing (Step 6)
+12. If verification failed: session file restored from backup, failure reported to orchestrator, no closing
+    statement delivered (Step 5b-R)
 
 ## Writing Rules
 
