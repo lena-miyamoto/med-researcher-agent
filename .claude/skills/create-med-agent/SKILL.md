@@ -53,7 +53,7 @@ only when routing boundaries change.
 3. Shared file holds stable role boundaries and output expectations.
 4. Wrappers point at the shared file and do not duplicate its procedure.
 5. Differences are only the harness differences that are actually needed.
-6. Run `uv run lint-md` on every changed file; diagnostics must be clean.
+6. Run `uv run lint-md` on every changed file — follow `CLAUDE.md`; diagnostics must be clean.
 7. Repo doc references match created paths.
 
 ## Output

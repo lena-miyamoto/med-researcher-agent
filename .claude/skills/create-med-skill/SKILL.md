@@ -48,7 +48,7 @@ only when routing boundaries change.
 2. Frontmatter parses in each.
 3. Shared file holds the procedure; wrappers do not duplicate it.
 4. Wrapper bodies cite the shared file path exactly.
-5. Run `uv run lint-md` on every changed file; diagnostics must be clean.
+5. Run `uv run lint-md` on every changed file — follow `CLAUDE.md`; diagnostics must be clean.
 6. Repo doc references match created paths.
 
 ## Output

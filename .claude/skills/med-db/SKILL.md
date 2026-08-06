@@ -206,6 +206,5 @@ common operations.
 
 ### Lint Rules
 
-- After completing edits to any `*.md` file, run `uv run lint-md` (or `uv run lint-md --fix`).
-- **Never run `uv run pymarkdownlnt` directly.** Only `uv run lint-md`.
-- Canonical test command after editing any `*.py` file: `uv run test`. Full suite must pass.
+Follow `CLAUDE.md` (Command Invocation Contract section) for `uv run lint-md` and
+`uv run test` invocation rules.
