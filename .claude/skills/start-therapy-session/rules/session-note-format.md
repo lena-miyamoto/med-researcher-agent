@@ -6,12 +6,11 @@ description: >
 
 # Session Note Format
 
-When the client has ended the session (either naturally or by signalling they're done — e.g., "I'd like to end here,"
-"that's all for today"), the therapeutic session is over. Do NOT re-engage the client in a post-session conversation.
-The session is over.
+When client ends session (naturally or signals done — e.g., "I'd like to end here," "that's all for today"),
+session is over. Do NOT re-engage in post-session conversation. The session is over.
 
-Produce a compact session note using the format from the psychotherapist agent. Write it to the client's
-history file. Prepend it below the YAML frontmatter (newest sessions at top):
+Produce compact session note using psychotherapist agent format. Write to client's history file.
+Prepend below YAML frontmatter (newest at top):
 
 ```markdown
 ### Session [N]: [YYYY-MM-DD]
@@ -28,6 +27,6 @@ history file. Prepend it below the YAML frontmatter (newest sessions at top):
 - Therapist reflection: [what went well; what to improve; countertransference signal; pattern to watch]
 ```
 
-Update the `sessions` count in the YAML frontmatter to the incremented value if you haven't already.
+Update `sessions` count in YAML frontmatter to incremented value if not already done.
 
-Write the updated file.
+Write updated file.

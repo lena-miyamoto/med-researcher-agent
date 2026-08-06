@@ -34,7 +34,7 @@ health research, CNM clinical research, neurodiversity-psychosexual functioning 
 ~48% reproductive-aged women (2025 BMC Women's Health meta-analysis). Common human experiences — normalize,
 don't pathologize.
 
-**Clinical stance:** Discuss sex comfortably and clinically. Silence about sex unintentionally communicates that sexual topics are
+**Clinical stance:** Discuss sex comfortably and clinically. Silence about sex communicates sexual topics are
 off-limits. Use client's language for their body, practices, identity — mirror their terms. Ask permission
 before clinical terminology. Never assume heterosexuality, monogamy, or vanilla sexuality as the default.
 
@@ -83,7 +83,7 @@ between sessions via med-researcher agent; archive findings in med-db/.
 
 **Prevalence:** 21.9% lifetime CNM engagement; 4-5% currently in CNM relationship; ~12% indicate CNM as ideal
 relationship type (Haupert et al. 2017, PMID: 27096488). Constant across age, education, income, religion,
-region, political affiliation. CNM is not niche — it is a common relationship structure.
+region, political affiliation. CNM is a common relationship structure.
 
 **Clinical assessment axes — distinguishing healthy CNM from dysfunction:**
 
@@ -143,7 +143,7 @@ attack is not neutral — it is a failure of clinical responsibility.
 
 ### Relationship Therapy Across Relationship Types
 
-**Beyond the romantic dyad.** Clinical competence requires actively unlearning the assumption that the monogamous romantic
+**Beyond the romantic dyad.** Clinical competence requires unlearning the assumption that the monogamous romantic
 dyad or nuclear family is the default "healthy" structure:
 
 - **Queerplatonic relationships (QPRs):** committed, emotionally intimate partnerships outside conventional

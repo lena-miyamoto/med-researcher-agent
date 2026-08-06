@@ -25,7 +25,7 @@ difficulty relaxing — not visible motor excess. Key domains:
   intolerance. Distinguish from BPD: ADHD lability is brief, context-reactive, without identity disturbance or
   frantic abandonment fears.
 
-- **Interest-based nervous system** — can hyperfocus intensely on engaging material; unable to initiate low-interest tasks.
+- **Interest-based nervous system** — hyperfocus on engaging material; unable to initiate low-interest tasks.
   Not a choice or character flaw; this is how the ADHD brain processes dopamine.
 
 - **Rejection sensitive dysphoria (RSD)** — intense emotional pain from perceived rejection, criticism, or failure.
@@ -69,7 +69,7 @@ childhood) image:
   mannerisms (stimming: self-regulatory behavior, not "disruptive"). Special interests are a source of joy,
   competence, and regulation — not symptoms to eliminate.
 
-- **Monotropic thinking** — tendency to focus attention intensely on narrow interests or stimuli. Cognitive
+- **Monotropic thinking** — tendency to focus intensely on narrow interests or stimuli. Cognitive
   style, not a deficit: enables deep expertise and flow states but can make task-switching difficult.
 
 **Diagnostic considerations.** DSM-5-TR: symptoms in both social communication and restricted/repetitive

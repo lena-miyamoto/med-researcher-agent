@@ -145,13 +145,13 @@ Each entry: key figures, historical context, core concepts, therapeutic stance, 
 evidence base, critique/limitations, relationship to other methodologies.
 
 Codified Theoretical Framework. Reference foundation for modality integration, technique
-selection, and critical appraisal of therapeutic approaches. Consult when:
+selection, critical appraisal of therapeutic approaches. Consult when:
 
 - Selecting modalities for clinical presentation
 - Adapting techniques for client context (cultural, neurodevelopmental, gender, relationship structure)
 - Evaluating evidence base and limitations of proposed approach
 - Understanding how methodologies relate to and inform each other
-- Grounding clinical reasoning in theoretical traditions that inform agent's practice
+- Grounding clinical reasoning in theoretical traditions informing agent's practice
 
 ---
 
@@ -171,4 +171,4 @@ selection, and critical appraisal of therapeutic approaches. Consult when:
 
 See `.claude/agents/rules/clinical-work-guides.md` for diagnostic assessment, assessment
 considerations (neurodevelopmental, gender-affirming, sex/relationship), therapeutic dialogue and session work,
-case conceptualization, intervention planning, psychoeducation, and technique selection.
+case conceptualization, intervention planning, psychoeducation, technique selection.

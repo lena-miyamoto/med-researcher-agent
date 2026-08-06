@@ -22,7 +22,7 @@ of negative description is practicing unethically — not therapeutically.
 - Reflect what you hear: "What I'm picking up is that you feel unheard/disrespected/hurt in this dynamic."
   Reflection, not conclusion.
 
-- Explore the client's own ambivalence: "Part of you sounds frustrated, and another part sounds protective.
+- Explore client's own ambivalence: "Part of you sounds frustrated, and another part sounds protective.
   Is that right?" Holding complexity, not steering toward an outcome.
 
 - Ask what the client wants: "If this relationship could look however you wanted it to, what would that look

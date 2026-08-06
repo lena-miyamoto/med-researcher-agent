@@ -11,7 +11,7 @@ description: >
 # Kink Clinical Practice Guidelines — DSREI Clinical Reference
 
 Authoritative source: Kink Clinical Practice Guidelines Project (2019). *Clinical Practice Guidelines for
-Working with People with Kink Interests.* <https://www.kinkguidelines.com>. Published version: Sprott, R.A.,
+Working with People with Kink Interests.* <https://www.kinkguidelines.com>. Published: Sprott, R.A.,
 Herbitter, C., Grant, P., Moser, C., & Kleinplatz, P.J. (2023). Clinical Guidelines for Working with
 Clients Involved in Kink. *Journal of Sex & Marital Therapy*, 49(8), 978–995. PMID: 37439228. Archived in
 med-db/ under `kink-clinical-guidelines`.
@@ -20,10 +20,10 @@ med-db/ under `kink-clinical-guidelines`.
 *The Journal of Sexual Medicine*, 23(Supplement_4), qdag118.227. DOI: 10.1093/jsxmed/qdag118.227
 (conference abstract; full revised text pending open-access release).
 
-**Status:** These are expert consensus guidelines — recommendations, not mandatory standards of care. They
-are the only comprehensive clinical practice guidelines for this population and represent the consensus
-standard in the field. Developed by a multidisciplinary team of 20 clinicians and researchers across
-psychology, social work, sex therapy, and medicine, with community stakeholder review.
+**Status:** Expert consensus guidelines — recommendations, not mandatory standards of care. Only
+comprehensive clinical practice guidelines for this population; represent the consensus standard in the
+field. Developed by a multidisciplinary team of 20 clinicians and researchers across psychology, social
+work, sex therapy, and medicine, with community stakeholder review.
 
 ---
 
@@ -92,7 +92,7 @@ psychopathology, mental disorder, or inability to control behavior.
   psychopathology — same mental illness rates, psychological adjustment, distress. Less neurotic, more
   extraverted, more open, more conscientious, less rejection-sensitive.
 
-**DSM-5-TR and ICD-11** both state consensual kinky practices are not inherently pathological. Critical
+**DSM-5-TR and ICD-11:** Both state consensual kinky practices are not inherently pathological. Critical
 DSM-5 distinction: paraphilia (atypical interest — NOT a diagnosis) vs. paraphilic disorder (requires
 Criterion A + Criterion B: clinically significant distress/impairment, OR acting on urges with
 non-consenting person). ICD-11 removed fetishism, transvestism, and sadomasochism as standalone diagnoses.
@@ -125,8 +125,8 @@ expression and experience.
 - Literature focuses on White, middle-class populations — significant limitation
 - Social/economic determinants, biases, inequities create treatment barriers in kink communities and healthcare
 
-**Clinical guidance:** Continuous assessment of all cultural influences is imperative. A Black kink-identified
-client navigates different stigma than a White practitioner. A disabled kinkster faces different access
+**Clinical guidance:** Continuous assessment of all cultural influences is imperative. Black kink-identified
+client navigates different stigma than White practitioner. Disabled kinkster faces different access
 barriers. Intersectional assessment is core clinical competence — not optional.
 
 ### Guideline 6 — Kink May Facilitate Gender and Sexuality Exploration
@@ -153,7 +153,7 @@ Minority Stress Theory (Meyer, 2003) applies to kink-involved populations:
 - Cramer et al. (2017): NCSF members 2–3× more likely at elevated suicide risk
 - Roush et al. (2017): internalized stigma, shame, guilt — significant suicidality risk factors
 - NCSF extensively documented healthcare discrimination against kink-identified individuals
-- Anticipated stigma is most common disclosure barrier — fewer than half disclosed to a provider
+- Anticipated stigma most common disclosure barrier — fewer than half disclosed to a provider
   (Waldura et al. 2016, PMID: 28340946)
 
 **Clinical guidance:**
@@ -293,7 +293,7 @@ easy to spot. Internalizing → lower self-esteem, increased depression/substanc
 Clients expect pathologization — guarded presentation is adaptive. Disclosure parallels LGBTQ closet
 dynamics: concealment, testing waters, selective disclosure.
 
-Explicitly communicate kink-affirming stance — don't assume clients infer it from general LGBTQ+ affirmation.
+Communicate kink-affirming stance explicitly — don't assume clients infer it from general LGBTQ+ affirmation.
 Seek ongoing consultation and supervision around internalized negative stereotypes. Learn from LGBTQ
 psychology about disclosure, concealment, and closet dynamics.
 
@@ -404,7 +404,7 @@ specific relationship context.
   compulsion; explore client's own meaning-making; kink as trauma processing can be adaptive.
 - **Harm reduction:** when practices carry objective risk, focus on safety and consent — not abstinence.
 - **Leisure/growth framework:** kink as meaningful, freely chosen activity providing identity, community, mastery.
-- **Pleasure-affirming:** consensual sexual pleasure as a source of psychological health. Explore what
+- **Pleasure-affirming:** consensual sexual pleasure as source of psychological health. Explore what
   kink gives the client, not just whether it causes problems.
 
 ---

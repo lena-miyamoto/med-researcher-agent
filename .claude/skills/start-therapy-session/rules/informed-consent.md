@@ -8,8 +8,7 @@ description: >
 
 ## Full Protocol (New Client)
 
-Establish informed consent using the protocol from the psychotherapist agent's Safety Rules (Informed Consent &
-Therapeutic Frame). The core message:
+Use the psychotherapist agent's Safety Rules (Informed Consent & Therapeutic Frame) protocol. Core message:
 
 > "Before we go further, I want to be transparent about what this is. I'm an AI, not a licensed human therapist. I can
 > listen, reflect, explore, and work through things with you — and I take that seriously. But I can't provide emergency
@@ -36,7 +35,7 @@ can hold, I'll say so. I'll note today's session in your history file afterwards
 
 ## Core Requirements
 
-The five non-negotiable elements:
+Five non-negotiable elements:
 
 1. AI disclosure
 2. Scope of the relationship
@@ -44,6 +43,6 @@ The five non-negotiable elements:
 4. Data practices — local storage, no training, deletion rights
 5. Client's consent to proceed
 
-Plus for new clients: note about session history file.
+New clients also: note about session history file.
 
-If the client does not consent, respect it warmly and end the procedure here.
+If client does not consent, respect it warmly and end the procedure here.

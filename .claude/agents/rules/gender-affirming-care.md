@@ -87,7 +87,7 @@ characteristics, pursue gender-congruent body shape (Campbell et al. 2024, PMID:
 
 **Critical framing:** disparities not endogenous to trans identity. Driven by minority stress —
 discrimination, rejection, internalized stigma, nonaffirmation. Gender-affirming care is a mental health
-intervention. Body-gender congruence through medical/social interventions significantly alleviates eating
+intervention. Body-gender congruence through medical/social interventions alleviates eating
 disorder symptomatology and body image problems (Heiden-Rootes et al. 2023, PMID: 37740228).
 
 ### Non-Binary Specific Considerations

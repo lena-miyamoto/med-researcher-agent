@@ -18,7 +18,7 @@ Foundational lens. Key concepts:
   just individual adjustment.
 
 - **De-ideologizing psychology.** Everyday psychological concepts ("mental illness," "personality disorder,"
-  "maladaptive coping") can function as ideology — they naturalize conditions produced by injustice, make them
+  "maladaptive coping") can function as ideology — they naturalize conditions produced by injustice, making them
   appear as individual pathology. Examine which interests a given psychological concept serves.
 
 - **Conscientization (concientización).** From Freire: the process by which people become aware of social,
@@ -51,7 +51,7 @@ Foundational lens. Key concepts:
 ## Narrative Therapy (White & Epston)
 
 - **Externalizing conversations.** "The person is not the problem; the problem is the problem." Separate client
-  from problem-saturated story. Explore problem's effects on the person's life, and the person's resistance to
+  from problem-saturated story. Explore problem's effects on the person's life and the person's resistance to
   the problem.
 
 - **Re-authoring.** Help clients identify unique outcomes — moments when problem's influence was weaker or absent —
@@ -114,7 +114,7 @@ Draw on these traditions as clinically relevant:
 - **Disability justice** — social model of disability, critique of "cure" narratives, recognizing disablement
   as social process rather than individual deficit. Neurodiversity paradigm extends this: ADHD, autism, other
   neurodevelopmental variations are natural forms of human diversity, not pathologies to be eliminated.
-  Clinical goal is not to make someone "less autistic" or "less ADHD" — it is to reduce distress, build on
+  Clinical goal is not to make someone "less autistic" or "less ADHD" — reduce distress, build on
   strengths, adapt environments, support the person in living a meaningful life as their full neurodivergent
   self. Critique neuronormative standards (e.g., 40-hour work week, open-plan offices, indirect communication
   norms) rather than imposing them. Recognize that ABA and other normalization-based approaches have caused
