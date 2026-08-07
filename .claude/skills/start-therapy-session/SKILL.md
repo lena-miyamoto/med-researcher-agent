@@ -13,7 +13,7 @@ user-invocable: true
 # Start Therapy Session
 
 Manages session history file, intake, informed consent, dispatch to psychotherapist agent. Post-session: writes
-compact session note, compresses file. Agent (adult ADHD, ASD, neurodevelopmental comorbidities, gender-affirming
+session note, compresses file. Agent (adult ADHD, ASD, neurodevelopmental comorbidities, gender-affirming
 care for trans/NB adults, sex/relationship therapy) owns clinical methodology — this skill manages files and frames.
 
 ## When to Use
@@ -23,7 +23,7 @@ care for trans/NB adults, sex/relationship therapy) owns clinical methodology �
 - User wants to continue previous therapeutic thread (provide history file path).
 - User starting therapy first time (no history file yet).
 
-**User-invocable only.** Psychotherapist agent does not suggest or trigger it. Client chooses when to start.
+**User-invocable only.** Psychotherapist agent does not suggest or trigger. Client chooses when to start.
 
 ## Procedure
 
@@ -31,8 +31,8 @@ care for trans/NB adults, sex/relationship therapy) owns clinical methodology �
 
 Psychotherapist agent requires local knowledge base in `med-db/` (gitignored). Follow med-db skill
 (`.claude/skills/med-db/SKILL.md`) for bootstrap and diagnostic classification setup. Run Mandatory
-Pre-Work Bootstrap Check from `.claude/agents/rules/knowledge-base.md`. If client prefers to proceed
-without bootstrapping, note limitation — diagnostic assessment uses training knowledge, not structured
+Pre-Work Bootstrap Check from `.claude/agents/rules/knowledge-base.md`. Client prefers to proceed
+without bootstrapping → note limitation — diagnostic assessment uses training knowledge, not structured
 local reference data.
 
 ### 0. Resolve Client Identity and History File
@@ -49,19 +49,19 @@ Options:
 - **English** — alternative
 - **Another language** — client types preferred language (e.g., French, Spanish, Italian)
 
-**Stop and wait for client to respond.** Do not proceed until client chooses language. Default to German
-if client doesn't express preference. Once chosen, switch to that language immediately for all further
-interaction — intake, informed consent, session, written documentation (session notes, profile). If client
-chooses language you can't support competently, say so honestly, offer German or English as fallbacks.
+**Stop and wait for client to respond.** Do not proceed until client chooses. Default to German
+if no preference expressed. Once chosen, switch immediately for all further interaction — intake,
+informed consent, session, written documentation (session notes, profile). Language you can't support
+competently → say so honestly, offer German or English as fallbacks.
 
-Record language in session file (frontmatter `language` field + Permanent Client Profile). If client
-later requests language switch, update both, continue in new language.
+Record language in session file (frontmatter `language` field + Permanent Client Profile). Client
+later requests language switch → update both, continue in new language.
 
 Ask for name (or pseudonym): "Welcome. What name would you like me to use for you? You
 can use your real name, a pseudonym, or anything you're comfortable with — or we can just use a first initial."
 
-**Stop and wait for client to respond.** If client declines to give name, use neutral placeholder they
-agree to (e.g., "Client C", their initial). Do not fabricate a name. Do not proceed until name question resolved.
+**Stop and wait for client to respond.** Client declines to give name → use neutral placeholder they
+agree to (e.g., "Client C", their initial). Do not fabricate a name. Do not proceed until name resolved.
 
 Once client gives name, create client slug: lowercase kebab-case (`lena`, `alex-m`, `jordan-k`).
 
@@ -75,7 +75,7 @@ Check if history file exists at `sessions/<client-slug>.md`:
 
 - **Exists** → returning client. Load file. Proceed to Step 0b.
 - **Does not exist** → new client. Create `sessions/<client-slug>.md` with initial YAML frontmatter
-and permanent profile section:
+  and permanent profile section:
 
 ```markdown
 ---
@@ -103,7 +103,7 @@ sessions: 0
 - **Psychoactive medication:** (to be collected)
 - **Permanently retained observations:** (populated over time — see Step 5b)
 
-## Session Log
+## Session Log Archive
 ```
 
 Proceed to Step 1.
@@ -114,7 +114,7 @@ Verify path points to valid markdown file. Load file. Extract client name from Y
 (`client` field) and session language (`language` field). Switch to that language immediately.
 Slug derived from filename (`sessions/<slug>.md` → slug).
 
-If file path invalid or doesn't exist, tell client, fall back to "no parameter" flow above.
+File path invalid or doesn't exist → tell client, fall back to "no parameter" flow above.
 
 Skip Step 1's name question — greet client by name in history file. Proceed to Step 0b.
 
@@ -122,11 +122,11 @@ Skip Step 1's name question — greet client by name in history file. Proceed to
 
 **Returning clients only** (history file exists with ≥1 prior sessions). Skip for new clients.
 
-Read `.claude/skills/start-therapy-session/rules/knowledge-gap-analysis.md` and execute full procedure:
-scan session history for knowledge gaps (conditions, techniques, concepts, medications, life contexts, flagged gaps),
-check coverage across med-db/, resource files, therapy methodology guidelines, dispatch med-researcher agent
-for every uncovered gap, assemble session context block with newly filled and unresolved gaps. Update
-frontmatter session count: increment `sessions` by 1 (written after session).
+Read `.claude/skills/start-therapy-session/rules/knowledge-gap-analysis.md`. Execute full procedure:
+scan session history for knowledge gaps (conditions, techniques, concepts, medications, life contexts,
+flagged gaps), check coverage across med-db/, resource files, therapy methodology guidelines, dispatch
+med-researcher agent for every uncovered gap, assemble session context block with newly filled and
+unresolved gaps. Increment `sessions` by 1 in frontmatter (written after session).
 
 ### 1. Welcome — Intake
 
@@ -146,8 +146,8 @@ immediately (before proceeding to informed consent). Do not write profile until 
 your mind today?"
 
 **Stop and wait for client to respond.** Do not proceed to Step 2 (informed consent) until client tells you
-what they want to work on today. Welcome-back question shapes session focus — proceeding without answer
-means you don't know why client is here. Don't push for detail if answer is brief. Material
+what they want to work on. Welcome-back question shapes session focus — proceeding without answer
+means you don't know why client is here. Don't push for detail if answer brief. Material
 unfolds in session, but you need to know where the door is before you open it.
 
 ### 2. Informed Consent — Set the Frame
@@ -195,39 +195,39 @@ reaction — you do not describe it.
 After displaying agent's opening, **continue therapeutic dialogue in this conversation**
 by adopting psychotherapist agent's persona and methodology (see `.claude/agents/psychotherapist.md`).
 Maintain therapeutic frame, voice, clinical grounding throughout. Agent's opening is start —
-session continues until client signals they want to end. Do NOT fabricate or simulate client's
+session continues until client signals end. Do NOT fabricate or simulate client's
 responses. Every response is real person typing, not you writing their part.
 
-**CRITICAL — Post-Session Routine Mandatory:** Moment client signals they want to end (e.g.,
+**CRITICAL — Post-Session Routine Mandatory:** Moment client signals end (e.g.,
 "I'd like to end here," "that's all for today," "Good talk!," natural conversational close),
-end the session in a **single, atomic response** containing all three components:
+end session in a **single, atomic response** with all three components:
 
-1. The therapeutic closing message (warm, brief, no new material)
-2. The exact string `SESSION_ENDED` on its own line
-3. A Skill invocation to `end-therapy-session` with the client slug:
+1. Therapeutic closing message (warm, brief, no new material)
+2. Exact string `SESSION_ENDED` on its own line
+3. Skill invocation to `end-therapy-session` with client slug:
 
    ```text
    Skill: "end-therapy-session", args: "<client-slug>"
    ```
 
 **These three components are indivisible.** Never output `SESSION_ENDED` without also invoking
-the skill in the same tool call batch. No separate step, no "wait for the marker and then act,"
-no "drop persona first and then invoke." The closing message, the marker, and the skill
-invocation travel together in one response. The persona only drops *after* the response is
-complete — the `end-therapy-session` skill runs next and takes over.
+skill in same tool call batch. No separate step, no "wait for marker and then act,"
+no "drop persona first and then invoke." Closing message, marker, and skill
+invocation travel together in one response. Persona drops only *after* response is
+complete — `end-therapy-session` skill runs next and takes over.
 
-If the psychotherapist agent (subagent dispatched in Step 4) produced the opening turn only and
-you have been carrying the therapeutic dialogue since: you are the one ending the session. Apply
-the atomic-response rule yourself.
+If psychotherapist agent (subagent dispatched in Step 4) produced opening turn only and
+you carried therapeutic dialogue since: you are ending the session. Apply
+atomic-response rule yourself.
 
-The `end-therapy-session` skill executes all six steps (clinical self-reflection, session note,
-profile update, protocol save, compression, closing statement) in order and delivers the closing
-statement to the client.
+`end-therapy-session` skill executes all six steps (clinical self-reflection, session note,
+profile update, protocol save, compression, closing statement) in order, delivers closing
+statement to client.
 
-**Fallback: If you or the subagent accidentally output `SESSION_ENDED` without invoking the
-skill** — i.e., a previous response contained the marker but the skill was not called — invoke
-`end-therapy-session` immediately upon realizing the omission. The marker is a signal, not a
-gate. Client ending the session is the true trigger.
+**Fallback: If you or subagent accidentally output `SESSION_ENDED` without invoking
+skill** — i.e., previous response contained marker but skill was not called — invoke
+`end-therapy-session` immediately upon realizing omission. Marker is signal, not
+gate. Client ending session is true trigger.
 
 ### Reference: Post-Session Documentation
 
@@ -238,8 +238,8 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 
 ## Writing Rules
 
-- **Every question to client is wait point.** When procedure instructs you to ask client something,
-  stop and wait for actual response. Never proceed past question without client's answer. Never fabricate,
+- **Every question to client is wait point.** Procedure instructs you to ask client something →
+  stop, wait for actual response. Never proceed past question without client's answer. Never fabricate,
   imply, or assume what client would say — not with nod, placeholder, or narrative prose.
   Most frequently violated rule, most clinically damaging when broken.
 - Take client's opening at face value. Don't reframe, minimize, or pathologize.
@@ -248,8 +248,8 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 - Every intake question can be declined. Client sets pace of disclosure.
 - Never skip informed consent, even for returning clients (shortened version fine).
 - Crisis screen mandatory. Acute risk → redirection, not therapy.
-- Session notes, profile updates, protocol saves, compression, and closing statements delegated to
-  `end-therapy-session` skill after every session. Never perform these steps inline — always invoke the skill.
+- Session notes, profile updates, protocol saves, compression, closing statements delegated to
+  `end-therapy-session` skill after every session. Never perform these steps inline — always invoke skill.
 - **"Gaps flagged" field in session notes mandatory.** Every session note must record topics agent admitted
   not knowing enough about and committed to researching. Primary input to pre-session knowledge gap
   analysis (Step 0b). "none" acceptable when nothing flagged.
@@ -269,9 +269,9 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 
 1. Client identity resolved — language selected (wait point respected), name confirmed (wait point respected),
    slug created, history file located or created.
-2. **Returning client: Pre-session knowledge gap analysis completed (Step 0b-i–iii).** Session log scanned, coverage
+2. **Returning client: Pre-session knowledge gap analysis completed (Step 0b).** Session log scanned, coverage
    checked against med-db/, resource files, therapy methodology guidelines. Gaps dispatched to med-researcher agent.
-   Research results archived in med-db/. New and unresolved gaps documented in session context (Step 0b-iv).
+   Research results archived in med-db/. New and unresolved gaps documented in session context.
 3. History file read and context extracted — including newly filled and unresolved knowledge gaps.
 4. **New client: structured intake collected one question at a time** (name confirmation, gender/pronouns, age,
    diagnoses, medication, opening, context). Each question had own wait point — no batched questions, no
