@@ -1,7 +1,7 @@
 ---
 name: review-changeset
 description: >
-             Review the current instruction-file changeset for logical inconsistencies, obvious flaws, stale
+             Review the current changeset for logical inconsistencies, obvious flaws, stale
              cross-file references, and wrapper/source misalignment. Auto-detects scope: staged changes if
              present, otherwise unstaged. Produces a structured findings report; creates a fix plan file when
              issues warrant it.
@@ -10,18 +10,16 @@ user-invocable: true
 
 # Review Changeset
 
-Diff-driven review of instruction files in the current changeset. Analyzes changes for inconsistencies,
-stale references, and contradictions that would cause wrong behavior. Produces a findings report with
-severity labels. When findings warrant fixes, creates a plan file and offers it for execution.
+Diff-driven review of instruction files in the current changeset. Analyzes for inconsistencies, stale
+references, and contradictions that cause wrong behavior. Produces a findings report with severity
+labels. When findings warrant fixes, creates a plan file and offers it for execution.
 
 ## When to Use
 
-- After editing agent, skill, or rule `.md` files and before committing.
-- When refactoring a behavioral rule that spans multiple files (e.g., session ending, dispatch protocol).
+- After editing agent, skill, or rule `.md` files, before committing.
+- When refactoring a behavioral rule spanning multiple files (e.g., session ending, dispatch protocol).
 - When unsure whether a change in one file breaks references or assumptions in another.
-- After renames, moves, or file splits that may have left stale paths behind.
-
-**User-invocable.** Run manually after making instruction-file changes — not auto-triggered.
+- After renames, moves, or file splits that may leave stale paths.
 
 ## Procedure
 
@@ -40,8 +38,8 @@ If the command returns nothing → fall back to **unstaged changes**:
 git diff --name-only
 ```
 
-Only one scope is reviewed — never merge staged and unstaged into a combined review. The goal is to
-review what the user is about to commit (staged) or what they're still working on (unstaged).
+Only one scope reviewed — never merge staged and unstaged. Review what the user is about to commit
+(staged) or what they're still working on (unstaged).
 
 ### 2. Filter to Instruction Files
 
@@ -62,23 +60,22 @@ Read every file from step 2 in full (current on-disk version). For each file, ex
 
 - **Explicit file references** — any path in backticks matching `.claude/*` or `.github/*`, plus references
   introduced by `Read`, `See`, `Follow`, `per`, `defined in`, `owned by`, `source of truth`.
-- **Cross-file behavioral rules** — rules that are restated or referenced across multiple files. Identify
-  these by matching shared topics: session ending, crisis redirection, dispatch protocol, command
-  invocation contract, source-of-truth ownership, evidence hierarchy, compression rules.
+- **Cross-file behavioral rules** — rules restated or referenced across multiple files. Identify by
+  matching shared topics: session ending, crisis redirection, dispatch protocol, command invocation
+  contract, source-of-truth ownership, evidence hierarchy, compression rules.
 - **Frontmatter fields** — note presence/absence of `name`, `description`, `user-invocable`,
   `argument-hint` (for skills); `name`, `description`, `tools`, `model` (for agents).
 
 ### 4. Stale-Reference Check
 
-For every file reference extracted in step 3, resolve it relative to the repository root and verify the
+For every file reference extracted in step 3, resolve relative to the repository root and verify the
 target exists on disk. Use `Bash: test -f <path>` for each. Flag every missing path as:
 
-- **Error** — target is referenced in a procedure step or mandatory file load. Missing it breaks
-  execution.
-- **Warning** — target is mentioned in prose or as a non-critical reference.
+- **Error** — target referenced in a procedure step or mandatory file load. Missing it breaks execution.
+- **Warning** — target mentioned in prose or as a non-critical reference.
 
-Also flag references that use a path convention that no longer matches the repo structure (e.g.,
-referencing `.claude/agents/rules/foo.md` when the file was moved to
+Also flag references using a path convention that no longer matches the repo structure (e.g.,
+referencing `.claude/agents/rules/foo.md` when the file moved to
 `.claude/skills/foo/rules/foo.md`).
 
 ### 5. Cross-File Consistency Check
@@ -112,7 +109,7 @@ Wrapper. Source of truth: `.claude/<agents|skills>/<name>.<md|SKILL.md>`.
 Check that:
 
 - The referenced `.claude/` file exists.
-- The frontmatter `name` and `description` match between wrapper and source (they must be identical).
+- The frontmatter `name` and `description` match between wrapper and source (must be identical).
 
 ### 7. Internal Consistency
 
@@ -125,9 +122,9 @@ Within each changed file, flag:
   "five elements" but only 4 are enumerated.
 - **Broken placeholders** — `<placeholder>` syntax used but never defined in the file or its documented
   inputs.
-- **Lost emphasis** — a rule that was previously marked `CRITICAL`, `IMPORTANT`, `YOU MUST`, or `NEVER`
-  lost its emphasis marker in the new version. Check the diff: if a line was removed that contained
-  these keywords, verify the rule is still enforced elsewhere or flag it.
+- **Lost emphasis** — a rule previously marked `CRITICAL`, `IMPORTANT`, `YOU MUST`, or `NEVER`
+  lost its emphasis marker in the new version. Check the diff: if a line containing these keywords
+  was removed, verify the rule is still enforced elsewhere or flag it.
 - **Missing steps** — numbered procedure steps where a number is skipped (1, 2, 4 — missing 3).
 
 ### 8. Assemble Findings Report
@@ -146,7 +143,7 @@ files were reviewed. Stop here — no plan file needed.
 ### 9. Create Fix Plan (When Findings Warrant It)
 
 If the report contains any **Error** or **Warning** findings, create a plan file at
-`.claude/plans/fix-review-findings-<slug>.md` that proposes concrete fixes for each actionable finding.
+`.claude/plans/fix-review-findings-<slug>.md` proposing concrete fixes for each actionable finding.
 
 The plan file must:
 
@@ -182,8 +179,8 @@ can act on them or not.
 ## Validation
 
 1. Diff scope auto-detected correctly — staged if present, otherwise unstaged.
-2. Every changed instruction file was read in full.
-3. Every extracted file reference was verified against disk.
+2. Every changed instruction file read in full.
+3. Every extracted file reference verified against disk.
 4. Cross-file checks completed for all related-file pairs where at least one side changed.
 5. Wrapper alignment verified for every changed `.github/` file.
 6. Internal consistency checked for every changed file.
