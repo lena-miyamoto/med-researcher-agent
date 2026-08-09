@@ -1,7 +1,8 @@
 ---
 description: >
-  Internal med-db directory structure and conventions. Only relevant when extending the script stack
-  in .claude/scripts/ — never when using uv run entry points.
+  Internal med-db directory structure and conventions. Development workflow commands for
+  testing and linting. Only relevant when modifying files in .claude/scripts/ or any other
+  Python code in the repo.
 ---
 
 # med-db Developer Notes
@@ -9,6 +10,16 @@ description: >
 Internal directory structure and conventions. **Only relevant when extending the med-db script
 stack.** Agents and skills must never manipulate `med-db/` directly — all access goes through the
 `uv run` entry points documented in `../agents/rules/med-db-commands.md`.
+
+## Development Workflow
+
+- **`uv run test`** after editing any `*.py` file. No other test invocation. **Full suite must pass** — if any
+  test fails, the change is not done. Evaluate each failure: logic changed → test adapts; or real
+  regression surfaced. Do not ship code with known failures unless the user explicitly approves them.
+  Spot-checking touched files insufficient — refactor in one module can break distant tests through
+  shared imports or CLI contract changes.
+- **`uv run lint-md`** after batch-editing tracked `*.md` files. Never `uv run pymarkdownlnt` directly — only
+  `uv run lint-md` (or `--fix`); wraps the linter with correct config (`.pymarkdown.yaml`).
 
 ## Directory Structure (`./med-db/`)
 
@@ -33,3 +44,6 @@ Required top-level categories:
   DOAJ / open-access directories → Google Scholar. Full-text fallback: follow the Sci-Hub policy in `.claude/agents/med-researcher.md`.
 - Flag evidence per `med-researcher` Evidence Hierarchy (`../agents/med-researcher.md`).
   Reusable write-ups → `tmp/`, not overwriting source briefs or archived records.
+- **No backwards-compat shims.** Scripts have no version history — the agent only knows the
+  current interface. No deprecated aliases, no deprecation warnings, no transitional flags.
+  If a flag name is wrong, change it. See `../agents/rules/coding-style.md`.

@@ -42,6 +42,8 @@ Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always in
 | `--delay` | float | `0.34` | Delay between PMID fetches (seconds) |
 | `--migrate` | flag | off | Migrate flat `med-db/` to topic-based per-paper folders |
 | `--migrate-dry-run` | flag | off | Preview `--migrate` without copying files |
+| `--format` | choice | `text` | Output format: `json` or `text` |
+| `--quiet` | flag | off | Output only created folder paths, one per line |
 
 ---
 
@@ -52,7 +54,7 @@ Runs after every archival, setup, or download. Errors block (exit code 1) — fi
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `--med-db` | str | `med-db` | Target `med-db/` directory path |
-| `--json` | flag | off | Emit findings as machine-parseable JSON |
+| `--format` | choice | `text` | Output format: `json` or `text` |
 
 ---
 
@@ -101,6 +103,11 @@ Query local `med-db/` archive. Exactly one operation flag required (mutually exc
 | `--search-topic` | str | — | `--search-keyword`, `--search-searches` | Restrict search to a specific topic |
 | `--show-abstract` | flag | off | `--read-metadata` | Include abstract text in output |
 | `--summary` | flag | off | `--search-keyword` | Compact output (identifiers + titles only) |
+| `--identifiers-only` | flag | off | `--topic`, `--search-keyword`, `--recent`, `--pmids-from-search`, `--search-searches` | Output identifiers/paths/PMIDs one per line |
+| `--title-only` | flag | off | `--read-metadata` | Output only the title text |
+| `--abstract-only` | flag | off | `--read-metadata` | Output only the abstract text (auto-loads abstract) |
+| `--names-only` | flag | off | `--list-topics` | Output topic names only, one per line |
+| `--locations-only` | flag | off | `--check-pmid`, `--check-epmc` | Output archive location paths only, one per line |
 
 ---
 
@@ -156,6 +163,7 @@ Fast local ICD-11 MMS lookup from downloaded WHO data. At least one query parame
 | `--hierarchy` | bool | `true` | Show full hierarchy for code lookups. Use `--no-hierarchy` to disable |
 | `--children` | flag | off | Include direct children in code lookup output |
 | `--format` | choice | `json` | Output format: `json` or `text` |
+| `--title-only` | flag | off | Output only the title text (for `--code`) |
 
 ---
 
@@ -172,3 +180,4 @@ Fast local DSM-5-TR classification lookup. At least one of `--code`, `--keyword`
 | `--list-categories` | flag | `false` | List all DSM-5-TR diagnostic categories |
 | `--limit` | int | `50` | Max keyword search results |
 | `--format` | choice | `json` | Output format: `json` or `text` |
+| `--title-only` | flag | off | Output only the disorder name (for `--code`) |

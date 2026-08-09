@@ -1183,3 +1183,251 @@ class TestMainIntegration:
                 med_db.main()
         captured = capsys.readouterr()
         assert "provide --query" in captured.err.lower() or "error" in captured.err.lower()
+
+
+class TestMainFormatJson:
+    """Test --format json and --format text output from med-db.py main()."""
+
+    def test_format_json_web_source(self, tmp_path, monkeypatch, capsys):
+        """--format json with a web source produces valid JSON with expected structure."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "google-scholar",
+            "--query", "endometriosis diet",
+            "--search-slug", "format-test",
+            "--topic", "endometriosis",
+            "--med-db", str(med_db_path),
+            "--format", "json",
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+        result = json.loads(capsys.readouterr().out)
+        assert result["search_file"] is None
+        assert result["search_source"] is None
+        assert len(result["web_sources"]) == 1
+        assert "format-test" in result["web_sources"][0]["path"]
+        assert "scholar.google.com" in result["web_sources"][0]["url"]
+        assert result["archived_records"] == []
+
+    def test_format_text_default_web_source(self, tmp_path, monkeypatch, capsys):
+        """Default output is human-readable text matching pre-refactor format."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "google-scholar",
+            "--query", "endometriosis diet",
+            "--search-slug", "format-test",
+            "--topic", "endometriosis",
+            "--med-db", str(med_db_path),
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+        out = capsys.readouterr().out
+        assert "saved search: none" in out
+        assert "archived web sources:" in out
+        assert "archived structured records: none" in out
+
+    def test_format_text_explicit_web_source(self, tmp_path, monkeypatch, capsys):
+        """--format text produces the same output as the default."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "google-scholar",
+            "--query", "endometriosis diet",
+            "--search-slug", "format-test",
+            "--topic", "endometriosis",
+            "--med-db", str(med_db_path),
+            "--format", "text",
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+        out = capsys.readouterr().out
+        assert "saved search: none" in out
+        assert "archived structured records: none" in out
+
+    def test_format_json_with_mocked_pmids(self, tmp_path, monkeypatch, capsys):
+        """--format json with PMID archival shows archived_records in output."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+
+        paper_dir = med_db_path / "papers" / "test-topic" / "pmid-12345-test-paper-title"
+        paper_dir.mkdir(parents=True)
+        meta = {
+            "result": {
+                "uids": ["12345"],
+                "12345": {
+                    "title": "Test Paper Title",
+                    "source": "Test Journal",
+                    "pubdate": "2024 Mar",
+                    "authors": [{"name": "Smith J"}],
+                    "articleids": [
+                        {"idtype": "pubmed", "value": "12345"},
+                        {"idtype": "doi", "value": "10.1000/test"},
+                    ],
+                },
+            }
+        }
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("Test abstract.")
+
+        mock_result = (
+            paper_dir / "metadata.json",
+            paper_dir / "abstract.txt",
+            "Test Paper Title",
+            "12345",
+            "https://pubmed.ncbi.nlm.nih.gov/12345/",
+        )
+        with mock.patch("med_db.archive_pmid", return_value=mock_result):
+            with mock.patch.object(sys, "argv", [
+                "med-db.py",
+                "--pmid", "12345",
+                "--topic", "test-topic",
+                "--med-db", str(med_db_path),
+                "--format", "json",
+            ]):
+                exit_code = med_db.main()
+        assert exit_code == 0
+        result = json.loads(capsys.readouterr().out)
+        assert result["search_file"] is None
+        assert len(result["archived_records"]) == 1
+        assert result["archived_records"][0]["identifier"] == "12345"
+        assert result["archived_records"][0]["title"] == "Test Paper Title"
+        assert "test-topic" in result["archived_records"][0]["folder"]
+
+    def test_format_text_with_mocked_pmids(self, tmp_path, monkeypatch, capsys):
+        """Text output with PMID archival shows human-readable archived records."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+
+        paper_dir = med_db_path / "papers" / "test-topic" / "pmid-12345-test-paper-title"
+        paper_dir.mkdir(parents=True)
+        meta = {
+            "result": {
+                "uids": ["12345"],
+                "12345": {
+                    "title": "Test Paper Title",
+                    "source": "Test Journal",
+                    "pubdate": "2024 Mar",
+                    "authors": [{"name": "Smith J"}],
+                    "articleids": [
+                        {"idtype": "pubmed", "value": "12345"},
+                    ],
+                },
+            }
+        }
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("Test abstract.")
+
+        mock_result = (
+            paper_dir / "metadata.json",
+            paper_dir / "abstract.txt",
+            "Test Paper Title",
+            "12345",
+            "https://pubmed.ncbi.nlm.nih.gov/12345/",
+        )
+        with mock.patch("med_db.archive_pmid", return_value=mock_result):
+            with mock.patch.object(sys, "argv", [
+                "med-db.py",
+                "--pmid", "12345",
+                "--topic", "test-topic",
+                "--med-db", str(med_db_path),
+            ]):
+                exit_code = med_db.main()
+        assert exit_code == 0
+        out = capsys.readouterr().out
+        assert "saved search: none" in out
+        assert "archived structured records:" in out
+        assert "12345: Test Paper Title" in out
+
+
+class TestMainQuiet:
+    """Test --quiet output from med-db.py main()."""
+
+    def test_quiet_web_source(self, tmp_path, monkeypatch, capsys):
+        """--quiet with a web source outputs only the web file path."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "google-scholar",
+            "--query", "endometriosis diet",
+            "--search-slug", "quiet-test",
+            "--topic", "endometriosis",
+            "--med-db", str(med_db_path),
+            "--quiet",
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+        out = capsys.readouterr().out.strip()
+        assert "quiet-test" in out
+        assert "web" in out
+        assert "saved search" not in out
+        assert "archived" not in out
+
+    def test_quiet_with_mocked_pmids(self, tmp_path, monkeypatch, capsys):
+        """--quiet with PMID archival outputs only folder paths, one per line."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+
+        paper_dir = med_db_path / "papers" / "test-topic" / "pmid-12345-test-paper-title"
+        paper_dir.mkdir(parents=True)
+        meta = {
+            "result": {
+                "uids": ["12345"],
+                "12345": {
+                    "title": "Test Paper Title",
+                    "source": "Test Journal",
+                    "pubdate": "2024 Mar",
+                    "authors": [{"name": "Smith J"}],
+                    "articleids": [{"idtype": "pubmed", "value": "12345"}],
+                },
+            }
+        }
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("Test abstract.")
+
+        mock_result = (
+            paper_dir / "metadata.json",
+            paper_dir / "abstract.txt",
+            "Test Paper Title",
+            "12345",
+            "https://pubmed.ncbi.nlm.nih.gov/12345/",
+        )
+        with mock.patch("med_db.archive_pmid", return_value=mock_result):
+            with mock.patch.object(sys, "argv", [
+                "med-db.py",
+                "--pmid", "12345",
+                "--topic", "test-topic",
+                "--med-db", str(med_db_path),
+                "--quiet",
+            ]):
+                exit_code = med_db.main()
+        assert exit_code == 0
+        out = capsys.readouterr().out.strip()
+        assert "test-topic" in out
+        assert "test-paper-title" in out
+        assert "saved search" not in out
+
+    def test_quiet_web_source_no_structured_records(self, tmp_path, monkeypatch, capsys):
+        """--quiet with web source and no PMIDs outputs only the web file path."""
+        med_db_path = tmp_path / "med-db"
+        monkeypatch.chdir(tmp_path)
+        with mock.patch.object(sys, "argv", [
+            "med-db.py",
+            "--source", "open-science-directory",
+            "--query", "clinical trial data",
+            "--search-slug", "quiet-web-only",
+            "--topic", "research",
+            "--med-db", str(med_db_path),
+            "--quiet",
+        ]):
+            exit_code = med_db.main()
+        assert exit_code == 0
+        out = capsys.readouterr().out.strip()
+        lines = out.split("\n")
+        assert len(lines) == 1
+        assert "quiet-web-only" in lines[0]

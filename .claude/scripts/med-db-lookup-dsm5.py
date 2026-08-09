@@ -221,12 +221,19 @@ def parse_args():
         default="json",
         help="Output format. Default: json.",
     )
+    parser.add_argument(
+        "--title-only",
+        action="store_true",
+        help="Output only the disorder name (for --code).",
+    )
 
     args = parser.parse_args()
     if not args.code and not args.keyword and not args.category and not args.list_categories:
         parser.error(
             "provide at least one of --code, --keyword, --category, or --list-categories"
         )
+    if args.title_only and not args.code:
+        parser.error("--title-only requires --code")
     return args
 
 
@@ -274,6 +281,17 @@ def main():
 
     if args.list_categories:
         output["all_categories"] = data["categories"]
+
+    if args.title_only:
+        code_lookup = output.get("code_lookup", {})
+        if "error" in code_lookup:
+            return 1
+        if code_lookup.get("partial_match"):
+            for item in code_lookup.get("results", []):
+                print(item["disorder"].get("name", ""))
+        else:
+            print(code_lookup.get("disorder", {}).get("name", ""))
+        return 0
 
     if args.format == "text":
         _format_text_output(output, args)

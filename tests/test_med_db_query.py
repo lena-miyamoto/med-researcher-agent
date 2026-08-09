@@ -608,3 +608,342 @@ class TestSearchSearches:
         assert len(result) == 1
         result_all = mq.search_searches(tmp_path, "SSRI")
         assert len(result_all) == 1
+
+
+class TestIdentifiersOnly:
+    """Test --identifiers-only flag."""
+
+    def test_with_topic(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-a", pmid="11111", title="Paper A")
+        _make_paper(tmp_path, "papers/adhd/pmid-22222-b", pmid="22222", title="Paper B")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--topic", "adhd", "--identifiers-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert len(out) == 2
+        assert "11111" in out[0]
+        assert "22222" in out[1]
+
+    def test_with_search_keyword(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/pmid-33333-match", pmid="33333", title="Methylphenidate efficacy")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--search-keyword", "methylphenidate", "--identifiers-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert len(out) == 1
+        assert out[0] == "PMID:33333"
+
+    def test_with_recent(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-a", pmid="11111", title="Paper A")
+        index = {
+            "papers": [
+                {
+                    "path": "papers/adhd/pmid-11111-a",
+                    "identifier": "11111",
+                    "url": "https://pubmed.ncbi.nlm.nih.gov/11111/",
+                    "title": "Paper A",
+                    "topic": "adhd",
+                    "purpose": "research",
+                    "accessed": "2024-01-15",
+                },
+            ],
+            "searches": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+        }
+        (tmp_path / "index.json").write_text(json.dumps(index))
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--recent", "5", "--identifiers-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert len(out) == 1
+        assert out[0] == "11111"
+
+    def test_error_without_compatible_command(self, capsys):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", "/tmp/nonexistent",
+                "--identifiers-only",
+            ])
+            with pytest.raises(SystemExit):
+                mq.main()
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower()
+
+    def test_output_is_plain_text(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-a", pmid="11111", title="Paper A")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--topic", "adhd", "--identifiers-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out
+        assert "{" not in out
+        assert "11111" in out
+
+
+class TestTitleOnlyAndAbstractOnly:
+    """Test --title-only and --abstract-only flags."""
+
+    def test_title_only(self, tmp_path, capsys):
+        d = _make_paper(tmp_path, "papers/adhd/pmid-12345-test", pmid="12345", title="Effect of X on Y",
+                        abstract="This is the abstract text.")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--read-metadata", str(d), "--title-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip()
+        assert out == "Effect of X on Y"
+
+    def test_abstract_only(self, tmp_path, capsys):
+        d = _make_paper(tmp_path, "papers/adhd/pmid-12345-test", pmid="12345", title="Effect of X on Y",
+                        abstract="This is the abstract text.")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--read-metadata", str(d), "--abstract-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip()
+        assert out == "This is the abstract text."
+
+    def test_both_title_and_abstract(self, tmp_path, capsys):
+        d = _make_paper(tmp_path, "papers/adhd/pmid-12345-test", pmid="12345", title="Effect Title",
+                        abstract="Abstract content here.")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--read-metadata", str(d), "--title-only", "--abstract-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out
+        lines = out.strip().split("\n")
+        assert len(lines) == 2
+        assert lines[0] == "Effect Title"
+        assert lines[1] == "Abstract content here."
+
+    def test_title_only_error_without_read_metadata(self, capsys):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", "/tmp/test", "--title-only",
+            ])
+            with pytest.raises(SystemExit):
+                mq.main()
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower()
+
+    def test_abstract_only_error_without_read_metadata(self, capsys):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", "/tmp/test", "--abstract-only",
+            ])
+            with pytest.raises(SystemExit):
+                mq.main()
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower()
+
+
+class TestNamesOnly:
+    """Test --names-only flag for --list-topics."""
+
+    def test_list_topics_names_only(self, tmp_path, capsys):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        (tmp_path / "papers" / "depression").mkdir(parents=True)
+        (tmp_path / "papers" / "anxiety").mkdir(parents=True)
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--list-topics", "--names-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert len(out) == 3
+        assert out == ["adhd", "anxiety", "depression"]
+
+    def test_names_only_empty_archive(self, tmp_path, capsys):
+        (tmp_path / "papers").mkdir()
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--list-topics", "--names-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip()
+        assert out == ""
+
+    def test_names_only_error_without_list_topics(self, capsys):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", "/tmp/test", "--names-only",
+            ])
+            with pytest.raises(SystemExit):
+                mq.main()
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower()
+
+
+class TestLocationsOnly:
+    """Test --locations-only flag for --check-pmid and --check-epmc."""
+
+    def test_check_pmid_locations_only(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/pmid-99999999-effect")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--check-pmid", "99999999", "--locations-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert len(out) == 1
+        assert "adhd" in out[0] and "99999999" in out[0]
+
+    def test_check_pmid_not_found_locations_only(self, tmp_path, capsys):
+        (tmp_path / "papers").mkdir()
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--check-pmid", "99999999", "--locations-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip()
+        assert out == ""
+
+    def test_check_epmc_locations_only(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/epmc-med-99999999-effect", pmid="99999999", source="europe-pmc")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--check-epmc", "MED:99999999", "--locations-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert len(out) == 1
+        assert "adhd" in out[0] and "epmc-med-99999999" in out[0]
+
+    def test_locations_only_error_without_check(self, capsys):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", "/tmp/test",
+                "--locations-only",
+            ])
+            with pytest.raises(SystemExit):
+                mq.main()
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower()
+
+
+class TestIdentifiersOnlyExtended:
+    """Test --identifiers-only with --pmids-from-search and --search-searches."""
+
+    def test_pmids_from_search(self, tmp_path, capsys):
+        _make_search_json(tmp_path / "search.json", "pubmed", ["11111", "22222", "33333"])
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--pmids-from-search", str(tmp_path / "search.json"),
+                "--identifiers-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert out == ["11111", "22222", "33333"]
+
+    def test_search_searches(self, tmp_path, capsys):
+        (tmp_path / "searches" / "adhd").mkdir(parents=True)
+        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
+                          source="pubmed", pmids=["1"], query="ADHD stimulants")
+        _make_search_json(tmp_path / "searches" / "adhd" / "epmc-b.json",
+                          source="epmc", pmids=["2"], query="ADHD non-stimulants")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", [
+                "med-db-query", "--med-db", str(tmp_path),
+                "--search-searches", "ADHD", "--identifiers-only",
+            ])
+            try:
+                mq.main()
+            except SystemExit:
+                pass
+
+        out = capsys.readouterr().out.strip().split("\n")
+        assert len(out) == 2
+        assert all("adhd" in line for line in out)
+        assert any("pubmed-a" in line for line in out)
+        assert any("epmc-b" in line for line in out)

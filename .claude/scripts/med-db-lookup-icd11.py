@@ -431,12 +431,19 @@ def parse_args():
         default=False,
         help="Include direct children in code lookup output.",
     )
+    parser.add_argument(
+        "--title-only",
+        action="store_true",
+        help="Output only the title text (for --code).",
+    )
 
     args = parser.parse_args()
     if not args.code and not args.keyword and not args.icd10_code and not args.icd11_to_icd10:
         parser.error(
             "provide at least one of --code, --keyword, --icd10-code, or --icd11-to-icd10"
         )
+    if args.title_only and not args.code:
+        parser.error("--title-only requires --code")
     return args
 
 
@@ -498,6 +505,17 @@ def main():
             "count": len(results),
             "results": results,
         }
+
+    if args.title_only:
+        code_lookup = output.get("code_lookup", {})
+        if "error" in code_lookup:
+            return 1
+        if code_lookup.get("partial_match"):
+            for entry in code_lookup.get("results", []):
+                print(entry.get("title", ""))
+        else:
+            print(code_lookup.get("title", ""))
+        return 0
 
     if args.format == "text":
         lines = []

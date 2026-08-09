@@ -590,8 +590,46 @@ def parse_args():
         action="store_true",
         help="Compact output for --search-keyword (identifiers and titles only, no snippets).",
     )
+    parser.add_argument(
+        "--identifiers-only",
+        action="store_true",
+        help="Output only identifiers, one per line (for --topic, --search-keyword, --recent, --pmids-from-search, --search-searches).",
+    )
+    parser.add_argument(
+        "--title-only",
+        action="store_true",
+        help="Output only the title text (for --read-metadata).",
+    )
+    parser.add_argument(
+        "--abstract-only",
+        action="store_true",
+        help="Output only the abstract text (for --read-metadata).",
+    )
+    parser.add_argument(
+        "--names-only",
+        action="store_true",
+        help="Output only topic names, one per line (for --list-topics).",
+    )
+    parser.add_argument(
+        "--locations-only",
+        action="store_true",
+        help="Output only archive location paths, one per line (for --check-pmid, --check-epmc).",
+    )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if args.identifiers_only and not any([args.topic, args.search_keyword, args.recent, args.pmids_from_search, args.search_searches]):
+        parser.error("--identifiers-only requires --topic, --search-keyword, --recent, --pmids-from-search, or --search-searches")
+    if args.title_only and not args.read_metadata:
+        parser.error("--title-only requires --read-metadata")
+    if args.abstract_only and not args.read_metadata:
+        parser.error("--abstract-only requires --read-metadata")
+    if args.names_only and not args.list_topics:
+        parser.error("--names-only requires --list-topics")
+    if args.locations_only and not any([args.check_pmid, args.check_epmc]):
+        parser.error("--locations-only requires --check-pmid or --check-epmc")
+
+    return args
 
 
 def main():
@@ -633,7 +671,7 @@ def main():
     elif args.read_metadata:
         command = "read-metadata"
         result = read_paper_metadata(args.read_metadata)
-        if args.show_abstract and "error" not in result:
+        if (args.show_abstract or args.abstract_only) and "error" not in result:
             result["abstract"] = read_paper_abstract(args.read_metadata)
     elif args.search_keyword:
         command = "search-keyword"
@@ -656,6 +694,36 @@ def main():
             "match_count": len(matches),
             "matches": matches,
         }
+
+    if args.identifiers_only or args.title_only or args.abstract_only or args.names_only or args.locations_only:
+        if args.identifiers_only:
+            identifier_list = []
+            if command == "topic-papers":
+                identifier_list = [paper["identifier"] for paper in result.get("papers", [])]
+            elif command == "search-keyword":
+                identifier_list = [match["identifier"] for match in result.get("matches", [])]
+            elif command == "recent":
+                identifier_list = [paper["identifier"] for paper in result.get("papers", [])]
+            elif command == "pmids-from-search":
+                identifier_list = result.get("pmids", [])
+            elif command == "search-searches":
+                identifier_list = [match["path"] for match in result.get("matches", [])]
+            for identifier in identifier_list:
+                print(identifier)
+            return 0
+        if args.title_only:
+            print(result.get("title", ""))
+        if args.abstract_only:
+            print(result.get("abstract", ""))
+        if args.names_only:
+            for topic in result.get("topics", []):
+                print(topic["topic"])
+            return 0
+        if args.locations_only:
+            for location in result.get("locations", []):
+                print(location)
+            return 0
+        return 0
 
     if args.format == "text":
         print(_format_text(result, command))

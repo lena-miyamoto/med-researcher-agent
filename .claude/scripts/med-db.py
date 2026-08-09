@@ -719,6 +719,17 @@ def parse_args():
         action="store_true",
         help="Preview --migrate without copying files.",
     )
+    parser.add_argument(
+        "--format",
+        choices=("json", "text"),
+        default="text",
+        help="Output format. Defaults to text.",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Output only created folder paths, one per line.",
+    )
     args = parser.parse_args()
 
     if args.migrate or args.migrate_dry_run:
@@ -739,6 +750,46 @@ def parse_args():
     if args.retmax < 1:
         parser.error("--retmax must be >= 1")
     return args
+
+
+def _format_result_text(result):
+    """Format the archival result as human-readable text (existing behavior)."""
+    lines = []
+    if result["search_file"]:
+        lines.append(f"saved search: {result['search_file']}")
+    elif result["web_sources"]:
+        lines.append("saved search: none")
+        lines.append("archived web sources:")
+        for source in result["web_sources"]:
+            lines.append(f"- {source['path']}: {source['url']}")
+    else:
+        lines.append("saved search: none")
+
+    if not result["archived_records"]:
+        lines.append("archived structured records: none")
+    else:
+        lines.append("archived structured records:")
+        for record in result["archived_records"]:
+            lines.append(f"- {record['identifier']}: {record['title']}")
+            lines.append(f"  folder: {record['folder']}")
+    return "\n".join(lines)
+
+
+def _format_result_json(result):
+    """Format the archival result as JSON."""
+    return json.dumps(result, indent=2, default=str, ensure_ascii=False)
+
+
+def _format_result_quiet(result):
+    """Format the archival result as newline-separated folder paths."""
+    paths = []
+    if result["search_file"]:
+        paths.append(result["search_file"])
+    for source in result["web_sources"]:
+        paths.append(source["path"])
+    for record in result["archived_records"]:
+        paths.append(record["folder"])
+    return "\n".join(paths)
 
 
 def main():
@@ -844,26 +895,33 @@ def main():
 
     sync_index(med_db, search_updates=search_updates, paper_updates=paper_updates, web_updates=web_updates)
 
+    result = {
+        "search_file": str(search_file) if search_file else None,
+        "search_source": None,
+        "web_sources": [
+            {"path": path, "url": details["url"]}
+            for path, details in sorted(web_updates.items())
+        ],
+        "archived_records": [
+            {
+                "identifier": identifier,
+                "title": title,
+                "folder": str(metadata_file.parent),
+            }
+            for identifier, metadata_file, abstract_file, title in archived
+        ],
+    }
     if search_file:
-        print(f"saved search: {search_file}")
-    elif web_updates:
-        print("saved search: none")
-        print("archived web sources:")
-        for filename, details in sorted(web_updates.items()):
-            print(f"- {filename}: {details['url']}")
-    else:
-        print("saved search: none")
+        result["search_source"] = source_label(args.source) if hasattr(args, "source") else None
 
-    if not archived:
-        print("archived structured records: none")
-        if utils.verify_and_report_integrity(med_db) != 0:
-            return 1
+    if args.quiet:
+        print(_format_result_quiet(result))
         return 0
 
-    print("archived structured records:")
-    for identifier, metadata_file, abstract_file, title in archived:
-        print(f"- {identifier}: {title}")
-        print(f"  folder: {metadata_file.parent}")
+    if args.format == "json":
+        print(_format_result_json(result))
+    else:
+        print(_format_result_text(result))
 
     if utils.verify_and_report_integrity(med_db) != 0:
         return 1

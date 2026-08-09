@@ -36,3 +36,16 @@ Unit tests are the explicit exception — test frameworks (pytest, unittest) req
 Framework mandate, not design choice.
 
 When in doubt: use a module with functions, not a class.
+
+## No backwards-compat shims
+
+Scripts do not have versions — they only exist in their current form. The agent has no memory
+of previous CLI interfaces. Never add:
+
+- Deprecated aliases for renamed flags (e.g., `--json` alongside `--format json`)
+- Deprecation warnings printed to stderr
+- `[DEPRECATED]` markers in help text
+- Shims that translate old flag names to new ones
+
+If a flag name is wrong, change it. If an interface needs improvement, improve it. The old
+form simply ceases to exist. No transitional period, no compatibility layer, no dead code.

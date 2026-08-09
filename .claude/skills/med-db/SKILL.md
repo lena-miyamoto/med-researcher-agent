@@ -44,8 +44,10 @@ in real sessions. **None of them are acceptable.**
 | Forbidden | Why | Use Instead |
 |---|---|---|
 | `python3 -c "import json; ..."` reading `index.json` | Bypasses validation layer | `uv run med-db-query --search-keyword "..."` |
+| `python3 -c "..."` for JSON post-processing | Tools have extraction flags for this | `uv run med-db-query ... --{identifiers,names,locations,title,abstract}-only` |
 | `python3 -c "..."` for any med-db operation | Direct file access, no integrity checks | `uv run med-db-lookup --pmid ...` |
 | `jq` / `cat` / `grep` on `med-db/index.json` | Bypasses the tool layer | `uv run med-db-query --list-topics` |
+| `jq` / `sed` / `awk` on JSON output | Extraction flags output plain text directly | `uv run med-db-query ... --identifiers-only` etc. |
 | `python3` or `python` in any form | Forbidden by CLAUDE.md contract | `uv run <entry-point>` |
 | `node -e`, `perl -e` touching med-db files | Same bypass, different language | `uv run med-db-*` tools |
 
@@ -55,7 +57,7 @@ in real sessions. **None of them are acceptable.**
 - Do not create `med-db/` or its subdirectories by hand; the tooling creates the archive
   tree and initial `index.json`.
 - To bootstrap a fresh checkout: run any archival command (e.g.
-  `uv run med-db --pmid 12345678 --validate`). The tooling auto-creates the full tree
+  `uv run med-db --pmid 12345678`). The tooling auto-creates the full tree
   (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`) plus `index.json`.
 - To verify bootstrap: `uv run med-db-integrity-check --med-db med-db`. An empty archive
   passes if all five directories and `index.json` exist.
@@ -104,7 +106,6 @@ querying, or analyzing evidence from the archive:
 - Always include `--topic <name>` on archival commands (human-readable name, e.g. `adhd`,
   `endometriosis`). The tool derives the kebab-case slug automatically.
 - Use `--topic-slug` only when automatic derivation fails.
-- Always include `--validate` when archiving by PMID, DOI, or EPMC record.
 - Integrity check runs automatically after every archival, setup, or download operation.
   Errors block completion (exit code 1) and must be fixed immediately.
 
@@ -116,14 +117,25 @@ local, no-network** commands are permitted during the session:
 | Permitted during session | Must wait until after session |
 |---|---|
 | `uv run med-db-query --search-keyword "..."` | `uv run med-db --pmid ...` (archival — writes) |
-| `uv run med-db-query --list-topics` | `uv run med-db --source pubmed --query "..."` (network search) |
-| `uv run med-db-query --read-metadata "..."` | `uv run med-db-download-icd11` (setup — writes) |
-| `uv run med-db-lookup --pmid ...` | `uv run med-db-setup-dsm5` (setup — writes) |
-| `uv run med-db-lookup-icd11 --code "..."` | `uv run med-db-setup-therapy-methods` (setup — writes) |
-| `uv run med-db-lookup-dsm5 --code "..."` | `uv run med-db-integrity-check` (harmless but unnecessary mid-session) |
-| `uv run med-db-lookup --doi ...` | `WebSearch`, `WebFetch` for new papers (network) |
-| Reading `med-db/guidelines/therapy-methodologies/source.md` | Dispatching `med-researcher` agent (writes to med-db/) |
-| Dispatching Haiku sub-agent for read-only med-db queries | Dispatching any sub-agent other than Haiku for med-db access |
+| `uv run med-db-query --search-keyword "..." --identifiers-only` | `uv run med-db --source pubmed --query "..."` (network search) |
+| `uv run med-db-query --list-topics` | `uv run med-db-download-icd11` (setup — writes) |
+| `uv run med-db-query --list-topics --names-only` | `uv run med-db-setup-dsm5` (setup — writes) |
+| `uv run med-db-query --check-pmid "..."` | `uv run med-db-setup-therapy-methods` (setup — writes) |
+| `uv run med-db-query --check-pmid "..." --locations-only` | `uv run med-db-integrity-check` (harmless but unnecessary mid-session) |
+| `uv run med-db-query --read-metadata "..."` | `WebSearch`, `WebFetch` for new papers (network) |
+| `uv run med-db-query --read-metadata "..." --title-only` | Dispatching `med-researcher` agent (writes to med-db/) |
+| `uv run med-db-query --read-metadata "..." --abstract-only` | Dispatching any sub-agent other than Haiku for med-db access |
+| `uv run med-db-query --pmids-from-search "..." --identifiers-only` | |
+| `uv run med-db-query --search-searches "..." --identifiers-only` | |
+| `uv run med-db-query --recent N --identifiers-only` | |
+| `uv run med-db-lookup --pmid ...` | |
+| `uv run med-db-lookup-icd11 --code "..."` | |
+| `uv run med-db-lookup-icd11 --code "..." --title-only` | |
+| `uv run med-db-lookup-dsm5 --code "..."` | |
+| `uv run med-db-lookup-dsm5 --code "..." --title-only` | |
+| `uv run med-db-lookup --doi ...` | |
+| Reading `med-db/guidelines/therapy-methodologies/source.md` | |
+| Dispatching Haiku sub-agent for read-only med-db queries | |
 
 Read-only commands are sub-second, local, and equivalent to consulting a reference shelf.
 Network searches and archival are between-session work.
@@ -134,10 +146,33 @@ use only commands from the "Permitted during session" column above. It must neve
 network, or write commands. This pattern lets the therapist consult the reference shelf without
 breaking therapeutic presence.
 
+## Extraction Flags — Get Data Without JSON Post-Processing
+
+Every query and lookup command defaults to JSON (`--format json`). When you need a
+single field from that JSON, use an extraction flag instead of piping through
+`python3 -c`, `jq`, `grep`, or `sed`. Extraction flags output plain text, one value
+per line — they exist to make post-processing unnecessary.
+
+| Flag | Applies to | Output |
+|---|---|---|
+| `--identifiers-only` | `--topic`, `--search-keyword`, `--recent`, `--pmids-from-search`, `--search-searches` | Identifiers (PMIDs, EPMC IDs, or paths) one per line |
+| `--title-only` | `--read-metadata`, ICD-11 `--code`, DSM-5 `--code` | Title/disorder name text |
+| `--abstract-only` | `--read-metadata` | Abstract text (auto-loads it — no `--show-abstract` needed) |
+| `--names-only` | `--list-topics` | Topic names one per line |
+| `--locations-only` | `--check-pmid`, `--check-epmc` | Archive folder paths one per line |
+
+**Archive (`med-db`) also supports:** `--format json` (structured machine output),
+`--quiet` (created folder paths only, one per line). Default is `--format text`.
+
+**Diagnostic lookups** support `--title-only` for `--code` (ICD-11: condition title;
+DSM-5: disorder name). For partial code matches, all matching titles are printed one per line.
+
 ## Command Reference
 
 All scripts must be invoked via `uv run` from the repo root. Query and lookup scripts
-default to JSON; use `--format text` for human-readable output.
+default to JSON. Use `--format text` for human-readable output, or an extraction flag
+(`--identifiers-only`, `--title-only`, `--abstract-only`, `--names-only`, `--locations-only`)
+to get a single field as plain text — no `jq`, `python3 -c`, or `grep` needed.
 
 For the complete parameter reference with every flag, type, and default, see
 `.claude/agents/rules/med-db-commands.md`. The table below is a quick reference for
@@ -145,34 +180,50 @@ common operations.
 
 ### Archive (`med-db`)
 
-| Operation          | Command                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| PMID               | `uv run med-db --pmid <ID> --topic '<name>' --validate`                                          |
-| DOI                | `uv run med-db --doi <DOI> --topic '<name>' --validate`                                          |
-| Europe PMC record  | `uv run med-db --epmc-record '<SOURCE>:<ID>' --topic '<name>' --validate`                        |
-| PubMed search      | `uv run med-db --source pubmed --query '<query>' --topic '<name>'`                               |
-| Europe PMC search  | `uv run med-db --source europe-pmc --query '<query>' --topic '<name>'`                           |
-| Web discovery      | `uv run med-db --source <SOURCE> --query '<query>' --topic '<name>'`                             |
-| Archive first N    | `uv run med-db --source pubmed --query '<query>' --archive-first <N> --topic '<name>'`           |
-| Multiple PMIDs     | `uv run med-db --pmid <ID1> --pmid <ID2> --topic '<name>' --validate`                            |
-| Migrate (dry run)  | `uv run med-db --migrate-dry-run`                                                                |
-| Migrate            | `uv run med-db --migrate`                                                                        |
+Default text output; `--format json` for structured, `--quiet` for folder paths only.
+
+| Operation              | Command                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| PMID                   | `uv run med-db --pmid <ID> --topic '<name>'`                                                     |
+| DOI                    | `uv run med-db --doi <DOI> --topic '<name>'`                                                     |
+| Europe PMC record      | `uv run med-db --epmc-record '<SOURCE>:<ID>' --topic '<name>'`                                   |
+| PubMed search          | `uv run med-db --source pubmed --query '<query>' --topic '<name>'`                               |
+| Europe PMC search      | `uv run med-db --source europe-pmc --query '<query>' --topic '<name>'`                           |
+| Web discovery          | `uv run med-db --source <SOURCE> --query '<query>' --topic '<name>'`                             |
+| Archive first N        | `uv run med-db --source pubmed --query '<query>' --archive-first <N> --topic '<name>'`           |
+| Multiple PMIDs         | `uv run med-db --pmid <ID1> --pmid <ID2> --topic '<name>'`                                       |
+| JSON output            | `uv run med-db ... --format json`                                                                |
+| Paths only (quiet)     | `uv run med-db ... --quiet`                                                                      |
+| Migrate (dry run)      | `uv run med-db --migrate-dry-run`                                                                |
+| Migrate                | `uv run med-db --migrate`                                                                        |
 
 ### Query (`med-db-query`)
 
-| Operation          | Command                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| List topics        | `uv run med-db-query --list-topics`                                                              |
-| List papers/topic  | `uv run med-db-query --topic '<slug>'`                                                           |
-| Check PMID         | `uv run med-db-query --check-pmid '<ID>'`                                                        |
-| Check EPMC record  | `uv run med-db-query --check-epmc '<SOURCE>:<ID>'`                                               |
-| PMIDs from search  | `uv run med-db-query --pmids-from-search '<path>'`                                               |
-| Read metadata      | `uv run med-db-query --read-metadata '<path>'`                                                   |
-| Read + abstract    | `uv run med-db-query --read-metadata '<path>' --show-abstract`                                   |
-| Keyword search     | `uv run med-db-query --search-keyword '<term>'`                                                  |
-| Scoped keyword     | `uv run med-db-query --search-keyword '<term>' --search-topic '<slug>'`                          |
-| Recent papers      | `uv run med-db-query --recent <N>`                                                               |
-| Search searches    | `uv run med-db-query --search-searches '<term>'`                                                 |
+Default JSON. Use `--format text` for readable output, or extraction flags for single-field plain text.
+
+| Operation               | Command                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------ |
+| List topics             | `uv run med-db-query --list-topics`                                                              |
+| Topic names only        | `uv run med-db-query --list-topics --names-only`                                                 |
+| List papers/topic       | `uv run med-db-query --topic '<slug>'`                                                           |
+| Paper IDs only          | `uv run med-db-query --topic '<slug>' --identifiers-only`                                        |
+| Check PMID              | `uv run med-db-query --check-pmid '<ID>'`                                                        |
+| PMID locations only     | `uv run med-db-query --check-pmid '<ID>' --locations-only`                                       |
+| Check EPMC record       | `uv run med-db-query --check-epmc '<SOURCE>:<ID>'`                                               |
+| EPMC locations only     | `uv run med-db-query --check-epmc '<SOURCE>:<ID>' --locations-only`                              |
+| PMIDs from search       | `uv run med-db-query --pmids-from-search '<path>'`                                               |
+| PMIDs only              | `uv run med-db-query --pmids-from-search '<path>' --identifiers-only`                            |
+| Read metadata           | `uv run med-db-query --read-metadata '<path>'`                                                   |
+| Title only              | `uv run med-db-query --read-metadata '<path>' --title-only`                                      |
+| Abstract only           | `uv run med-db-query --read-metadata '<path>' --abstract-only`                                   |
+| Read + abstract (JSON)  | `uv run med-db-query --read-metadata '<path>' --show-abstract`                                   |
+| Keyword search          | `uv run med-db-query --search-keyword '<term>'`                                                  |
+| Scoped keyword          | `uv run med-db-query --search-keyword '<term>' --search-topic '<slug>'`                          |
+| Keyword IDs only        | `uv run med-db-query --search-keyword '<term>' --identifiers-only`                               |
+| Recent papers           | `uv run med-db-query --recent <N>`                                                               |
+| Recent IDs only         | `uv run med-db-query --recent <N> --identifiers-only`                                            |
+| Search searches         | `uv run med-db-query --search-searches '<term>'`                                                 |
+| Search paths only       | `uv run med-db-query --search-searches '<term>' --identifiers-only`                              |
 
 ### External Lookup (`med-db-lookup`)
 
@@ -184,25 +235,27 @@ common operations.
 
 ### Diagnostic Classification
 
-| Operation          | Command                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| Download ICD-11    | `uv run med-db-download-icd11 --release 2026-01`                                                 |
-| ICD-11 by code     | `uv run med-db-lookup-icd11 --code '<CODE>'`                                                     |
-| ICD-11 keyword     | `uv run med-db-lookup-icd11 --keyword '<term>'`                                                  |
-| ICD-10 → ICD-11    | `uv run med-db-lookup-icd11 --icd10-code '<CODE>'`                                               |
-| ICD-11 → ICD-10    | `uv run med-db-lookup-icd11 --icd11-to-icd10 '<CODE>'`                                           |
-| Setup DSM-5-TR     | `uv run med-db-setup-dsm5`                                                                       |
-| DSM-5 by code      | `uv run med-db-lookup-dsm5 --code '<CODE>'`                                                      |
-| DSM-5 keyword      | `uv run med-db-lookup-dsm5 --keyword '<term>'`                                                   |
-| Setup therapy      | `uv run med-db-setup-therapy-methods`                                                            |
+| Operation             | Command                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| Download ICD-11       | `uv run med-db-download-icd11 --release 2026-01`                                                 |
+| ICD-11 by code        | `uv run med-db-lookup-icd11 --code '<CODE>'`                                                     |
+| ICD-11 title only     | `uv run med-db-lookup-icd11 --code '<CODE>' --title-only`                                        |
+| ICD-11 keyword        | `uv run med-db-lookup-icd11 --keyword '<term>'`                                                  |
+| ICD-10 → ICD-11       | `uv run med-db-lookup-icd11 --icd10-code '<CODE>'`                                               |
+| ICD-11 → ICD-10       | `uv run med-db-lookup-icd11 --icd11-to-icd10 '<CODE>'`                                           |
+| Setup DSM-5-TR        | `uv run med-db-setup-dsm5`                                                                       |
+| DSM-5 by code         | `uv run med-db-lookup-dsm5 --code '<CODE>'`                                                      |
+| DSM-5 title only      | `uv run med-db-lookup-dsm5 --code '<CODE>' --title-only`                                         |
+| DSM-5 keyword         | `uv run med-db-lookup-dsm5 --keyword '<term>'`                                                   |
+| Setup therapy         | `uv run med-db-setup-therapy-methods`                                                            |
 
 ### Maintenance
 
-| Operation          | Command                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------ |
-| Integrity check    | `uv run med-db-integrity-check --med-db med-db`                                                  |
-| JSON integrity     | `uv run med-db-integrity-check --med-db med-db --json`                                           |
-| All tests          | `uv run test`                                                                                    |
+| Operation             | Command                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| Integrity check       | `uv run med-db-integrity-check --med-db med-db`                                                  |
+| Integrity check JSON  | `uv run med-db-integrity-check --med-db med-db --format json`                                    |
+| All tests             | `uv run test`                                                                                    |
 
 ### Lint Rules
 

@@ -3,7 +3,7 @@
 
 Designed for reliable agent handoff: every finding includes a severity level,
 a human-readable description, the exact filesystem location, and a concrete
-fix hint.  Use ``--json`` for machine-parseable output consumable by subagents.
+fix hint.  Use ``--format json`` for machine-parseable output consumable by subagents.
 
 Thin CLI wrapper around the shared check library in ``utils.py``.  The same
 checks also run automatically at the end of every script that modifies med-db/
@@ -17,6 +17,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+import utils
 from utils import (
     CATEGORY_STRUCTURAL,
     SEVERITY_ERROR,
@@ -117,10 +118,10 @@ def parse_args():
         help="Target med-db directory. Defaults to ./med-db.",
     )
     parser.add_argument(
-        "--json",
-        action="store_true",
-        dest="json_output",
-        help="Emit findings as machine-parseable JSON instead of human-readable text.",
+        "--format",
+        choices=("json", "text"),
+        default="text",
+        help="Output format. Defaults to text.",
     )
     return parser.parse_args()
 
@@ -131,7 +132,7 @@ def main():
 
     if not root.is_dir():
         print(f"ERROR: med-db directory not found: {root}", file=sys.stderr)
-        if args.json_output:
+        if args.format == "json":
             print(
                 json.dumps(
                     {
@@ -154,7 +155,7 @@ def main():
 
     findings = run_integrity_check(root)
 
-    if args.json_output:
+    if args.format == "json":
         print(_format_json(findings))
     else:
         print(_format_human(findings))
