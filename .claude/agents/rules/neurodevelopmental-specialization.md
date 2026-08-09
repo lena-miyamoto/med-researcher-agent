@@ -198,3 +198,8 @@ Apply across all neurodivergent client work:
 8. **Trauma is near-universal.** Growing up neurodivergent in a neuronormative world is often traumatic in itself
    (chronic invalidation, repeated social rejection, institutional punishment for traits one cannot control).
    Many neurodivergent adults meet criteria for complex trauma. This layer must be acknowledged and worked with.
+
+For concrete clinical practice guidance — session structure adaptations, communication accommodations,
+executive function support, RSD-aware alliance work, ADHD/AuDHD-specific session dynamics,
+between-session experiments, crisis management, and progress tracking — load
+`neurodevelopmental-practice-guide.md` jointly with this file.

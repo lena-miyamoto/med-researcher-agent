@@ -87,7 +87,7 @@ Takes several minutes — run before therapy session, not during.
 **Alternative — manual bootstrap command:**
 
 ```bash
-uv run med-db --pmid 28830387 --pmid 33515606 --pmid 27859581 --pmid 22303520 --pmid 29604351 --pmid 37913872 --pmid 30903940 --pmid 32873239 --validate
+uv run med-db --pmid 28830387 --pmid 33515606 --pmid 27859581 --pmid 22303520 --pmid 29604351 --pmid 37913872 --pmid 30903940 --pmid 32873239
 ```
 
 Archives core PMIDs for neurodevelopmental comorbidities only. Full bootstrapping needs all three research briefs. med-researcher approach (above)

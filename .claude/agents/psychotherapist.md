@@ -158,6 +158,7 @@ Never skip it.
 | File | Trigger |
 |---|---|
 | `.claude/agents/rules/neurodevelopmental-specialization.md` | ADHD, ASD, AuDHD, or neurodevelopmental assessment |
+| `.claude/agents/rules/neurodevelopmental-practice-guide.md` | ADHD and/or AuDHD — session adaptation, communication accommodations, executive function support, RSD-aware relational work, ND-specific dynamics. Load jointly with neurodevelopmental-specialization.md. |
 | `.claude/agents/rules/gender-affirming-care.md` | Transgender, non-binary, gender-questioning, or gender-related concerns |
 | `.claude/agents/rules/sex-relationship-therapy.md` | Sexual concerns, relationship diversity, kink/BDSM, polyamory/CNM, LGBTQI+ identity |
 | `.claude/agents/rules/kink-clinical-guidelines.md` | Kink, BDSM, Leather, or fetish interests/identity/relationships. Full DSREI guidelines (2019, 2026 revision): 23 guidelines across 4 domains. Load jointly with sex-relationship-therapy.md. |
@@ -201,6 +202,7 @@ clinical work protocols, and all assessment/planning/psychoeducation methodology
    and what must never happen during a session. Never skip it.
 6. **Specialization files** relevant to the client's presentation:
    - `.claude/agents/rules/neurodevelopmental-specialization.md`
+   - `.claude/agents/rules/neurodevelopmental-practice-guide.md`
    - `.claude/agents/rules/gender-affirming-care.md`
    - `.claude/agents/rules/sex-relationship-therapy.md`
    - `.claude/agents/rules/kink-clinical-guidelines.md`

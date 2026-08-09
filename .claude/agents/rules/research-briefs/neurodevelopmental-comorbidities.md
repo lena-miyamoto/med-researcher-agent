@@ -48,7 +48,7 @@ Archive under `adhd-comorbidity`. Foundation for ADHD comorbidity prevalence and
 **Why:** Comprehensive review of adult ADHD comorbidity prevalence, clinical implications. Covers mood, anxiety, substance use, and personality disorder comorbidity. Foundational reference for psychotherapist's ADHD specialization.
 
 ```bash
-uv run med-db --pmid 28830387 --validate
+uv run med-db --pmid 28830387
 ```
 
 ### 1.2 Schiweck et al. (2021) — ADHD and adult bipolar disorder
@@ -57,7 +57,7 @@ uv run med-db --pmid 28830387 --validate
 **Why:** Pooled BD prevalence in adults with ADHD (~7.95%), pooled OR 8.7, BD onset ~4 years earlier with comorbid ADHD. 17.11% of BD adults have ADHD. Critical for bipolar differential diagnosis guidance.
 
 ```bash
-uv run med-db --pmid 33515606 --validate
+uv run med-db --pmid 33515606
 ```
 
 ### 1.3 Nazar et al. (2016) — Eating disorders comorbid with ADHD
@@ -66,7 +66,7 @@ uv run med-db --pmid 33515606 --validate
 **Why:** Pooled OR 3.82 for any ED in ADHD, bulimia OR 5.71, BED OR 4.13. Bidirectional relationship. Foundation for psychotherapist's eating disorder screening recommendations.
 
 ```bash
-uv run med-db --pmid 27859581 --validate
+uv run med-db --pmid 27859581
 ```
 
 ### 1.4 Bond et al. (2012) — CANMAT task force: mood disorders and comorbid ADHD
@@ -75,7 +75,7 @@ uv run med-db --pmid 27859581 --validate
 **Why:** Clinical guidelines for treating ADHD in bipolar disorder. "Stabilize mood first" principle, bupropion as first-line ADHD treatment in BD, stimulant precautions. Referenced in bipolar differential and treatment sequencing.
 
 ```bash
-uv run med-db --pmid 22303520 --validate
+uv run med-db --pmid 22303520
 ```
 
 ### 1.5 Diaz-Roman et al. (2018) — Sleep in adults with ADHD
@@ -84,7 +84,7 @@ uv run med-db --pmid 22303520 --validate
 **Why:** Adults with ADHD show longer sleep onset latency, reduced sleep efficiency, elevated subjective insomnia. Foundation for psychotherapist's sleep disorder guidance (43–80% prevalence).
 
 ```bash
-uv run med-db --pmid 29604351 --validate
+uv run med-db --pmid 29604351
 ```
 
 ### 1.6 Choi et al. (2025) — Personality disorders in adults with ADHD: meta-analysis
@@ -101,7 +101,7 @@ uv run med-db-lookup --doi 10.1016/j.jad.2025.01.013
 Then archive by PMID from lookup, or if no PMID, via Europe PMC:
 
 ```bash
-uv run med-db --source europe-pmc --query "Choi 2025 personality disorders ADHD adult meta-analysis" --archive-first 1 --validate
+uv run med-db --source europe-pmc --query "Choi 2025 personality disorders ADHD adult meta-analysis" --archive-first 1
 ```
 
 ### 1.7 Magdi et al. (2025) — ADHD and PTSD adult comorbidity: systematic review
@@ -123,7 +123,7 @@ Archive under `asd-comorbidity`.
 **Why:** 340 studies, ~590,000 participants. Pooled point-prevalence for 38 conditions in ASD. Adult-specific estimates: depression 34%, anxiety 28%, ADHD 22%, OCD 10%, bipolar 9%. Single most important reference for ASD comorbidity prevalence.
 
 ```bash
-uv run med-db --pmid 37913872 --validate
+uv run med-db --pmid 37913872
 ```
 
 ### 2.2 Lugo-Marin et al. (2019) — Psychiatric disorders in adults with ASD
@@ -132,7 +132,7 @@ uv run med-db --pmid 37913872 --validate
 **Why:** 54.8% of adults with ASD have ≥1 psychiatric disorder. ADHD most prevalent, then mood and anxiety disorders. Key reference for psychotherapist's ASD specialization.
 
 ```bash
-uv run med-db --pmid 30903940 --validate
+uv run med-db --pmid 30903940
 ```
 
 ### 2.3 McDougle et al. (2025) — Pharmacological treatment in autism
@@ -154,7 +154,7 @@ Archive under `neurodevelopmental-overlap`.
 **Why:** 336 newly diagnosed adults. ADHD+ASD group: 72.4% had ≥1 additional disorder. ADHD-only: 72.8%, ASD-only: 50%. Depressive disorder most common across all groups. Foundation for AuDHD profile.
 
 ```bash
-uv run med-db --pmid 32873239 --validate
+uv run med-db --pmid 32873239
 ```
 
 ---
@@ -166,7 +166,7 @@ Broaden evidence base beyond core PMIDs. Run each query, archive most relevant r
 ### 4.1 ADHD comorbidity in adults — systematic reviews
 
 ```bash
-uv run med-db --query 'adult ADHD comorbidity prevalence systematic review meta-analysis' --archive-first 5 --validate
+uv run med-db --query 'adult ADHD comorbidity prevalence systematic review meta-analysis' --archive-first 5
 ```
 
 Archive results under `adhd-comorbidity`.
@@ -174,7 +174,7 @@ Archive results under `adhd-comorbidity`.
 ### 4.2 ASD psychiatric comorbidity in adults
 
 ```bash
-uv run med-db --query 'adult autism spectrum disorder psychiatric comorbidity prevalence systematic review' --archive-first 5 --validate
+uv run med-db --query 'adult autism spectrum disorder psychiatric comorbidity prevalence systematic review' --archive-first 5
 ```
 
 Archive results under `asd-comorbidity`.
@@ -182,7 +182,7 @@ Archive results under `asd-comorbidity`.
 ### 4.3 ADHD bipolar disorder treatment guidelines
 
 ```bash
-uv run med-db --query 'ADHD bipolar disorder treatment guidelines adults comorbidity management' --archive-first 3 --validate
+uv run med-db --query 'ADHD bipolar disorder treatment guidelines adults comorbidity management' --archive-first 3
 ```
 
 Archive results under `adhd-comorbidity`.
@@ -190,7 +190,7 @@ Archive results under `adhd-comorbidity`.
 ### 4.4 ASD pharmacological treatment comorbid psychiatric symptoms
 
 ```bash
-uv run med-db --query 'autism spectrum disorder pharmacological treatment comorbid anxiety depression guidelines adults' --archive-first 5 --validate
+uv run med-db --query 'autism spectrum disorder pharmacological treatment comorbid anxiety depression guidelines adults' --archive-first 5
 ```
 
 Archive results under `asd-comorbidity`.
@@ -198,7 +198,7 @@ Archive results under `asd-comorbidity`.
 ### 4.5 ADHD PTSD comorbidity neurobiological overlap
 
 ```bash
-uv run med-db --query 'ADHD PTSD comorbidity adult prevalence neurobiological overlap treatment' --archive-first 5 --validate
+uv run med-db --query 'ADHD PTSD comorbidity adult prevalence neurobiological overlap treatment' --archive-first 5
 ```
 
 Archive results under `adhd-comorbidity`.
@@ -206,7 +206,7 @@ Archive results under `adhd-comorbidity`.
 ### 4.6 AuDHD (ADHD + autism combined) psychiatric comorbidity
 
 ```bash
-uv run med-db --query 'ADHD autism combined comorbidity adults AuDHD psychiatric disorders prevalence' --archive-first 5 --validate
+uv run med-db --query 'ADHD autism combined comorbidity adults AuDHD psychiatric disorders prevalence' --archive-first 5
 ```
 
 Archive results under `neurodevelopmental-overlap`.

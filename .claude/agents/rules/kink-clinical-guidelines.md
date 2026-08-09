@@ -10,14 +10,14 @@ description: >
 
 # Kink Clinical Practice Guidelines — DSREI Clinical Reference
 
-Authoritative source: Kink Clinical Practice Guidelines Project (2019). *Clinical Practice Guidelines for
-Working with People with Kink Interests.* <https://www.kinkguidelines.com>. Published: Sprott, R.A.,
+Authoritative source: Kink Clinical Practice Guidelines Project (2019). _Clinical Practice Guidelines for
+Working with People with Kink Interests._ <https://www.kinkguidelines.com>. Published: Sprott, R.A.,
 Herbitter, C., Grant, P., Moser, C., & Kleinplatz, P.J. (2023). Clinical Guidelines for Working with
-Clients Involved in Kink. *Journal of Sex & Marital Therapy*, 49(8), 978–995. PMID: 37439228. Archived in
+Clients Involved in Kink. _Journal of Sex & Marital Therapy_, 49(8), 978–995. PMID: 37439228. Archived in
 med-db/ under `kink-clinical-guidelines`.
 
 2026 revision: Moser, C., Kleinplatz, P., & Randall, A. (2026). Kink Clinical Guidelines — 2026 Revision.
-*The Journal of Sexual Medicine*, 23(Supplement_4), qdag118.227. DOI: 10.1093/jsxmed/qdag118.227
+_The Journal of Sexual Medicine_, 23(Supplement_4), qdag118.227. DOI: 10.1093/jsxmed/qdag118.227
 (conference abstract; full revised text pending open-access release).
 
 **Status:** Expert consensus guidelines — recommendations, not mandatory standards of care. Only
@@ -413,18 +413,18 @@ specific relationship context.
 
 Based on Kolmes et al. (2006, PMID: 16803769), Waldura et al. (2016, PMID: 28340946), and DSREI:
 
-| # | Mistake | Instead |
-|---|---|---|
-| 1 | Assuming kink = trauma history ("When did the abuse start?") | Explore meaning: "What does this part of your life mean to you?" |
-| 2 | Diagnosing paraphilic disorder from interests alone | Apply full DSM-5 criteria; Criterion B must be met. Document precisely — notes can be weaponized in custody cases |
-| 3 | Equating consensual impact play with IPV | Assess context: consent, negotiation, safewords, aftercare, genuine ability to exit |
-| 4 | Setting eradication of kink as treatment goal | Explore client's own goals; distinguish internalized stigma from autonomous desire for change |
-| 5 | Waiting for client to disclose; interpreting silence as irrelevance | Create safety for disclosure; explicitly signal kink competence |
-| 6 | Asking client to educate you ("Can you explain BDSM to me?") | Pursue self-directed learning between sessions |
-| 7 | Pathologizing jealousy in CNM ("maybe this isn't right for you") | Normalize jealousy; assess how it's processed and communicated |
-| 8 | Framing kink/CNM as obstacles to "real" intimacy | Work within client's relationship structure; wellbeing, not conformity, is the goal |
-| 9 | Avoiding sexual topics — communicating sex is off-limits | Discuss sex comfortably and clinically using client's language |
-| 10 | Conflating negotiated power exchange with abuse | Distinguish consensual D/s (check-ins, transparency, genuine exit) from coercive control |
+| #   | Mistake                                                             | Instead                                                                                                           |
+| --- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1   | Assuming kink = trauma history ("When did the abuse start?")        | Explore meaning: "What does this part of your life mean to you?"                                                  |
+| 2   | Diagnosing paraphilic disorder from interests alone                 | Apply full DSM-5 criteria; Criterion B must be met. Document precisely — notes can be weaponized in custody cases |
+| 3   | Equating consensual impact play with IPV                            | Assess context: consent, negotiation, safewords, aftercare, genuine ability to exit                               |
+| 4   | Setting eradication of kink as treatment goal                       | Explore client's own goals; distinguish internalized stigma from autonomous desire for change                     |
+| 5   | Waiting for client to disclose; interpreting silence as irrelevance | Create safety for disclosure; explicitly signal kink competence                                                   |
+| 6   | Asking client to educate you ("Can you explain BDSM to me?")        | Pursue self-directed learning between sessions                                                                    |
+| 7   | Pathologizing jealousy in CNM ("maybe this isn't right for you")    | Normalize jealousy; assess how it's processed and communicated                                                    |
+| 8   | Framing kink/CNM as obstacles to "real" intimacy                    | Work within client's relationship structure; wellbeing, not conformity, is the goal                               |
+| 9   | Avoiding sexual topics — communicating sex is off-limits            | Discuss sex comfortably and clinically using client's language                                                    |
+| 10  | Conflating negotiated power exchange with abuse                     | Distinguish consensual D/s (check-ins, transparency, genuine exit) from coercive control                          |
 
 **Recovery after mistakes:** Name the impact, brief sincere apology, don't get defensive or make it about
 your guilt, ask for reframe, check the alliance. If pattern continues, offer referral transparently.
@@ -460,9 +460,9 @@ TASHRA (<https://www.tashra.org>), CARAS (<https://www.carasresearch.org>), Kink
 (<https://www.ncsfreedom.org/key-programs/kink-aware-professionals-59776>), The Network/La Red
 (<https://tnlr.org/en> — kink-aware IPV/DV).
 
-**Key books:** Kleinplatz & Moser (2006) *Sadomasochism: Powerful Pleasures*; Langdridge & Barker (2007)
-*Safe, Sane and Consensual*; Ortmann & Sprott (2013) *Sexual Outsiders*; Shahbaz & Chirinos (2017)
-*Becoming a Kink Aware Therapist*.
+**Key books:** Kleinplatz & Moser (2006) _Sadomasochism: Powerful Pleasures_; Langdridge & Barker (2007)
+_Safe, Sane and Consensual_; Ortmann & Sprott (2013) _Sexual Outsiders_; Shahbaz & Chirinos (2017)
+_Becoming a Kink Aware Therapist_.
 
 **Key articles (all med-db/archived):** Sprott et al. (2023, PMID: 37439228) — guidelines publication;
 Dunkley & Brotto (2018, PMID: 29543573) — BDSM practitioners psychologically healthy; Kolmes et al.
@@ -481,7 +481,7 @@ disorder; kink intersecting with gender, neurodivergence, or trauma.
   sex/relationship therapy competence, this file for DSREI guideline detail.
 - **`gender-affirming-care.md`** — load jointly when kink intersects with gender exploration or client is
   trans/NB and kink-involved (elevated prevalence).
-- **`neurodevelopmental-specialization.md`** — load jointly when client is neurodivergent and kink-involved.
+- **`neurodevelopmental-specialization.md`** + **`neurodevelopmental-practice-guide.md`** — load jointly with these files when client is neurodivergent and kink-involved. Provides session adaptation guidance (RSD-aware relational work, sensory needs, AuDHD-specific dynamics) directly applicable to kink-involved ND clients.
 - **`premature-relational-judgments.md`** — the four-threshold rule applies equally to kink, CNM, and Leather
   family dynamics. Power differentials in D/s or M/s do not suspend this prohibition.
 
