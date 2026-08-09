@@ -14,42 +14,29 @@ user-invocable: true
 
 Compress instruction `.md` files. Cut token cost, keep meaning exact.
 
-## Input handling
-
-Arg: file path, directory, glob, or space/comma-separated list.
-
-- File → target directly.
-- Directory → `find <dir> -name '*.md'` via `Bash`.
-- Glob pattern → expand via `Bash` (`shopt -s globstar nullglob; printf '%s\n' <pattern>`).
-- List → split on whitespace/comma; resolve each per rules above; dedupe.
-
-No arg → ask for file(s), directory, or glob; stop until given.
-
 ## Scope — skip by default
 
-Files named `README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`, `CHANGELOG.md`.
-
-Override: file named directly as arg → process anyway. Files pulled in via directory/glob/list stay filtered.
+`README.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`, `CHANGELOG.md` skipped unless named directly as arg. Files via directory/glob/list stay filtered.
 
 ## Process
 
 Per file, section-by-section — no scripts, no external calls:
 
-1. Resolve arg into target list (see Input handling).
+1. Resolve arg into target list.
 2. Scope check per file — skip if matched, unless named directly as a file arg.
 3. **Read file** (skip if already in context this turn).
-4. **Density check.** Apply criteria below. If file meets all density thresholds, skip it, note which criteria triggered, continue. Never skip on subjective judgement alone.
-5. **Save original.** Step 3 content is reference. Hold in context as baseline for all comparisons.
+4. **Density check.** Apply criteria below. All thresholds met → skip, note which triggered. Never skip on subjective judgement alone.
+5. **Save original.** Step 3 content as baseline for all comparisons.
 6. **Section-by-section rewrite via `Edit`/`Write`:**
    a. Identify major heading sections (`##` or `###` delimited blocks).
    b. Compress one section at a time, applying rules below.
    c. After each section: self-check against saved original BEFORE next section.
    - Count content-bearing elements (bullets, labelled sub-items, standalone paragraphs)
-     in compressed vs. original. Fewer items → content silently dropped — even if bullets
-     were merged to prose or collapsed across labelled groups. Restore missing items.
+     in compressed vs. original. Fewer → content dropped — even if merged to prose or
+     collapsed across labelled groups. Restore missing.
    - Verify compound qualifiers and resource references survived in that section.
    d. If any check fails for that section, fix in place, then proceed.
-7. **Final re-read.** After all sections done, re-read entire edited file via `Read` (mandatory — fresh call). Review as first-time reader — primary verification, not afterthought.
+7. **Final re-read.** Re-read entire edited file via `Read` (mandatory — fresh call). Review as first-time reader — primary verification, not afterthought.
 8. **Full self-check** (below), comparing re-read against original (step 5), item by item. Fix in place if needed.
 9. Repeat 2–8 per remaining file.
 
@@ -60,15 +47,15 @@ Skip only when **all four** true (never on subjective judgement):
 1. **Fragment ratio:** >80% of non-heading, non-code-block, non-blank lines are fragments (no subject + verb pair).
 2. **Word density:** average <10 words per non-blank content line. Body-text lines only — exclude headings, code blocks, single path/command bullets.
 3. **Sentence length:** no body-text sentence >12 words. Sentence = prose unit ending in `.`/`!`/`?`, not inside code block or inline span.
-4. **Compression-room test:** at least one compression rule (see Word + sentence level) applies to some content line. None applies anywhere → no room to compress, regardless of other thresholds.
+4. **Compression-room test:** at least one compression rule (see Word + sentence level) applies somewhere in file. None applies → no room to compress, regardless of other thresholds.
 
-When skipping, state: "Skipping `<filename>` — density thresholds met: `<list which ones triggered>`."
+When skipping: "Skipping `<filename>` — density thresholds met: `<list which ones triggered>`."
 
-If any single threshold fails → file is not dense → compress normally.
+Any single threshold fails → file is not dense → compress normally.
 
 ## Lossless definition
 
-Lossless: these survive compression exactly as in original, strength and order unchanged:
+These survive compression exactly as in original, strength and order unchanged:
 
 - Emphasis keywords and formatting — bold, italic, and emphasis words (CRITICAL, MUST, NEVER, ALWAYS,
   IMPORTANT, ESSENTIAL).
@@ -98,9 +85,9 @@ Any compression that loses one of these categories is over-optimized — restore
 - Fragments, not full sentences; drop subject, articles (a/an/the).
 - Cut filler (just, really, basically, actually, simply, essentially, generally), pleasantries (sure, certainly, happy to), hedging (might be worth, could consider, it would be good to), connective fluff (however, furthermore, additionally, in addition).
 - Shorten redundant phrasing: "in order to" → "to", "make sure to" → "ensure", "the reason is because" → "because", "utilize" → "use".
-- Plain, everyday words. Exception: technical jargon (library/API names, protocols, CLI flags, error strings) — keep exact, never paraphrase or simplify.
+- Plain words. Exception: technical jargon (library/API names, protocols, CLI flags, error strings) — keep exact, never paraphrase.
 - Sentences that must stay full: ≤20 words.
-- Merge or cut bullets/examples making the same point twice.
+- Merge or cut bullets/examples making same point twice.
 - Comparatives (more than N, at least N, no more than N, up to N) → keep direction exact. Don't collapse to shorthand like "N+" — that can silently shift the threshold.
 
 ### Tiebreaker: when in doubt, preserve
@@ -109,7 +96,7 @@ Compression biases toward cutting. Counter:
 
 - **Doubt → preserve.** Uncertain about any Lossless category → keep. Cut only when certain removal loses nothing from any Lossless category.
 - **Borderline load-bearing → load-bearing.** Might be emphasis, temporal, identity, or consequential → IS load-bearing until proven otherwise.
-- **Burden of proof is on removal.** Don't argue "probably safe." Argue "definitely safe — here's why it touches none of the Lossless categories."
+- **Burden of proof is on removal.** Argue "definitely safe — here's why it touches none of the Lossless categories." Never "probably safe."
 - **Directive rationale is load-bearing.** When a MUST/NEVER/ALWAYS directive is immediately
   preceded or followed by its ethical/clinical rationale (e.g., "...this is conversion therapy
   by another name"), the rationale is not "explanatory prose" — it establishes why the
@@ -122,8 +109,8 @@ Not an excuse to skip — a rule against over-compression. Compress aggressively
 - Code blocks (fenced + indented), inline code, inline formatting (`**bold**`, `*italic*`)
 - URLs, markdown links, file paths, commands, env vars
 - Technical terms, proper nouns, numbers, dates, version strings
-- Emphasis keywords beyond must/should/never/always: `CRITICAL`, `IMPORTANT:`, `YOU MUST`, `NEVER`,
-  `ALWAYS`, `ESSENTIAL`, `MANDATORY`, `NOT OPTIONAL` — treat as obligation words, never weaken or drop.
+- Emphasis keywords: `CRITICAL`, `IMPORTANT:`, `YOU MUST`, `NEVER`, `ALWAYS`, `ESSENTIAL`,
+  `MANDATORY`, `NOT OPTIONAL` — treat as obligation words, never weaken or drop.
 - Headings (exact text + order), list nesting, table structure (compress cell text only), frontmatter/YAML
 
 ### Self-check before done
@@ -132,7 +119,7 @@ Self-check runs twice: per-section during editing (step 6c), full-file review af
 
 **Full-file review procedure:**
 
-1. Re-read the edited file (already done in step 7 — fresh in context).
+1. Re-read edited file (already done in step 7 — fresh in context).
 2. Audit as if someone else wrote it. Read each line against original (step 5).
 3. Mentally diff each changed section against original. Focus on *removals* — meaning lost in deletions, rarely in additions.
 4. Run each checklist item against compressed file, cross-referencing saved original. Uncertain check → fail — tiebreaker applies here too.
@@ -153,7 +140,7 @@ Self-check runs twice: per-section during editing (step 6c), full-file review af
 - Trailing newline still there?
 - **Diff scan:** review every removal. For each, confirm outside all Lossless categories. Flag ambiguous removals — restore if not confidently safe.
 
-Any check fails → fix directly. Don't restart from scratch. If 3+ checks fail, re-edit offending sections against original, re-run full-file review.
+Any check fails → fix directly. Don't restart from scratch. 3+ checks fail → re-edit offending sections against original, re-run full-file review.
 
 ## Pattern
 
