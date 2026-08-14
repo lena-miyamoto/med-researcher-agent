@@ -66,6 +66,10 @@ def med_db_integrity_check():
     return _load_script("med_db_integrity_check", "med-db-integrity-check.py").main()
 
 
+def check_retraction():
+    return _load_script("check_retraction", "check-retraction.py").main()
+
+
 def lint_md(args=None):
     """Run pymarkdownlnt on repo markdown files.
 

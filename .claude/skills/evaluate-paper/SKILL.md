@@ -5,9 +5,6 @@ description: >
              study type, rates retracted papers 0, and lists strengths and weaknesses with reasons for the grade.
 argument-hint: 'Path to a paper file, DOI/URL, or inline paper text'
 user-invocable: true
-model: sonnet
-effort: high
-context: fork
 ---
 
 # Evaluate Paper
@@ -31,22 +28,16 @@ landmark — virtually no paper reaches it. Every grade must be justified: stren
 
 ### 2. Retraction gate — mandatory, before any reading
 
-Check retraction status first, cheapest source first:
-
-1. Crossref: `https://api.crossref.org/works?filter=update-type:retraction&query.bibliographic=title-or-DOI`; also
-   `https://api.crossref.org/works/DOI` → look at `update-to` events.
-2. PubMed: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=PMID&retmode=json` → check
-   `pubtype` for "Retracted Publication" / "Retraction of Publication"; or `https://pubmed.ncbi.nlm.nih.gov/?term=10.1000/example[doi]`.
-3. Retraction Watch database: `https://retractiondatabase.org/RetractionSearch.aspx` — search by DOI, PMID, or title.
-4. Fallback: WebSearch the paper title plus `retracted`.
-
-`WebFetch` fails → retry with `curl`.
+Check retraction status via the check-retraction skill (`.claude/skills/check-retraction/SKILL.md`) before any
+reading.
 
 - **Retracted → score 0. Stop. No further analysis.** Report is the retraction record: status, retraction date
-  and reason if findable, source (Retraction Watch / PubMed / Crossref). Verify with at least two sources.
+  and reason if findable, source (PubMed / Crossref). Verify with at least two sources.
 - Outstanding Expression of Concern → continue; cap score at 20; state it in the report.
-- Journal legitimacy: check indexing (MEDLINE, Scopus) and DOAJ (https://doaj.org) before scoring. Predatory or
-  unverifiable journal → cap at 15.
+- Journal legitimacy (separate from retraction): check indexing (MEDLINE, Scopus) and DOAJ (https://doaj.org)
+  before scoring. Predatory or unverifiable journal → cap at 15. OpenAlex
+  (`https://api.openalex.org/works/doi:<DOI>`) reports OA status, venue, and identifiers without an API key or
+  email; use it when DOAJ returns 403.
 
 ### 3. Classify the study design
 
@@ -166,7 +157,7 @@ Write full report to `tmp/evaluate-paper.<timestamp>.md` with YAML frontmatter (
 
 ## Validation
 
-1. Retraction checked via at least two sources before any scoring; retracted papers scored 0 and stopped.
+1. Retraction checked via the check-retraction skill before any scoring; retracted papers scored 0 and stopped.
 2. Study design classified; ceiling stated; reclassification applied where the defining feature failed.
 3. Every deduction maps to a named flag.
 4. Strengths and weaknesses both present.

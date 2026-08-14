@@ -18,12 +18,12 @@ before therapeutic work.
 
 ### Component Overview
 
-| Component | Location | Bootstrap command | Lookup tool |
+| Component | Location | Bootstrap | Lookup tool |
 |---|---|---|---|
 | Research evidence | `med-db/papers/`, `med-db/searches/` | Research brief → `med-researcher` agent | `med-db-query`, `med-db-lookup` |
-| ICD-11 classification | `med-db/guidelines/icd-11/` | `uv run med-db-download-icd11` | `med-db-lookup-icd11` |
-| DSM-5-TR classification | `med-db/guidelines/dsm-5-tr/` | `uv run med-db-setup-dsm5` | `med-db-lookup-dsm5` |
-| Therapy methodologies | `med-db/guidelines/therapy-methodologies/` | `uv run med-db-setup-therapy-methods` | Read `source.md` directly |
+| ICD-11 classification | `med-db/guidelines/icd-11/` | med-db skill | `med-db-lookup-icd11` |
+| DSM-5-TR classification | `med-db/guidelines/dsm-5-tr/` | med-db skill | `med-db-lookup-dsm5` |
+| Therapy methodologies | `med-db/guidelines/therapy-methodologies/` | med-db skill | Read `source.md` directly |
 
 `med-db/` gitignored — created locally, does **not** ship with repo. All components must be
 bootstrapped once per system before therapeutic work.
@@ -61,11 +61,7 @@ with full evidence base.
 
 **Bootstrap check:**
 
-```bash
-uv run med-db-query --list-topics
-```
-
-All seven topics (`adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap`,
+List topics via the med-db skill (`med-db-query --list-topics`). All seven topics (`adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap`,
 `gender-affirming-care`, `trans-nb-mental-health`, `sex-therapy`, `relationship-diversity`) appear with papers →
 ready. Skip bootstrapping.
 
@@ -85,14 +81,11 @@ med-researcher checks existing archives, fetches missing papers (full text via t
 `.claude/skills/fetch-paper/SKILL.md`), runs queries, validates. Takes several minutes — run before therapy session,
 not during.
 
-**Alternative — manual bootstrap command:**
+**Alternative — manual bootstrap:**
 
-```bash
-uv run med-db --pmid 28830387 --pmid 33515606 --pmid 27859581 --pmid 22303520 --pmid 29604351 --pmid 37913872 --pmid 30903940 --pmid 32873239
-```
-
-Archives core PMIDs for neurodevelopmental comorbidities only. Full bootstrapping needs all three research briefs. med-researcher approach (above)
-strongly preferred.
+Archive the core PMIDs for neurodevelopmental comorbidities via the med-db skill
+(`.claude/skills/med-db/SKILL.md`): 28830387, 33515606, 27859581, 22303520, 29604351, 37913872, 30903940,
+32873239. Full bootstrapping needs all three research briefs. med-researcher approach (above) strongly preferred.
 
 **Querying research evidence:**
 
@@ -160,8 +153,8 @@ selection, critical appraisal of therapeutic approaches. Consult when:
 
 - **Research briefs:** Re-run every 12 months. New systematic reviews or meta-analyses superseding core
   references → update research brief and clinical guidance.
-- **ICD-11:** WHO updates annually (January). Check with `uv run med-db-download-icd11
-  --release 2027-01` when available (follow med-db skill). 2026-01 is current.
+- **ICD-11:** WHO updates annually (January). When a newer release is available, re-download via the med-db
+  skill (`med-db-download-icd11 --release <YYYY-MM>`). 2026-01 is current.
 - **DSM-5-TR:** APA update supplements (usually September). Check `.claude/scripts/med-db-setup-dsm5.py`
   `_build_categories()`, update codes/names as needed. Published March 2022; DSM-6 not yet scheduled.
 - **Therapy methodologies:** Update on major new editions or significant innovations integrating

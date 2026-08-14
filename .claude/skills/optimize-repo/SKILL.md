@@ -124,13 +124,17 @@ Skills and docs must point to these owner files instead of restating their rules
 After cleanup, grep for these patterns in all repo `*.md` files (excluding wrappers and this audit list). Remaining
 matches must only appear in the listed owner files.
 
-`uv run med-db`, `uv run med-db-validate`, `uv run med-db-lookup`, `uv run med-db-query`, `uv run test`, `uv run
-lint-md`
+All `uv run med-db*` entry points (`med-db`, `med-db-lookup`, `med-db-query`, `med-db-lookup-icd11`,
+`med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-download-paper`, `med-db-setup-dsm5`,
+`med-db-setup-therapy-methods`, `med-db-integrity-check`)
+→ `.claude/skills/med-db/SKILL.md` and `.claude/agents/rules/med-db-commands.md` only.
+
+`uv run test`, `uv run lint-md`
 → `CLAUDE.md` only (README may show examples).
 
 `searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`, `metadata.json`, `abstract.txt`, `source.md`, `YAML
 frontmatter`, `bootstrap`, `gitignored`
-→ `CLAUDE.md` only.
+→ `.claude/skills/med-db/SKILL.md` only.
 
 Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research Output Format
 → `.claude/agents/med-researcher.md` only.

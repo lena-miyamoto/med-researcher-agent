@@ -266,15 +266,15 @@ class TestSourceChainOrder:
     def _fail_all_legal(self, monkeypatch):
         monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
         monkeypatch.setattr(paper, "fetch_fulltext_xml", raise_runtime_error)
+        monkeypatch.setattr(paper, "fetch_openalex_oa", lambda doi, fetch_url_func=None: (None, None))
         monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", lambda doi, email=None, fetch_url_func=None: None)
-        monkeypatch.setattr(paper, "fetch_openalex_pdf_url", lambda doi, fetch_url_func=None: None)
         monkeypatch.setattr(paper, "fetch_publisher_pdf", raise_runtime_error)
         monkeypatch.setattr(paper, "download_binary", lambda url, destination, timeout=60: False)
 
-    def test_legal_hit_never_touches_sci_hub(self, tmp_path, monkeypatch):
+    def test_oa_paper_uses_legal_source_and_never_touches_sci_hub(self, tmp_path, monkeypatch):
         monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
         monkeypatch.setattr(paper, "fetch_fulltext_xml", raise_runtime_error)
-        monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", lambda doi, email=None, fetch_url_func=None: "https://example.org/paper.pdf")
+        monkeypatch.setattr(paper, "fetch_openalex_oa", lambda doi, fetch_url_func=None: (True, "https://example.org/paper.pdf"))
         monkeypatch.setattr(paper, "download_binary", fake_download_binary)
         monkeypatch.setattr(paper, "extract_pdf_text", lambda pdf_path: "Extracted text.")
         sci_hub_calls = []
@@ -283,7 +283,7 @@ class TestSourceChainOrder:
         result = paper.download_paper("pmid", "35350465", topic="test", med_db=tmp_path / "med-db")
 
         assert result["status"] == "downloaded"
-        assert result["pdf_source"] == "unpaywall"
+        assert result["pdf_source"] == "openalex"
         assert sci_hub_calls == []
         sources = [step["source"] for step in result["source_chain"]]
         assert "sci-hub" not in sources
@@ -312,11 +312,63 @@ class TestSourceChainOrder:
         assert meta["provenance"]["pdf_source"] == "sci-hub"
         assert "Sci-Hub fallback used" in (folder / "source.md").read_text()
 
+    def test_paywalled_goes_to_sci_hub_before_legal_sources(self, tmp_path, monkeypatch):
+        calls = []
+        monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
+        monkeypatch.setattr(paper, "fetch_fulltext_xml", raise_runtime_error)
+        monkeypatch.setattr(paper, "fetch_openalex_oa", lambda doi, fetch_url_func=None: (False, None))
+        monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", lambda doi, email=None, fetch_url_func=None: calls.append("unpaywall"))
+
+        def record_scihub(value, mirror, fetch_url_func=None):
+            calls.append("sci-hub")
+            return "https://sci-hub.se/downloads/x/paper.pdf"
+
+        def record_publisher(doi, timeout=60):
+            calls.append("publisher")
+            raise RuntimeError("paywalled")
+
+        monkeypatch.setattr(paper, "fetch_scihub_pdf_url", record_scihub)
+        monkeypatch.setattr(paper, "fetch_publisher_pdf", record_publisher)
+        monkeypatch.setattr(paper, "download_binary", fake_download_binary)
+        monkeypatch.setattr(paper, "extract_pdf_text", lambda pdf_path: "Extracted text.")
+
+        result = paper.download_paper("pmid", "35350465", topic="test", med_db=tmp_path / "med-db")
+
+        assert result["pdf_source"] == "sci-hub"
+        assert calls == ["sci-hub"]
+        meta = json.loads((tmp_path / "med-db" / "fulltext" / "test" / "pmid-35350465-test-paper-title" / "metadata.json").read_text())
+        assert meta["provenance"]["sci_hub_used"] is True
+
+    def test_paywalled_sci_hub_fail_falls_back_to_publisher(self, tmp_path, monkeypatch):
+        calls = []
+        monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
+        monkeypatch.setattr(paper, "fetch_fulltext_xml", raise_runtime_error)
+        monkeypatch.setattr(paper, "fetch_openalex_oa", lambda doi, fetch_url_func=None: (False, None))
+
+        def record_scihub(value, mirror, fetch_url_func=None):
+            calls.append("sci-hub")
+            return None
+
+        def record_publisher(doi, timeout=60):
+            calls.append("publisher")
+            return b"%PDF-1.4 publisher content"
+
+        monkeypatch.setattr(paper, "fetch_scihub_pdf_url", record_scihub)
+        monkeypatch.setattr(paper, "fetch_publisher_pdf", record_publisher)
+        monkeypatch.setattr(paper, "extract_pdf_text", lambda pdf_path: "Extracted text.")
+
+        result = paper.download_paper(
+            "pmid", "35350465", topic="test", med_db=tmp_path / "med-db",
+            sci_hub_mirrors=["https://sci-hub.se"],
+        )
+
+        assert result["pdf_source"] == "publisher-open-access"
+        assert calls == ["sci-hub", "publisher"]
+
     def test_legal_text_obtained_skips_sci_hub(self, tmp_path, monkeypatch):
         monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_epmc_resolved())
         monkeypatch.setattr(paper, "fetch_fulltext_xml", lambda epmc_record, fetch_func=None: "<article><body><p>Text.</p></body></article>")
         monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", lambda doi, email=None, fetch_url_func=None: None)
-        monkeypatch.setattr(paper, "fetch_openalex_pdf_url", lambda doi, fetch_url_func=None: None)
         monkeypatch.setattr(paper, "fetch_publisher_pdf", raise_runtime_error)
         sci_hub_calls = []
         monkeypatch.setattr(paper, "fetch_scihub_pdf_url", lambda *a, **k: sci_hub_calls.append(1))
@@ -342,7 +394,6 @@ class TestSourceChainOrder:
 
         monkeypatch.setattr(paper, "fetch_fulltext_xml", fake_fulltext_xml)
         monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", lambda doi, email=None, fetch_url_func=None: None)
-        monkeypatch.setattr(paper, "fetch_openalex_pdf_url", lambda doi, fetch_url_func=None: None)
         monkeypatch.setattr(paper, "fetch_publisher_pdf", raise_runtime_error)
         monkeypatch.setattr(paper, "download_binary", lambda url, destination, timeout=60: False)
         sci_hub_calls = []
@@ -367,7 +418,7 @@ class TestFulltextLayout:
     def _run_main(self, med_db_path, monkeypatch, *arguments):
         monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
         monkeypatch.setattr(paper, "fetch_fulltext_xml", raise_runtime_error)
-        monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", lambda doi, email=None, fetch_url_func=None: "https://example.org/paper.pdf")
+        monkeypatch.setattr(paper, "fetch_openalex_oa", lambda doi, fetch_url_func=None: (True, "https://example.org/paper.pdf"))
         monkeypatch.setattr(paper, "download_binary", fake_download_binary)
         monkeypatch.setattr(paper, "extract_pdf_text", lambda pdf_path: "Extracted full text.")
         with mock.patch.object(sys, "argv", ["med-db-download-paper.py", *arguments]):
@@ -387,7 +438,7 @@ class TestFulltextLayout:
             assert key in source_md
         assert "Extracted full text." in source_md
         meta = json.loads((folder / "metadata.json").read_text())
-        assert meta["provenance"]["pdf_source"] == "unpaywall"
+        assert meta["provenance"]["pdf_source"] == "openalex"
         index = json.loads((med_db_path / "index.json").read_text())
         fulltext_entries = {entry["path"]: entry for entry in index["fulltext"]}
         assert "fulltext/test-topic/pmid-35350465-test-paper-title" in fulltext_entries
@@ -404,7 +455,7 @@ class TestFulltextLayout:
     def test_pdf_extraction_failure_falls_back(self, tmp_path, monkeypatch):
         monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
         monkeypatch.setattr(paper, "fetch_fulltext_xml", raise_runtime_error)
-        monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", lambda doi, email=None, fetch_url_func=None: "https://example.org/paper.pdf")
+        monkeypatch.setattr(paper, "fetch_openalex_oa", lambda doi, fetch_url_func=None: (True, "https://example.org/paper.pdf"))
         monkeypatch.setattr(paper, "download_binary", fake_download_binary)
         monkeypatch.setattr(paper, "extract_pdf_text", lambda pdf_path: (_ for _ in ()).throw(ValueError("no text")))
 

@@ -93,7 +93,10 @@ that fail.
 | Effect size and clinical meaning | Statistically significant results must also be clinically meaningful. Report both absolute and relative risk measures | p < 0.05 but absolute risk difference is clinically trivial (e.g., <1% ARR with no meaningful patient outcome) |
 | Reproducibility | Single-study findings are tentative; single-group findings are unreliable | Only one study exists and has never been independently replicated; all positive evidence comes from a single research group without external replication |
 | Publication bias | For meta-analyses: must assess publication bias (funnel plot, Egger's test, trim-and-fill). For individual studies: consider whether negative results are absent from the literature | Meta-analysis without publication bias assessment; all published studies are positive and small (suggesting publication bias); downgrade confidence |
-| Retraction status | Must not be retracted or have an expression of concern | Retracted; expression of concern; indexed in Retraction Watch database |
+| Retraction status | Must not be retracted or have an expression of concern | Retracted; expression of concern |
+
+Retraction and expression-of-concern status is verified via the check-retraction skill
+(`.claude/skills/check-retraction/SKILL.md`) before any study is cited.
 
 ### Absolute vs. Relative Risk
 
@@ -143,7 +146,7 @@ lower-level studies exist — report the evidence as insufficient.
 evaluated before individual studies.
 - Required sources: PubMed (Clinical Queries / SR filter), Europe PMC (SR filter), Cochrane Library (mandatory for
 intervention questions), ClinicalTrials.gov / WHO ICTRP (for unpublished and terminated trials — essential for detecting
-publication bias), Retraction Watch.
+publication bias).
 - **APA PsycINFO** ([https://www.apa.org/pubs/databases/psycinfo](https://www.apa.org/pubs/databases/psycinfo)) —
   mandatory for psychology, sociology, and mental-health research questions. PsycINFO is the American Psychological
   Association's abstract database, indexing over 5 million records across 2,500+ journals. Without a paid institutional

@@ -15,20 +15,15 @@ last_updated: 2026-07-15
 
 Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local evidence base on sex therapy, kink-positive practice, and LGBTQI+/polyamory-affirming relationship therapy. Read-only.
 
+## Archive access
+
+All archive and query operations go through the med-db skill (`.claude/skills/med-db/SKILL.md`). Archive each PMID/DOI under the topic named in its phase heading.
+
 ## Pre-flight
 
-Verify `med-db/` exists, check existing topics:
+Verify `med-db/` exists, check existing topics via the med-db skill (`med-db-query --list-topics`).
 
-```bash
-uv run med-db-query --list-topics
-```
-
-If `sex-therapy` and `relationship-diversity` both have papers, knowledge base may already be bootstrapped. Check each:
-
-```bash
-uv run med-db-query --topic sex-therapy
-uv run med-db-query --topic relationship-diversity
-```
+If `sex-therapy` and `relationship-diversity` both have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
 
 Both populated → skip to report. Otherwise proceed through phases.
 
@@ -43,36 +38,20 @@ Archive under `sex-therapy`.
 **PMID:** 38336366
 **Why:** 58,849 men, 73,379 women. Prevalence: men 31%, women 41% (44.3% with validated instruments). Population baseline for sexual dysfunction — essential for normalizing and contextualizing client concerns.
 
-```bash
-uv run med-db --pmid 38336366
-```
-
 ### 1.2 Ozdemir et al. (2024) — PLISSIT Model Meta-Analysis
 
 **PMID:** 38890226
 **Why:** 18 studies. PLISSIT significantly improved sexual function (SMD 1.68) and communication satisfaction (SMD 0.75). Evidence for graduated intervention model used in sex therapy.
-
-```bash
-uv run med-db --pmid 38890226
-```
 
 ### 1.3 Sharifipour et al. (2024) — CBT for Female Sexual Dysfunction
 
 **PMID:** 39148917
 **Why:** 7 clinical trials (448 women). CBT significantly improved overall sexual function (SMD 1.34), desire, orgasm, satisfaction, lubrication, and assertiveness. Foundation for CBST efficacy.
 
-```bash
-uv run med-db --pmid 39148917
-```
-
 ### 1.4 Liu et al. (2025) — CBT Meta-Analysis for Female Sexual Dysfunction
 
 **PMID:** 40151032
 **Why:** 10 RCTs (837 patients). CBT showed greater FSFI score increases vs. routine care (MD 7.63) and waitlist (MD 3.13). More recent meta-analysis confirming CBST efficacy.
-
-```bash
-uv run med-db --pmid 40151032
-```
 
 ---
 
@@ -85,36 +64,20 @@ Archive under `sex-therapy`.
 **PMID:** 31617765
 **Why:** 60 studies. BDSM fantasies in 40-70% of people; ~20% engage in BDSM behaviors; 7.6% self-identify as BDSM practitioners. Establishes BDSM interests as common, not rare or pathological.
 
-```bash
-uv run med-db --pmid 31617765
-```
-
 ### 2.2 Dunkley & Brotto (2018) — BDSM Clinical Considerations
 
 **PMID:** 29543573
 **Why:** Exhaustive review: BDSM practitioners differ minimally from general population in psychopathology — same rates of mental illness, psychological adjustment, and distress. Less neurotic, more extraverted, more conscientious, less rejection-sensitive. Foundation for depathologizing BDSM in clinical practice.
-
-```bash
-uv run med-db --pmid 29543573
-```
 
 ### 2.3 Kolmes, Stock & Moser (2006) — Psychotherapy Bias with BDSM Clients
 
 **PMID:** 16803769
 **Why:** Survey of 175 BDSM-identified therapy clients. Documented biased care: pathologization of practices, misinterpretation as abuse or personality disorder, assumptions about unfit parenting, empathic failures. Foundation for "common mistakes" guidance.
 
-```bash
-uv run med-db --pmid 16803769
-```
-
 ### 2.4 Waldura et al. (2016) — Fifty Shades of Stigma
 
 **PMID:** 28340946
 **Why:** Focus groups with 115 kink-oriented patients. Anticipated stigma most common barrier to disclosure; fewer than half had disclosed. Patients feared clinicians would confuse consensual BDSM with IPV.
-
-```bash
-uv run med-db --pmid 28340946
-```
 
 ---
 
@@ -127,36 +90,20 @@ Archive under `relationship-diversity`.
 **PMID:** 27096488
 **Why:** Two US Census-based quota samples (n=8,718). 21.9% and 21.2% reported lifetime CNM engagement. Constant across demographics. Foundation for normalizing CNM as common relationship structure.
 
-```bash
-uv run med-db --pmid 27096488
-```
-
 ### 3.2 Schechinger, Sakaluk & Moors (2018) — CNM Therapy Practices
 
 **PMID:** 30335421
 **Why:** 249 CNM individuals. Both exemplary practices (affirming, knowledgeable) and inappropriate practices (biased, uninformed) significantly predicted therapist helpfulness ratings and premature termination. Foundation for do's and don'ts of CNM-affirming therapy.
-
-```bash
-uv run med-db --pmid 30335421
-```
 
 ### 3.3 Campbell et al. (2024) — CNM Sexual Health Care Experiences
 
 **PMID:** 37641450
 **Why:** 67 CNM individuals. Significantly lower trust in healthcare professionals. 37% sometimes or never disclosed relationship status. Experiences ranged from accepting to withholding treatment.
 
-```bash
-uv run med-db --pmid 37641450
-```
-
 ### 3.4 Vaughan et al. (2019) — CNM Healthcare Experiences
 
 **PMID:** 30621924
 **Why:** 20 CNM adults in focus groups. Documented lack of provider knowledge, inadequate screenings, stigmatizing behaviors. Foundation for understanding systemic barriers CNM clients face.
-
-```bash
-uv run med-db --pmid 30621924
-```
 
 ---
 
@@ -169,10 +116,6 @@ Archive under `relationship-diversity`.
 **PMID:** 35143229
 **Why:** Executive summary of APA Guidelines. Three lenses: affirmative practice, minority stress theory, intersectionality. Foundation for what constitutes truly affirming (vs. merely tolerant) care.
 
-```bash
-uv run med-db --pmid 35143229
-```
-
 ---
 
 ## Phase 5: Core PMIDs — Neurodivergence & Sexuality Intersection
@@ -183,10 +126,6 @@ Archive under `sex-therapy`.
 
 **PMID:** 37287894
 **Why:** 17 ASD studies, 19 ADHD studies. Poorer psychosexual functioning for both groups: less satisfaction, more dysfunction, more risky behaviors, more victimization — especially females. Non-heterosexual orientation more common in ASD. Foundation for neurodivergence-sexuality clinical guidance.
-
-```bash
-uv run med-db --pmid 37287894
-```
 
 ---
 
@@ -202,64 +141,41 @@ Foundational critique arguing paraphilias do not meet DSM's own definition of me
 ### 6.2 Kink Clinical Practice Guidelines
 
 **URL:** <https://www.kinkguidelines.com>
-2019 original, 2026 revision. 23 aspirational guidelines for clinicians working with kink-identified clients. Archive as web source:
+2019 original, 2026 revision. 23 aspirational guidelines for clinicians working with kink-identified clients.
 
-```bash
-uv run med-db --source doaj --query 'kink clinical practice guidelines sprott' --search-slug 'kink-guidelines'
-```
+Archive as a web source via the med-db skill: `doaj` search for `kink clinical practice guidelines sprott`, saved-search slug `kink-guidelines`, under `sex-therapy`.
 
 ### 6.3 TASHRA Kink Core Competencies
 
 **URL:** <https://www.tashra.org>
-Progressive competency levels (0.5 through 3) for clinicians working with kink-identified clients. Search and archive:
+Progressive competency levels (0.5 through 3) for clinicians working with kink-identified clients.
 
-```bash
-uv run med-db --source google-scholar --query 'TASHRA kink core competencies clinical training' --search-slug 'tashra-competencies'
-```
+Search and archive as a web source via the med-db skill: `google-scholar` search for `TASHRA kink core competencies clinical training`, saved-search slug `tashra-competencies`, under `sex-therapy`.
 
 ---
 
 ## Phase 7: PubMed Search Queries
 
+Run each query via the med-db skill, archive the most relevant results under the stated topic.
+
 ### 7.1 Sex therapy modalities efficacy
 
-```bash
-uv run med-db --query 'sex therapy cognitive behavioral sensate focus efficacy systematic review meta-analysis' --archive-first 5
-```
-
-Archive under `sex-therapy`.
+Search PubMed via the med-db skill for `sex therapy cognitive behavioral sensate focus efficacy systematic review meta-analysis`, archive first 5 under `sex-therapy`.
 
 ### 7.2 Consensual non-monogamy mental health
 
-```bash
-uv run med-db --query 'consensual non-monogamy polyamory mental health relationship satisfaction systematic review' --archive-first 5
-```
-
-Archive under `relationship-diversity`.
+Search PubMed via the med-db skill for `consensual non-monogamy polyamory mental health relationship satisfaction systematic review`, archive first 5 under `relationship-diversity`.
 
 ### 7.3 Kink BDSM mental health
 
-```bash
-uv run med-db --query 'BDSM kink mental health psychotherapy stigma clinical guidelines' --archive-first 5
-```
-
-Archive under `sex-therapy`.
+Search PubMed via the med-db skill for `BDSM kink mental health psychotherapy stigma clinical guidelines`, archive first 5 under `sex-therapy`.
 
 ### 7.4 LGBTQ affirmative therapy outcomes
 
-```bash
-uv run med-db --query 'LGBTQ affirmative therapy outcomes mental health cognitive behavioral minority stress' --archive-first 5
-```
-
-Archive under `relationship-diversity`.
+Search PubMed via the med-db skill for `LGBTQ affirmative therapy outcomes mental health cognitive behavioral minority stress`, archive first 5 under `relationship-diversity`.
 
 ---
 
 ## Phase 8: Validation
 
-```bash
-uv run med-db-integrity-check --med-db med-db
-uv run med-db-query --list-topics
-uv run med-db-query --topic sex-therapy
-uv run med-db-query --topic relationship-diversity
-```
+Run validation via the med-db skill (`med-db-integrity-check`), then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>` for `sex-therapy` and `relationship-diversity`.

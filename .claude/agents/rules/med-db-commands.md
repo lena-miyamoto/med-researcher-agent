@@ -143,7 +143,7 @@ At least one input required: `--reference`, `--title`, or `--url`. `--topic` is 
 | `--email` | str | — | Contact email for NCBI E-utilities, Unpaywall, Crossref |
 | `--delay` | float | `0.34` | Delay between downloads (seconds) |
 | `--force` | flag | off | Re-download even if the paper is already archived |
-| `--no-sci-hub` | flag | off | Disable the Sci-Hub last-resort fallback entirely |
+| `--no-sci-hub` | flag | off | Disable Sci-Hub entirely (paywalled papers fall back to legal sources only) |
 | `--sci-hub-mirror` | str | — | Override the Sci-Hub mirror list (takes precedence) |
 | `--format` | choice | `text` | Output format: `json` or `text` |
 

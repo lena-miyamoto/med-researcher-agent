@@ -11,6 +11,7 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 | ------------------------ | ---------------------------------------------------------------------- |
 | `analyze-med-claims`     | Verify medical claims against literature; produce evidence reports.    |
 | `evaluate-paper`         | Score scientific papers 0-100 for evidence-based quality.              |
+| `check-retraction`       | Check whether a paper is retracted (Crossref + PubMed APIs).           |
 | `create-med-skill`       | Add a new shared skill with harness wrappers.                          |
 | `create-med-agent`       | Add a new shared agent with harness wrappers.                          |
 | `create-workout-routine` | Build a personalized, science-backed workout routine.                  |

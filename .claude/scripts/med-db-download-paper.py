@@ -1,10 +1,11 @@
 """Download a paper's full text into the med-db fulltext archive.
 
 Resolves a reference (DOI, PMID, arXiv ID, Europe PMC SOURCE:ID, title, or
-URL) to metadata, then downloads the full text.  Legal open-access sources
-are tried first, in fixed order: PMC open access, Unpaywall, OpenAlex,
-publisher open access (DOI content negotiation), arXiv.  Sci-Hub is a
-last-resort fallback and is disabled by default via ``--no-sci-hub``.
+URL) to metadata, then downloads the full text.  Open-access papers are
+fetched from legal open-access sources (Europe PMC, OpenAlex, Unpaywall,
+publisher open access, arXiv).  Paywalled papers skip those and go straight
+to Sci-Hub; the legal alternatives are only tried if Sci-Hub fails.  Sci-Hub
+is disabled entirely via ``--no-sci-hub``.
 
 Writes ``paper.pdf`` + ``source.md`` (YAML frontmatter + extracted text) +
 ``metadata.json`` (raw record + provenance) into
@@ -468,12 +469,27 @@ def fetch_unpaywall_pdf_url(doi, email=None, fetch_url_func=None):
     return location.get("url_for_pdf") or location.get("url")
 
 
-def fetch_openalex_pdf_url(doi, fetch_url_func=None):
-    """Return the best open-access PDF URL from OpenAlex, or None."""
+def fetch_openalex_oa(doi, fetch_url_func=None):
+    """Return ``(is_oa, pdf_url)`` for a DOI from OpenAlex.
+
+    ``is_oa`` is True or False when OpenAlex reports open-access status and
+    None when the lookup failed or the record has no status. ``pdf_url`` is
+    the best open-access PDF location, or None.
+    """
     fetch_url = fetch_url_func or utils._fetch_url
-    raw = fetch_url(f"{OPENALEX_API}{urllib.parse.quote(f'https://doi.org/{doi}')}", "OpenAlex")
-    location = json.loads(raw).get("best_oa_location") or {}
-    return location.get("pdf_url") or location.get("landing_page_url")
+    try:
+        raw = fetch_url(
+            f"{OPENALEX_API}{urllib.parse.quote(f'https://doi.org/{doi}')}", "OpenAlex"
+        )
+        data = json.loads(raw)
+    except (RuntimeError, json.JSONDecodeError, ValueError):
+        return None, None
+    is_oa = data.get("is_oa")
+    if not isinstance(is_oa, bool):
+        is_oa = None
+    location = data.get("best_oa_location") or {}
+    pdf_url = location.get("pdf_url") or location.get("landing_page_url")
+    return is_oa, pdf_url
 
 
 def build_arxiv_pdf_url(arxiv_id):
@@ -627,14 +643,28 @@ def attempt_pdf_download(url, label, pdf_destination, source_chain, download_bin
     return False
 
 
-def legal_pdf_candidates(resolved, email, source_chain, fetch_url_func=None):
-    """Yield ``(label, url)`` PDF candidates from legal sources in order."""
-    fetch_url = fetch_url_func or utils._fetch_url
+def legal_pdf_candidates(resolved, email, source_chain, oa_pdf_url=None, fetch_url_func=None):
+    """Yield ``(label, url)`` PDF candidates from legal open-access sources.
 
-    if resolved.get("doi"):
-        doi = resolved["doi"]
+    ``oa_pdf_url`` is the OpenAlex best-OA location already fetched during OA
+    detection; when given, the OpenAlex lookup is not repeated. Unpaywall is
+    only queried when an email is available — without one it always returns
+    HTTP 422.
+    """
+    doi = resolved.get("doi")
+    if not doi:
+        return
+    if oa_pdf_url:
+        yield "openalex", oa_pdf_url
+    else:
+        source_chain.append({
+            "source": "openalex",
+            "outcome": "failed",
+            "detail": "no open-access PDF location recorded",
+        })
+    if email:
         try:
-            url = fetch_unpaywall_pdf_url(doi, email, fetch_url_func=fetch_url)
+            url = fetch_unpaywall_pdf_url(doi, email, fetch_url_func=fetch_url_func or utils._fetch_url)
             if url:
                 yield "unpaywall", url
             else:
@@ -645,19 +675,89 @@ def legal_pdf_candidates(resolved, email, source_chain, fetch_url_func=None):
                 })
         except RuntimeError as exc:
             source_chain.append({"source": "unpaywall", "outcome": "failed", "detail": str(exc)})
+    else:
+        source_chain.append({
+            "source": "unpaywall",
+            "outcome": "skipped",
+            "detail": "no email provided (Unpaywall requires one)",
+        })
 
+
+def _try_sci_hub(reference_value, resolved, mirrors, pdf_destination, source_chain,
+                 provenance, download_binary_func, fetch_url_func):
+    """Try Sci-Hub mirrors in order; return True when a PDF is fetched."""
+    lookup_value = resolved.get("doi") or resolved.get("pmid") or reference_value
+    for mirror in mirrors:
         try:
-            url = fetch_openalex_pdf_url(doi, fetch_url_func=fetch_url)
-            if url:
-                yield "openalex", url
-            else:
-                source_chain.append({
-                    "source": "openalex",
-                    "outcome": "failed",
-                    "detail": "no open-access PDF location recorded",
-                })
+            url = fetch_scihub_pdf_url(
+                lookup_value, mirror, fetch_url_func=fetch_url_func or utils._fetch_url
+            )
         except RuntimeError as exc:
-            source_chain.append({"source": "openalex", "outcome": "failed", "detail": str(exc)})
+            source_chain.append({
+                "source": "sci-hub",
+                "outcome": "failed",
+                "detail": f"{mirror}: {exc}",
+            })
+            continue
+        if not url:
+            source_chain.append({
+                "source": "sci-hub",
+                "outcome": "failed",
+                "detail": f"{mirror}: captcha or no PDF link",
+            })
+            continue
+        if attempt_pdf_download(url, "sci-hub", pdf_destination, source_chain, download_binary_func):
+            provenance["pdf_source"] = "sci-hub"
+            provenance["pdf_url"] = url
+            provenance["sci_hub_used"] = True
+            return True
+    return False
+
+
+def _download_legal_pdf(resolved, email, source_chain, pdf_destination, provenance,
+                        oa_pdf_url, download_binary_func, fetch_url_func):
+    """Try legal PDF sources; return True when a PDF was fetched.
+
+    Order: OpenAlex OA location, Unpaywall (only with email), publisher open
+    access (DOI content negotiation), then arXiv for arXiv records.
+    """
+    fetched_pdf = False
+    for label, url in legal_pdf_candidates(
+        resolved, email, source_chain, oa_pdf_url=oa_pdf_url, fetch_url_func=fetch_url_func
+    ):
+        if attempt_pdf_download(url, label, pdf_destination, source_chain, download_binary_func):
+            fetched_pdf = True
+            provenance["pdf_source"] = label
+            provenance["pdf_url"] = url
+            break
+
+    if not fetched_pdf and resolved.get("doi"):
+        try:
+            content = fetch_publisher_pdf(resolved["doi"])
+            write_binary(pdf_destination, content)
+            fetched_pdf = True
+            provenance["pdf_source"] = "publisher-open-access"
+            provenance["pdf_url"] = f"{DOI_RESOLVER}{resolved['doi']}"
+            source_chain.append({
+                "source": "publisher-open-access",
+                "outcome": "ok",
+                "detail": provenance["pdf_url"],
+            })
+        except RuntimeError as exc:
+            source_chain.append({
+                "source": "publisher-open-access",
+                "outcome": "failed",
+                "detail": str(exc),
+            })
+
+    if not fetched_pdf and resolved.get("arxiv_id"):
+        url = build_arxiv_pdf_url(resolved["arxiv_id"])
+        if attempt_pdf_download(url, "arxiv", pdf_destination, source_chain, download_binary_func):
+            fetched_pdf = True
+            provenance["pdf_source"] = "arxiv"
+            provenance["pdf_url"] = url
+
+    return fetched_pdf
 
 
 def _remove_temporary_files(target):
@@ -743,66 +843,42 @@ def download_paper(reference_kind, reference_value, year=None, topic="uncategori
         except (RuntimeError, ValueError) as exc:
             source_chain.append({"source": "europe-pmc-fulltext", "outcome": "failed", "detail": str(exc)})
 
-    # 3. Legal PDF sources in fixed order
-    if not fetched_pdf:
-        for label, url in legal_pdf_candidates(resolved, email, source_chain, fetch_url_func):
-            if attempt_pdf_download(url, label, pdf_destination, source_chain, download_binary_func):
-                fetched_pdf = True
-                provenance["pdf_source"] = label
-                provenance["pdf_url"] = url
-                break
-
-    if not fetched_pdf and resolved.get("doi"):
+    # 3. OpenAlex OA status drives the branch: open-access papers use legal
+    #    sources first; paywalled papers go straight to Sci-Hub.
+    is_oa = None
+    oa_pdf_url = None
+    if not fetched_pdf and not text and resolved.get("doi"):
         try:
-            content = fetch_publisher_pdf(resolved["doi"])
-            write_binary(pdf_destination, content)
-            fetched_pdf = True
-            provenance["pdf_source"] = "publisher-open-access"
-            provenance["pdf_url"] = f"{DOI_RESOLVER}{resolved['doi']}"
-            source_chain.append({
-                "source": "publisher-open-access",
-                "outcome": "ok",
-                "detail": provenance["pdf_url"],
-            })
+            is_oa, oa_pdf_url = fetch_openalex_oa(resolved["doi"], fetch_url_func)
         except RuntimeError as exc:
-            source_chain.append({"source": "publisher-open-access", "outcome": "failed", "detail": str(exc)})
+            source_chain.append({"source": "openalex", "outcome": "failed", "detail": str(exc)})
 
-    if not fetched_pdf and resolved.get("arxiv_id"):
-        url = build_arxiv_pdf_url(resolved["arxiv_id"])
-        if attempt_pdf_download(url, "arxiv", pdf_destination, source_chain, download_binary_func):
-            fetched_pdf = True
-            provenance["pdf_source"] = "arxiv"
-            provenance["pdf_url"] = url
+    mirrors = sci_hub_mirrors or SCIHUB_MIRRORS
+    paywalled = resolved.get("doi") and is_oa is False
 
-    # 4. Sci-Hub — last resort only, and never when legal full text was
-    #    already obtained above.
-    if not fetched_pdf and allow_sci_hub and text is None:
-        mirrors = sci_hub_mirrors or SCIHUB_MIRRORS
-        lookup_value = resolved.get("doi") or resolved.get("pmid") or reference_value
-        for mirror in mirrors:
-            try:
-                url = fetch_scihub_pdf_url(
-                    lookup_value, mirror, fetch_url_func=fetch_url_func or utils._fetch_url
-                )
-                if not url:
-                    source_chain.append({
-                        "source": "sci-hub",
-                        "outcome": "failed",
-                        "detail": f"{mirror}: captcha or no PDF link",
-                    })
-                    continue
-                if attempt_pdf_download(url, "sci-hub", pdf_destination, source_chain, download_binary_func):
-                    fetched_pdf = True
-                    provenance["pdf_source"] = "sci-hub"
-                    provenance["pdf_url"] = url
-                    provenance["sci_hub_used"] = True
-                    break
-            except RuntimeError as exc:
-                source_chain.append({
-                    "source": "sci-hub",
-                    "outcome": "failed",
-                    "detail": f"{mirror}: {exc}",
-                })
+    if not fetched_pdf and not text and paywalled:
+        # Paywalled: Sci-Hub first, legal alternatives only after it fails.
+        if allow_sci_hub:
+            fetched_pdf = _try_sci_hub(
+                reference_value, resolved, mirrors, pdf_destination, source_chain,
+                provenance, download_binary_func, fetch_url_func,
+            )
+        if not fetched_pdf:
+            fetched_pdf = _download_legal_pdf(
+                resolved, email, source_chain, pdf_destination, provenance,
+                oa_pdf_url, download_binary_func, fetch_url_func,
+            )
+    elif not fetched_pdf and not text:
+        # Open access (or unknown status): legal sources first, Sci-Hub last.
+        fetched_pdf = _download_legal_pdf(
+            resolved, email, source_chain, pdf_destination, provenance,
+            oa_pdf_url, download_binary_func, fetch_url_func,
+        )
+        if not fetched_pdf and allow_sci_hub:
+            fetched_pdf = _try_sci_hub(
+                reference_value, resolved, mirrors, pdf_destination, source_chain,
+                provenance, download_binary_func, fetch_url_func,
+            )
 
     if not fetched_pdf and not text:
         _remove_temporary_files(target)
@@ -927,7 +1003,7 @@ def parse_args():
     parser.add_argument(
         "--no-sci-hub",
         action="store_true",
-        help="Disable the Sci-Hub last-resort fallback.",
+        help="Disable Sci-Hub entirely (paywalled papers fall back to legal sources only).",
     )
     parser.add_argument(
         "--sci-hub-mirror",

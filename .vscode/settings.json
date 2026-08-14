@@ -226,7 +226,15 @@
     "/^uv run med-db(?:\\s+.*)?$/": true,
     "/^uv run med-db-lookup(?:\\s+.*)?$/": true,
     "/^uv run med-db-query(?:\\s+.*)?$/": true,
-    "/^uv run med-db-validate(?:\\s+.*)?$/": true
+    "/^uv run med-db-download-icd11(?:\\s+.*)?$/": true,
+    "/^uv run med-db-download-paper(?:\\s+.*)?$/": true,
+    "/^uv run med-db-integrity-check(?:\\s+.*)?$/": true,
+    "/^uv run med-db-lookup-dsm5(?:\\s+.*)?$/": true,
+    "/^uv run med-db-lookup-icd11(?:\\s+.*)?$/": true,
+    "/^uv run med-db-setup-dsm5(?:\\s+.*)?$/": true,
+    "/^uv run med-db-setup-therapy-methods(?:\\s+.*)?$/": true,
+    "/^uv run check-retraction(?:\\s+.*)?$/": true,
+    "/^uv run lint-md(?:\\s+.*)?$/": true
   },
   "chat.tools.terminal.blockDetectedFileWrites": "all",
   "[markdown]": {
