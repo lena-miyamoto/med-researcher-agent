@@ -46,7 +46,7 @@ Only one scope reviewed — never merge staged and unstaged. Review what the use
 From the file list, keep only `.md` files under these directories:
 
 - `.claude/agents/`
-- `.claude/agents/rules/`
+- `.claude/agents/references/`
 - `.claude/skills/`
 - `.github/agents/`
 - `.github/skills/`
@@ -75,8 +75,8 @@ target exists on disk. Use `Bash: test -f <path>` for each. Flag every missing p
 - **Warning** — target mentioned in prose or as a non-critical reference.
 
 Also flag references using a path convention that no longer matches the repo structure (e.g.,
-referencing `.claude/agents/rules/foo.md` when the file moved to
-`.claude/skills/foo/rules/foo.md`).
+referencing `.claude/agents/references/foo.md` when the file moved to
+`.claude/skills/foo/references/foo.md`).
 
 ### 5. Cross-File Consistency Check
 
@@ -84,7 +84,7 @@ For each changed file, identify its **related files** — other instruction file
 files that reference it. Also check known related pairs:
 
 - Agent file + its rule files (e.g., `psychotherapist.md` ↔ `clinical-work-guides.md`)
-- Skill file + its rule files (e.g., `start-therapy-session/SKILL.md` ↔ `rules/handoff-prompt.md`)
+- Skill file + its rule files (e.g., `start-therapy-session/SKILL.md` ↔ `references/handoff-prompt.md`)
 - `.github/` wrapper ↔ `.claude/` source of truth
 - `CLAUDE.md` ↔ any changed agent or skill it routes to
 

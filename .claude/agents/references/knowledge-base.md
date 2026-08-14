@@ -46,14 +46,14 @@ Run missing bootstrap commands. All pass → proceed with therapeutic work.
 
 ### Component 1: Research Evidence (Literature in med-db/)
 
-Neurodevelopmental specialization backed by three canonical research briefs in `.claude/agents/rules/research-briefs/`
+Neurodevelopmental specialization backed by three canonical research briefs in `.claude/agents/references/`
 (version-controlled). Single source of truth for evidence base:
 
 | Brief | Topics covered | med-db topics |
 |---|---|---|
-| `neurodevelopmental-comorbidities.md` | ADHD, ASD, AuDHD, common comorbidities | `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap` |
-| `gender-affirming-care.md` | WPATH SOC 8, minority stress, TNB mental health, non-binary care, socio-political context, neurodivergence overlap | `gender-affirming-care`, `trans-nb-mental-health` |
-| `sex-relationship-therapy.md` | Sex therapy, kink/BDSM-affirming practice, CNM/polyamory, LGBTQI+ affirmative therapy, relationship diversity, neurodivergence intersection | `sex-therapy`, `relationship-diversity` |
+| `research-brief-neurodevelopmental-comorbidities.md` | ADHD, ASD, AuDHD, common comorbidities | `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap` |
+| `research-brief-gender-affirming-care.md` | WPATH SOC 8, minority stress, TNB mental health, non-binary care, socio-political context, neurodivergence overlap | `gender-affirming-care`, `trans-nb-mental-health` |
+| `research-brief-sex-relationship-therapy.md` | Sex therapy, kink/BDSM-affirming practice, CNM/polyamory, LGBTQI+ affirmative therapy, relationship diversity, neurodivergence intersection | `sex-therapy`, `relationship-diversity` |
 
 Each brief: core PMIDs with archival commands, DOI-only references with resolution fallbacks, PubMed search
 queries, topic organization, validation steps. med-researcher agent reads brief, populates `med-db/`
@@ -69,11 +69,11 @@ ready. Skip bootstrapping.
 
 Dispatch `med-researcher` agent with all three research briefs:
 
-> "Read and execute all three research briefs in `.claude/agents/rules/research-briefs/`:
+> "Read and execute all three research briefs in `.claude/agents/references/`:
 >
-> 1. `neurodevelopmental-comorbidities.md`
-> 2. `gender-affirming-care.md`
-> 3. `sex-relationship-therapy.md`
+> 1. `research-brief-neurodevelopmental-comorbidities.md`
+> 2. `research-brief-gender-affirming-care.md`
+> 3. `research-brief-sex-relationship-therapy.md`
 > Follow each brief's instructions to bootstrap the med-db/ knowledge base. Archive all core PMIDs and run all
 > search queries. Validate when done. Report what was archived and under which topics."
 
@@ -161,6 +161,6 @@ selection, critical appraisal of therapeutic approaches. Consult when:
 - Citing prevalence data or treatment guidance from med-db/ papers: note publication year and evidence-quality
   assessment. Papers >10 years: flag, check for newer evidence.
 
-See `.claude/agents/rules/clinical-work-guides.md` for diagnostic assessment, assessment
+See `.claude/agents/references/clinical-work-guides.md` for diagnostic assessment, assessment
 considerations (neurodevelopmental, gender-affirming, sex/relationship), therapeutic dialogue and session work,
 case conceptualization, intervention planning, psychoeducation, technique selection.

@@ -30,7 +30,7 @@ care for trans/NB adults, sex/relationship therapy) owns clinical methodology �
 ### Knowledge Base Bootstrap (First Use Per System)
 
 Psychotherapist agent requires local knowledge base in `med-db/` (gitignored). Follow `med-db` skill for bootstrap and diagnostic classification setup. Run Mandatory
-Pre-Work Bootstrap Check from `.claude/agents/rules/knowledge-base.md`. Client prefers to proceed
+Pre-Work Bootstrap Check from `.claude/agents/references/knowledge-base.md`. Client prefers to proceed
 without bootstrapping → note limitation — diagnostic assessment uses training knowledge, not structured
 local reference data.
 
@@ -121,7 +121,7 @@ Skip Step 1's name question — greet client by name in history file. Proceed to
 
 **Returning clients only** (history file exists with ≥1 prior sessions). Skip for new clients.
 
-Read `.claude/skills/start-therapy-session/rules/knowledge-gap-analysis.md`. Execute full procedure:
+Read `.claude/skills/start-therapy-session/references/knowledge-gap-analysis.md`. Execute full procedure:
 scan session history for knowledge gaps (conditions, techniques, concepts, medications, life contexts,
 flagged gaps), check coverage across med-db/, resource files, therapy methodology guidelines, dispatch
 med-researcher agent for every uncovered gap, assemble session context block with newly filled and
@@ -132,7 +132,7 @@ unresolved gaps. Increment `sessions` by 1 in frontmatter (written after session
 **New client (no prior history — first session only):** Collect intake. Only time these structured
 questions are asked — answers populate Permanent Client Profile, persist across all future sessions.
 
-Read `.claude/skills/start-therapy-session/rules/intake-questions.md` for exact question wording, delivery rules,
+Read `.claude/skills/start-therapy-session/references/intake-questions.md` for exact question wording, delivery rules,
 queer-affirming stance for gender/pronouns. Questions: 1a name confirmation, 1b gender and pronouns,
 1c age, 1d previous psychiatric diagnoses, 1e psychoactive medication, 1f what brings them here, 1g anything else
 before starting. Each question has own wait point — Never batch them. Every question can be declined.
@@ -151,7 +151,7 @@ unfolds in session, but you need to know where the door is before you open it.
 
 ### 2. Informed Consent — Set the Frame
 
-Read `.claude/skills/start-therapy-session/rules/informed-consent.md` (scripts from psychotherapist agent's
+Read `.claude/skills/start-therapy-session/references/informed-consent.md` (scripts from psychotherapist agent's
 Safety Rules) and deliver appropriate protocol:
 
 - **New client:** full protocol (includes note about session history file).
@@ -182,7 +182,7 @@ Past history of these is not contraindication. Red line is *acute and imminent* 
 
 ### 4. Hand Off — Dispatch the Agent
 
-Read `.claude/skills/start-therapy-session/rules/handoff-prompt.md` for dispatch template. Assemble prompt
+Read `.claude/skills/start-therapy-session/references/handoff-prompt.md` for dispatch template. Assemble prompt
 with client's details from Steps 0–3, then dispatch `psychotherapist` agent.
 
 Agent produces opening therapeutic message (first turn only — stops where client should respond).
@@ -244,7 +244,7 @@ gate. Client ending session is true trigger.
 
 All post-session documentation (session note, profile update, protocol save, compression, closing statement)
 handled by `end-therapy-session` skill. See `end-therapy-session` for
-complete procedure. Rule files (`rules/session-note-format.md`, `rules/compression-rules.md`) remain
+complete procedure. Rule files (`references/session-note-format.md`, `references/compression-rules.md`) remain
 authoritative format reference — `end-therapy-session` skill reads and applies them.
 
 ## Writing Rules
@@ -269,7 +269,7 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 - Full session protocols saved to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` after every
   session — handled by `end-therapy-session` skill. NOT auto-read by agent — exist for client reference and explicit lookback only.
 
-- Reference files (`.claude/skills/start-therapy-session/rules/informed-consent.md`, `handoff-prompt.md`,
+- Reference files (`.claude/skills/start-therapy-session/references/informed-consent.md`, `handoff-prompt.md`,
   `session-note-format.md`, `compression-rules.md`) contain templates and rule sets. Read them when procedure
   instructs — don't load preemptively.
 - Don't duplicate agent's therapeutic methodology. This skill manages files and frames.

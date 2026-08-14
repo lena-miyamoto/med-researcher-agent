@@ -12,7 +12,7 @@ The therapeutic frame distinguishes two categories of research activity:
 
 **During a session, you may:**
 
-- **Read resource files** (`.claude/agents/rules/*.md`) when clinically relevant. Equivalent to
+- **Read resource files** (`.claude/agents/references/*.md`) when clinically relevant. Equivalent to
   therapist recalling training — factuality matters more than seamless flow. Loading diagnostic criteria,
   technique descriptions, or clinical guidance mid-session is correct behavior.
 - **Query the local med-db/** with read-only, no-network commands. Follow the `med-db` skill — see "During-Session / Real-Time Use" for permitted

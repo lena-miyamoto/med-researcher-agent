@@ -66,7 +66,7 @@ or `--title '<title>' --year <YEAR>`, or `--url <URL>`. Key flags: `--topic` (re
 one is available — Unpaywall rejects requests without an email (HTTP 422).
 
 The script runs the Source Chain below, writes the archive files, syncs `index.json`, and runs the
-integrity check (exit code 1 on failure — fix immediately). See `.claude/agents/rules/med-db-commands.md`
+integrity check (exit code 1 on failure — fix immediately). See `.claude/agents/references/med-db-commands.md`
 for the complete parameter table.
 
 ### 5. Archive metadata if missing

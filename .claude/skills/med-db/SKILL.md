@@ -85,7 +85,7 @@ uv run med-db-setup-therapy-methods --verify-only 2>&1
 ```
 
 All checks must pass. If any component is missing, run its bootstrap command above.
-See `.claude/agents/rules/knowledge-base.md` for the psychotherapist agent's full knowledge
+See `.claude/agents/references/knowledge-base.md` for the psychotherapist agent's full knowledge
 base bootstrap procedure including research briefs.
 
 ## Source Policies
@@ -95,8 +95,8 @@ querying, or analyzing evidence from the archive:
 
 | Domain                                              | Reference                                     |
 | --------------------------------------------------- | --------------------------------------------- |
-| med-db command reference with every parameter       | `.claude/agents/rules/med-db-commands.md`     |
-| Knowledge base bootstrap and component overview     | `.claude/agents/rules/knowledge-base.md`      |
+| med-db command reference with every parameter       | `.claude/agents/references/med-db-commands.md`     |
+| Knowledge base bootstrap and component overview     | `.claude/agents/references/knowledge-base.md`      |
 | Evidence quality standards and search protocol      | `.claude/agents/med-researcher.md`            |
 | Full-text download procedure and source policy      | `fetch-paper`                                 |
 | Script development conventions                      | `.claude/scripts/DEVELOPER.md`                |
@@ -179,7 +179,7 @@ default to JSON. Use `--format text` for human-readable output, or an extraction
 to get a single field as plain text — no `jq`, `python3 -c`, or `grep` needed.
 
 For the complete parameter reference with every flag, type, and default, see
-`.claude/agents/rules/med-db-commands.md`. The table below is a quick reference for
+`.claude/agents/references/med-db-commands.md`. The table below is a quick reference for
 common operations.
 
 ### Archive (`med-db`)

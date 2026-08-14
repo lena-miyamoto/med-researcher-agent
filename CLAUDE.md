@@ -30,7 +30,7 @@ Invoke via `Skill: "med-db"` or follow the skill file directly.
 
 ## Script Development
 
-Read `.claude/agents/rules/coding-style.md` before writing or editing any Python file.
+Read `.claude/agents/references/coding-style.md` before writing or editing any Python file.
 No-abbreviation naming, functional programming by default — applies to `.claude/scripts/` and
 any other Python code.
 
@@ -40,5 +40,5 @@ not when using `uv run` entry points.
 
 ## Architecture (Claude-Specific)
 
-Context engineering: `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` — authoritative standard for all instruction files.
+Context engineering: `.claude/skills/optimize-repo/references/context-engineering-best-practices.md` — authoritative standard for all instruction files.
 Agent dispatch: invoke via Agent tool with `subagent_type: "<name>"` per YAML frontmatter `name` field.

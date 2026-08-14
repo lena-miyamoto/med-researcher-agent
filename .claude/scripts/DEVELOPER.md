@@ -9,7 +9,7 @@ description: >
 
 Internal directory structure and conventions. **Only relevant when extending the med-db script
 stack.** Agents and skills must never manipulate `med-db/` directly — all access goes through the
-`uv run` entry points documented in `../agents/rules/med-db-commands.md`.
+`uv run` entry points documented in `../agents/references/med-db-commands.md`.
 
 ## Development Workflow
 
@@ -46,4 +46,4 @@ Required top-level categories:
   Reusable write-ups → `tmp/`, not overwriting source briefs or archived records.
 - **No backwards-compat shims.** Scripts have no version history — the agent only knows the
   current interface. No deprecated aliases, no deprecation warnings, no transitional flags.
-  If a flag name is wrong, change it. See `../agents/rules/coding-style.md`.
+  If a flag name is wrong, change it. See `../agents/references/coding-style.md`.

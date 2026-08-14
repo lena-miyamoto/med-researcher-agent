@@ -69,7 +69,7 @@ caught it. Watch: client deflects praise with humor — pattern may be clinicall
 
 ### 2. Write Session Note
 
-Read `.claude/skills/start-therapy-session/rules/session-note-format.md` for template. Derive note from
+Read `.claude/skills/start-therapy-session/references/session-note-format.md` for template. Derive note from
 therapeutic conversation — extract presenting issue, themes, interventions, key quotes, patterns, gaps
 flagged, state at close, thread for next, therapist reflection (from Step 1).
 
@@ -114,7 +114,7 @@ Protocol files NOT auto-read at session start. Exist for client reference and ex
 
 ### 5. Compress History File
 
-Read `.claude/skills/start-therapy-session/rules/compression-rules.md`. Apply all rules to Session Log Archive
+Read `.claude/skills/start-therapy-session/references/compression-rules.md`. Apply all rules to Session Log Archive
 section only.
 
 **Permanent Client Profile section never compressed.** Exempt from all compression rules.

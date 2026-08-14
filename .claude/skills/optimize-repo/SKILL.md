@@ -32,7 +32,7 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 | Copilot skill wrappers | `.github/skills/<name>/SKILL.md`; frontmatter plus one pointer line. |
 | Shared agent behavior (also Claude entrypoint) | `.claude/agents/<name>.md`; role, routing, and repo-specific behavior. Claude loads directly. |
 | Copilot agent wrappers | `.github/agents/<name>.agent.md`; harness metadata plus pointer. |
-| Agent/skill resource dirs | `.claude/agents/rules/` or `.claude/skills/<name>/rules/`; on-demand reference files for oversized instruction files (see 500-line rule). |
+| Agent/skill resource dirs | `.claude/agents/references/` or `.claude/skills/<name>/references/`; on-demand reference files for oversized instruction files (see 500-line rule). |
 | Human onboarding | `README.md`; install/bootstrap/command examples, not policy detail. |
 
 ## Reference Ownership
@@ -49,7 +49,7 @@ Skills and docs must point to these owner files instead of restating their rules
 | Evidence hierarchy, quality standards, search protocol | `.claude/agents/med-researcher.md` |
 | Harms/safety search, counter-evidence requirements | `.claude/agents/med-researcher.md` |
 | Research output format | `.claude/agents/med-researcher.md` |
-| Context engineering best practices | `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` |
+| Context engineering best practices | `.claude/skills/optimize-repo/references/context-engineering-best-practices.md` |
 | Shared Python utilities | `.claude/scripts/utils.py` |
 
 ## Procedure
@@ -67,7 +67,7 @@ Skills and docs must point to these owner files instead of restating their rules
    - Flag any instruction file over ~500 lines for splitting (see 500-line rule in audit step 4).
    - Read changed files before patching; assume user/formatter edits are intentional unless they break the task.
 4. Audit against the structure above. **Before evaluating any file, read
-   `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md`** — it is the authoritative
+   `.claude/skills/optimize-repo/references/context-engineering-best-practices.md`** — it is the authoritative
    standard for all instruction files in this repo. Every audit criterion below derives from it. Violations
    are findings that MUST be fixed or explicitly justified in the affected file (with reason). "The file was
    already long" is not a justification — split it. "It's convenient to keep everything together" is not a
@@ -82,7 +82,7 @@ Skills and docs must point to these owner files instead of restating their rules
    - Shared skills should contain input parsing, delegated calls, procedure, validation, and output only.
    - Agent files should be one focused role; evidence and safety rules stay in the shared agent file.
    - **500-line rule:** Any instruction file over ~500 lines must be split into a slim core file (~200–500 lines
-     of always-needed content) plus a `rules/` subdirectory holding self-contained reference files. Each
+     of always-needed content) plus a `references/` subdirectory holding self-contained reference files. Each
      resource file gets minimal YAML frontmatter (`description`) and is read on-demand via explicit "Read
      `<path>` when `<condition>`" instructions in the core file. Resource files hold: domain-specific
      knowledge, output templates, bootstrap/setup procedures — anything not needed every invocation.
@@ -101,13 +101,13 @@ Skills and docs must point to these owner files instead of restating their rules
    - Keep command examples in `CLAUDE.md` and README synchronized in spirit, but do not duplicate every policy note.
    - **Split oversized files (>~500 lines):** Identify self-contained sections that aren't needed every invocation
      (domain-specific knowledge, output templates, bootstrap/setup procedures). Extract each to a resource file in a
-     `rules/` subdirectory with YAML frontmatter (`description`). Replace with an explicit "Read `<path>` when
+     `references/` subdirectory with YAML frontmatter (`description`). Replace with an explicit "Read `<path>` when
      `<condition>`" instruction. Keep core identity, safety rules, writing rules, and always-needed procedures inline.
-     Follow the pattern in `.claude/agents/psychotherapist.md` + `.claude/agents/rules/`.
+     Follow the pattern in `.claude/agents/psychotherapist.md` + `.claude/agents/references/`.
      - After splitting, optionally run `compress-skill` on the slimmed core file to tighten
        prose. If compressing, verify losslessness per the categories in `compress-skill`
        ("Lossless defined" section) before accepting the result.
-     - Never compress resource files extracted to `rules/` — they are already self-contained and
+     - Never compress resource files extracted to `references/` — they are already self-contained and
        on-demand; compression there only risks content loss with no line-budget benefit.
 6. Keep discovery-critical frontmatter concise:
    - Skill descriptions should identify when to invoke the skill, not explain policy.
@@ -127,7 +127,7 @@ matches must only appear in the listed owner files.
 All `uv run med-db*` entry points (`med-db`, `med-db-lookup`, `med-db-query`, `med-db-lookup-icd11`,
 `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-download-paper`, `med-db-setup-dsm5`,
 `med-db-setup-therapy-methods`, `med-db-integrity-check`)
-→ `.claude/skills/med-db/SKILL.md` and `.claude/agents/rules/med-db-commands.md` only.
+→ `.claude/skills/med-db/SKILL.md` and `.claude/agents/references/med-db-commands.md` only.
 
 `uv run test`, `uv run lint-md`
 → `CLAUDE.md` only (README may show examples).
@@ -159,7 +159,7 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 ## Writing Rules
 
 - **Context engineering best practices are mandatory.** Read and follow
-  `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` when writing or editing any
+  `.claude/skills/optimize-repo/references/context-engineering-best-practices.md` when writing or editing any
   instruction file. Deviations require explicit justification in the affected file.
 - Match the repo's direct procedural tone.
 - Never sacrifice meaning or expressiveness for shorter prose. Meaning includes: emphasis keywords
@@ -176,7 +176,7 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 
 ## Validation
 
-1. **Confirm `.claude/skills/optimize-repo/rules/context-engineering-best-practices.md` was read** before any instruction file was evaluated. The audit is incomplete without it.
+1. **Confirm `.claude/skills/optimize-repo/references/context-engineering-best-practices.md` was read** before any instruction file was evaluated. The audit is incomplete without it.
 2. Run Markdown/frontmatter diagnostics on every changed file.
 3. Run `git diff --check`.
 4. Confirm no file or folder excluded by `.gitignore` was touched.
