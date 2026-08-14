@@ -36,7 +36,7 @@ Read the full session history. For every session note, identify:
 For each identified item, check whether the knowledge base has adequate coverage:
 
 1. **med-db/ coverage**: Is there at least one relevant paper archived under a matching topic? Follow the
-   med-db skill (`.claude/skills/med-db/SKILL.md`) for query commands — `--search-keyword` and `--list-topics`.
+   `med-db` skill for query commands — `--search-keyword` and `--list-topics`.
 2. **Resource file coverage**: Do the agent's resource files (`neurodevelopmental-specialization`,
    `gender-affirming-care`, `sex-relationship-therapy`, `knowledge-base`) cover this? Read the relevant file and check.
 3. **Therapy methodology coverage**: Do the bootstrapped therapy methodology guidelines

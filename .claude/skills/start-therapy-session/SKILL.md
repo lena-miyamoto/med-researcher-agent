@@ -5,7 +5,7 @@ description: >
              neurodevelopmental comorbidities, gender-affirming care for trans/NB adults, and sex/relationship
              therapy). Maintains a compact per-client session history file for continuity across sessions. Collects
              client intake, establishes informed consent, then hands off to the psychotherapist agent for direct
-             therapeutic dialogue. After the session, delegates to end-therapy-session skill for documentation.
+             therapeutic dialogue. After the session, delegates to `end-therapy-session` skill for documentation.
 argument-hint: "Optional: path to a session history file (continues previous work), or nothing for a new client"
 user-invocable: true
 ---
@@ -29,8 +29,7 @@ care for trans/NB adults, sex/relationship therapy) owns clinical methodology �
 
 ### Knowledge Base Bootstrap (First Use Per System)
 
-Psychotherapist agent requires local knowledge base in `med-db/` (gitignored). Follow med-db skill
-(`.claude/skills/med-db/SKILL.md`) for bootstrap and diagnostic classification setup. Run Mandatory
+Psychotherapist agent requires local knowledge base in `med-db/` (gitignored). Follow `med-db` skill for bootstrap and diagnostic classification setup. Run Mandatory
 Pre-Work Bootstrap Check from `.claude/agents/rules/knowledge-base.md`. Client prefers to proceed
 without bootstrapping → note limitation — diagnostic assessment uses training knowledge, not structured
 local reference data.
@@ -244,7 +243,7 @@ gate. Client ending session is true trigger.
 ### Reference: Post-Session Documentation
 
 All post-session documentation (session note, profile update, protocol save, compression, closing statement)
-handled by `end-therapy-session` skill. See `.claude/skills/end-therapy-session/SKILL.md` for
+handled by `end-therapy-session` skill. See `end-therapy-session` for
 complete procedure. Rule files (`rules/session-note-format.md`, `rules/compression-rules.md`) remain
 authoritative format reference — `end-therapy-session` skill reads and applies them.
 

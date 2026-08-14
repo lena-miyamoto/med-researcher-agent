@@ -23,7 +23,7 @@ Reusable medical research agent configuration and Medical DB workflow.
 
 Literature archive for medical, psychological, nutritional or exercise-related research.
 
-**All med-db access must go through the med-db skill** (`.claude/skills/med-db/SKILL.md`).
+**All med-db access must go through the `med-db` skill**.
 Skill owns the black-box rule, forbidden patterns, bootstrap, archival conventions,
 command reference, diagnostic classification setup, and during-session usage rules.
 Invoke via `Skill: "med-db"` or follow the skill file directly.

@@ -20,7 +20,7 @@ metadata; listing contents; archiving papers via PMID, DOI, or search query; set
 diagnostic classifications (ICD-11, DSM-5-TR, therapy methodologies); looking up codes; syncing
 or validating the index; and running integrity checks.
 
-Other skills (analyze-med-claims, create-diet-plan, start-therapy-session) and agents
+Other skills (`analyze-med-claims`, `create-diet-plan`, `start-therapy-session`) and agents
 (med-researcher, psychotherapist, dietologist) delegate archive operations to this skill.
 
 ## Black-Box Rule
@@ -98,7 +98,7 @@ querying, or analyzing evidence from the archive:
 | med-db command reference with every parameter       | `.claude/agents/rules/med-db-commands.md`     |
 | Knowledge base bootstrap and component overview     | `.claude/agents/rules/knowledge-base.md`      |
 | Evidence quality standards and search protocol      | `.claude/agents/med-researcher.md`            |
-| Full-text download procedure and source policy      | `.claude/skills/fetch-paper/SKILL.md`         |
+| Full-text download procedure and source policy      | `fetch-paper`                                 |
 | Script development conventions                      | `.claude/scripts/DEVELOPER.md`                |
 | Overall integration and CLI contract                | `CLAUDE.md`                                   |
 
@@ -107,7 +107,7 @@ querying, or analyzing evidence from the archive:
 - Always include `--topic <name>` on archival commands (human-readable name, e.g. `adhd`,
   `endometriosis`). The tool derives the kebab-case slug automatically.
 - Use `--topic-slug` only when automatic derivation fails.
-- Full-text downloads go through the fetch-paper skill (`.claude/skills/fetch-paper/SKILL.md`),
+- Full-text downloads go through the `fetch-paper` skill,
   which archives into `fulltext/` via `uv run med-db-download-paper`.
 - Integrity check runs automatically after every archival, setup, or download operation.
   Errors block completion (exit code 1) and must be fixed immediately.

@@ -17,11 +17,11 @@ Directs med-researcher agent what to archive in `med-db/` for psychotherapist ag
 
 ## Archive access
 
-All archive and query operations go through the med-db skill (`.claude/skills/med-db/SKILL.md`). Archive each PMID/DOI under the topic named in its phase heading.
+All archive and query operations go through the `med-db` skill. Archive each PMID/DOI under the topic named in its phase heading.
 
 ## Pre-flight
 
-Verify `med-db/` exists, check existing topics via the med-db skill (`med-db-query --list-topics`).
+Verify `med-db/` exists, check existing topics via the `med-db` skill (`med-db-query --list-topics`).
 
 If `sex-therapy` and `relationship-diversity` both have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
 
@@ -143,39 +143,39 @@ Foundational critique arguing paraphilias do not meet DSM's own definition of me
 **URL:** <https://www.kinkguidelines.com>
 2019 original, 2026 revision. 23 aspirational guidelines for clinicians working with kink-identified clients.
 
-Archive as a web source via the med-db skill: `doaj` search for `kink clinical practice guidelines sprott`, saved-search slug `kink-guidelines`, under `sex-therapy`.
+Archive as a web source via the `med-db` skill: `doaj` search for `kink clinical practice guidelines sprott`, saved-search slug `kink-guidelines`, under `sex-therapy`.
 
 ### 6.3 TASHRA Kink Core Competencies
 
 **URL:** <https://www.tashra.org>
 Progressive competency levels (0.5 through 3) for clinicians working with kink-identified clients.
 
-Search and archive as a web source via the med-db skill: `google-scholar` search for `TASHRA kink core competencies clinical training`, saved-search slug `tashra-competencies`, under `sex-therapy`.
+Search and archive as a web source via the `med-db` skill: `google-scholar` search for `TASHRA kink core competencies clinical training`, saved-search slug `tashra-competencies`, under `sex-therapy`.
 
 ---
 
 ## Phase 7: PubMed Search Queries
 
-Run each query via the med-db skill, archive the most relevant results under the stated topic.
+Run each query via the `med-db` skill, archive the most relevant results under the stated topic.
 
 ### 7.1 Sex therapy modalities efficacy
 
-Search PubMed via the med-db skill for `sex therapy cognitive behavioral sensate focus efficacy systematic review meta-analysis`, archive first 5 under `sex-therapy`.
+Search PubMed via the `med-db` skill for `sex therapy cognitive behavioral sensate focus efficacy systematic review meta-analysis`, archive first 5 under `sex-therapy`.
 
 ### 7.2 Consensual non-monogamy mental health
 
-Search PubMed via the med-db skill for `consensual non-monogamy polyamory mental health relationship satisfaction systematic review`, archive first 5 under `relationship-diversity`.
+Search PubMed via the `med-db` skill for `consensual non-monogamy polyamory mental health relationship satisfaction systematic review`, archive first 5 under `relationship-diversity`.
 
 ### 7.3 Kink BDSM mental health
 
-Search PubMed via the med-db skill for `BDSM kink mental health psychotherapy stigma clinical guidelines`, archive first 5 under `sex-therapy`.
+Search PubMed via the `med-db` skill for `BDSM kink mental health psychotherapy stigma clinical guidelines`, archive first 5 under `sex-therapy`.
 
 ### 7.4 LGBTQ affirmative therapy outcomes
 
-Search PubMed via the med-db skill for `LGBTQ affirmative therapy outcomes mental health cognitive behavioral minority stress`, archive first 5 under `relationship-diversity`.
+Search PubMed via the `med-db` skill for `LGBTQ affirmative therapy outcomes mental health cognitive behavioral minority stress`, archive first 5 under `relationship-diversity`.
 
 ---
 
 ## Phase 8: Validation
 
-Run validation via the med-db skill (`med-db-integrity-check`), then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>` for `sex-therapy` and `relationship-diversity`.
+Run validation via the `med-db` skill (`med-db-integrity-check`), then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>` for `sex-therapy` and `relationship-diversity`.

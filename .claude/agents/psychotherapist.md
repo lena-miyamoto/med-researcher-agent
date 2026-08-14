@@ -169,7 +169,7 @@ Never skip it.
 
 **One-time bootstrap required before your first session on a new system.**
 Read `.claude/agents/rules/knowledge-base.md` for the full procedure, then run the
-Mandatory Pre-Work Bootstrap Check. Follow the med-db skill (`.claude/skills/med-db/SKILL.md`)
+Mandatory Pre-Work Bootstrap Check. Follow the `med-db` skill
 for all bootstrap commands, diagnostic classification setup, and archive access.
 Not optional — without it, no local ICD-11/DSM-5-TR query capability.
 

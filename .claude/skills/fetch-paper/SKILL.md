@@ -14,15 +14,15 @@ user-invocable: true
 Downloads the full text of one scientific paper or article (PDF plus extracted source text) into the
 med-db archive via `uv run med-db-download-paper`. Open-access papers are fetched from legal sources;
 paywalled papers go straight to Sci-Hub, and legal alternatives are tried only if Sci-Hub fails. All
-archive access rules follow the med-db skill (`.claude/skills/med-db/SKILL.md`).
+archive access rules follow the `med-db` skill.
 
 ## When to Use
 
 - Research needs a paper's full text, referenced by DOI, PMID, arXiv ID, Europe PMC `SOURCE:ID`, title
   (+year), or URL.
 - `med-researcher`, `evaluate-paper`, and `analyze-med-claims` delegate full-text retrieval here.
-- **Not** for metadata/abstract-only archival — that is the med-db skill (`.claude/skills/med-db/SKILL.md`).
-- **Not** for quality grading — that is the evaluate-paper skill (`.claude/skills/evaluate-paper/SKILL.md`).
+- **Not** for metadata/abstract-only archival — that is the `med-db` skill.
+- **Not** for quality grading — that is the `evaluate-paper` skill.
 - **Not** for web pages or guidelines — those are med-db archive categories, not papers.
 
 ## Procedure
@@ -46,15 +46,13 @@ resolved title (step 3); if it is the wrong version, re-run with the DOI or PMID
 
 ### 2. Check the archive first
 
-Check whether the paper is already archived (read-only) via the med-db skill
-(`.claude/skills/med-db/SKILL.md`) — by PMID, Europe PMC record, or keyword search on the title. If the
+Check whether the paper is already archived (read-only) via the `med-db` skill — by PMID, Europe PMC record, or keyword search on the title. If the
 full text is already present, stop and report. The download script is idempotent and skips archived
 papers anyway.
 
 ### 3. Resolve metadata
 
-Resolve identifiers and get the canonical title via the med-db skill
-(`.claude/skills/med-db/SKILL.md`) — `med-db-lookup` (read-only, no archival).
+Resolve identifiers and get the canonical title via the `med-db` skill — `med-db-lookup` (read-only, no archival).
 
 ### 4. Download the full text
 
@@ -73,8 +71,7 @@ for the complete parameter table.
 
 ### 5. Archive metadata if missing
 
-If step 2 showed no `papers/` entry for the paper, archive the metadata record too via the med-db
-skill (`.claude/skills/med-db/SKILL.md`) — `med-db` archival by PMID or DOI, always with `--topic`.
+If step 2 showed no `papers/` entry for the paper, archive the metadata record too via the `med-db` skill — `med-db` archival by PMID or DOI, always with `--topic`.
 The full text is already in the archive after step 4; this step keeps `papers/` metadata complete.
 
 ### 6. Report
@@ -113,11 +110,11 @@ papers go to Sci-Hub, and Unpaywall is simply skipped when no email is provided.
 ## Writing Rules
 
 - All operations via `uv run` entry points — never edit `med-db/` files directly (black-box rule,
-  med-db skill `.claude/skills/med-db/SKILL.md`).
+  `med-db` skill).
 - Always pass `--topic` on archival and download commands.
-- Never run downloads or any network/write operation during a live therapy session (med-db skill
+- Never run downloads or any network/write operation during a live therapy session (`med-db` skill
   "During-Session / Real-Time Use").
-- Cross-reference the med-db skill by path — do not restate its rules here.
+- Cross-reference the `med-db` skill by name — do not restate its rules here.
 - ASCII only.
 
 ## Validation
@@ -127,7 +124,7 @@ papers go to Sci-Hub, and Unpaywall is simply skipped when no email is provided.
 2. Integrity check passed (script exit code 0); on failure fix the reported errors.
 3. Paywalled papers went to Sci-Hub before legal alternatives; open-access papers never used Sci-Hub.
    Any Sci-Hub use is recorded in `metadata.json` provenance and `source.md` frontmatter.
-4. `papers/` metadata archived via the med-db skill (`med-db` archival, with `--topic`) when it was missing.
+4. `papers/` metadata archived via the `med-db` skill (`med-db` archival, with `--topic`) when it was missing.
 5. Report states: path, identifier, source used, fallback chain.
 
 ## Output

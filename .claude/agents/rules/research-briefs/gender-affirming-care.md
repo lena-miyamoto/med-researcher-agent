@@ -17,11 +17,11 @@ Directs med-researcher agent what to archive in `med-db/` for psychotherapist ag
 
 ## Archive access
 
-All archive and query operations go through the med-db skill (`.claude/skills/med-db/SKILL.md`). Archive each PMID/DOI under the topic named in its phase heading.
+All archive and query operations go through the `med-db` skill. Archive each PMID/DOI under the topic named in its phase heading.
 
 ## Pre-flight
 
-Verify `med-db/` exists, check existing topics via the med-db skill (`med-db-query --list-topics`).
+Verify `med-db/` exists, check existing topics via the `med-db` skill (`med-db-query --list-topics`).
 
 If `gender-affirming-care` and `trans-nb-mental-health` both have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
 
@@ -48,7 +48,7 @@ Archive under `gender-affirming-care`.
 **DOI:** 10.1037/a0029597
 **Why:** Landmark adaptation of Meyer's minority stress model for TGNC populations. Maps distal and proximal stressors specific to gender minority experience. Adds nonaffirmation as TNB-specific distal stressor.
 
-Resolve the DOI via the med-db skill (`med-db-lookup`), then archive under `gender-affirming-care`.
+Resolve the DOI via the `med-db` skill (`med-db-lookup`), then archive under `gender-affirming-care`.
 
 ### 1.4 Testa et al. (2015) — Gender Minority Stress and Resilience Measure
 
@@ -167,22 +167,22 @@ Archive under `gender-affirming-care`.
 
 ## Phase 6: PubMed Search Queries
 
-Run each query via the med-db skill, archive the most relevant results under the stated topic.
+Run each query via the `med-db` skill, archive the most relevant results under the stated topic.
 
 ### 6.1 Gender-affirming care mental health outcomes
 
-Search PubMed via the med-db skill for `gender-affirming care mental health outcomes transgender adults systematic review`, archive first 5 under `gender-affirming-care`.
+Search PubMed via the `med-db` skill for `gender-affirming care mental health outcomes transgender adults systematic review`, archive first 5 under `gender-affirming-care`.
 
 ### 6.2 Non-binary mental health
 
-Search PubMed via the med-db skill for `non-binary gender diverse mental health depression anxiety systematic review`, archive first 5 under `trans-nb-mental-health`.
+Search PubMed via the `med-db` skill for `non-binary gender diverse mental health depression anxiety systematic review`, archive first 5 under `trans-nb-mental-health`.
 
 ### 6.3 Transgender minority stress interventions
 
-Search PubMed via the med-db skill for `transgender minority stress intervention resilience psychotherapy affirmative`, archive first 5 under `gender-affirming-care`.
+Search PubMed via the `med-db` skill for `transgender minority stress intervention resilience psychotherapy affirmative`, archive first 5 under `gender-affirming-care`.
 
 ---
 
 ## Phase 7: Validation
 
-Run validation via the med-db skill (`med-db-integrity-check`), then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>` for `gender-affirming-care` and `trans-nb-mental-health`.
+Run validation via the `med-db` skill (`med-db-integrity-check`), then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>` for `gender-affirming-care` and `trans-nb-mental-health`.

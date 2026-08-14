@@ -1,10 +1,10 @@
 ---
-description: Anthropic's latest context engineering best practices for Claude Code instruction files — CLAUDE.md, skills, rules, subagents, hooks, and output styles. Authoritative standard for this repo. Apply during optimize-repo audits.
+description: Anthropic's latest context engineering best practices for Claude Code instruction files — CLAUDE.md, skills, rules, subagents, hooks, and output styles. Authoritative standard for this repo. Apply during `optimize-repo` audits.
 ---
 
 # Context Engineering Best Practices for Claude Code
 
-**THIS FILE IS AUTHORITATIVE.** These practices apply to every instruction file in this repo — CLAUDE.md, skills, agents, rules, wrappers, and any other file loaded into Claude's context. Every optimize-repo audit must read this file and enforce it. Every agent writing or editing instruction files must follow these rules.
+**THIS FILE IS AUTHORITATIVE.** These practices apply to every instruction file in this repo — CLAUDE.md, skills, agents, rules, wrappers, and any other file loaded into Claude's context. Every `optimize-repo` audit must read this file and enforce it. Every agent writing or editing instruction files must follow these rules.
 
 **Deviations require explicit justification.** If a best practice cannot be followed in a specific case, the deviation must be documented in the affected file with the reason. "The file was already long" is not a justification — split it. "It's convenient to keep everything together" is not a justification — separate concerns into the correct mechanism.
 

@@ -13,7 +13,7 @@ Direct Python invocation **forbidden**. Access only through `uv run` entry point
 Web discovery sources: `google-scholar`, `doaj`, `open-science-directory`,
 `free-medical-journals`, `openmd`, `trip-database`. Prefer PubMed/Europe PMC for structured records.
 
-Full-text acquisition: follow the fetch-paper skill (`.claude/skills/fetch-paper/SKILL.md`).
+Full-text acquisition: follow the `fetch-paper` skill.
 
 `med-db-integrity-check` runs after every archival, setup, or download. Errors block completion (exit code 1) — fix immediately.
 
@@ -125,8 +125,7 @@ Download ICD-11 MMS data from WHO CDN into `med-db/`. Integrity check runs on co
 
 ## `uv run med-db-download-paper` — Full-Text Download
 
-Download a paper's full text (PDF + extracted source text) into `med-db/fulltext/`. See the fetch-paper
-skill (`.claude/skills/fetch-paper/SKILL.md`) for the procedure and source policy. Integrity check runs
+Download a paper's full text (PDF + extracted source text) into `med-db/fulltext/`. See the `fetch-paper` skill for the procedure and source policy. Integrity check runs
 on completion.
 
 At least one input required: `--reference`, `--title`, or `--url`. `--topic` is required.

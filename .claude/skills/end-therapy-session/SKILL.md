@@ -3,7 +3,7 @@ name: end-therapy-session
 description: >
   Post-session documentation for therapy sessions. Writes compact session note, updates Permanent Client Profile,
   saves full session protocol, compresses history file, and delivers closing statement. Invoked automatically by
-  start-therapy-session skill when the therapeutic session ends (client signals end + SESSION_ENDED marker detected).
+  `start-therapy-session` skill when the therapeutic session ends (client signals end + SESSION_ENDED marker detected).
   Never invoked manually by the user.
 argument-hint: "<client-slug>"
 user-invocable: false
@@ -324,6 +324,6 @@ All checks run in Step 5b. Summarizes what was verified for traceability.
 
 - Match client's language (DE/EN) from frontmatter `language` field
 - Use standard German orthography (umlauts, ß) per CLAUDE.md
-- All med-db access through med-db skill — never touch med-db/ files directly
+- All med-db access through `med-db` skill — never touch med-db/ files directly
 - Session notes compact — clinical documentation, not narrative
 - Permanent Client Profile never compressed

@@ -23,12 +23,12 @@ landmark — virtually no paper reaches it. Every grade must be justified: stren
 ### 1. Acquire the paper
 
 - File path → read it.
-- DOI/URL → retrieve the paper with the fetch-paper skill (`.claude/skills/fetch-paper/SKILL.md`). Abstract-only
+- DOI/URL → retrieve the paper with the `fetch-paper` skill. Abstract-only
   allowed but provisional — see Writing Rules.
 
 ### 2. Retraction gate — mandatory, before any reading
 
-Check retraction status via the check-retraction skill (`.claude/skills/check-retraction/SKILL.md`) before any
+Check retraction status via the `check-retraction` skill before any
 reading.
 
 - **Retracted → score 0. Stop. No further analysis.** Report is the retraction record: status, retraction date
@@ -157,7 +157,7 @@ Write full report to `tmp/evaluate-paper.<timestamp>.md` with YAML frontmatter (
 
 ## Validation
 
-1. Retraction checked via the check-retraction skill before any scoring; retracted papers scored 0 and stopped.
+1. Retraction checked via the `check-retraction` skill before any scoring; retracted papers scored 0 and stopped.
 2. Study design classified; ceiling stated; reclassification applied where the defining feature failed.
 3. Every deduction maps to a named flag.
 4. Strengths and weaknesses both present.

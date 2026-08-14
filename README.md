@@ -53,8 +53,7 @@ All tools are invoked via `uv run <entry-point>` from the repo root.
 
 ### Local archive (`med-db/`)
 
-All med-db usage instructions are owned by the med-db skill
-(`.claude/skills/med-db/SKILL.md`). Invoke via `Skill: "med-db"` or
+All med-db usage instructions are owned by the `med-db` skill. Invoke via `Skill: "med-db"` or
 consult the skill file directly. Do not duplicate med-db commands
 outside the skill — the skill is the single source of truth.
 

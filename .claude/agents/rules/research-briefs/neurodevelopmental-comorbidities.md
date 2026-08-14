@@ -18,13 +18,13 @@ Directs med-researcher agent what to archive in `med-db/` for psychotherapist ag
 
 ## Archive access
 
-All archive and query operations go through the med-db skill (`.claude/skills/med-db/SKILL.md`). Archive each PMID/DOI under the topic named in its phase heading.
+All archive and query operations go through the `med-db` skill. Archive each PMID/DOI under the topic named in its phase heading.
 
 ## Pre-flight
 
 Verify `med-db/` exists. If not, any archival command auto-creates directory tree and `index.json`. No manual setup.
 
-Check existing topics via the med-db skill (`med-db-query --list-topics`). If `adhd-comorbidity`, `asd-comorbidity`, and `neurodevelopmental-overlap` all have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
+Check existing topics via the `med-db` skill (`med-db-query --list-topics`). If `adhd-comorbidity`, `asd-comorbidity`, and `neurodevelopmental-overlap` all have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
 
 All three populated → bootstrap complete. Stop, report to psychotherapist agent. Otherwise proceed, skipping populated topics.
 
@@ -64,7 +64,7 @@ Archive under `adhd-comorbidity`. Foundation for ADHD comorbidity prevalence and
 **DOI:** 10.1016/j.jad.2025.01.013
 **Why:** Pooled 57% any PD prevalence in adults with ADHD. High BPD overlap (~22%). Foundation for personality disorder differential diagnosis guidance.
 
-Resolve the DOI via the med-db skill (`med-db-lookup`), then archive under `adhd-comorbidity`. If no PMID, search Europe PMC via the med-db skill for `Choi 2025 personality disorders ADHD adult meta-analysis` and archive the first result.
+Resolve the DOI via the `med-db` skill (`med-db-lookup`), then archive under `adhd-comorbidity`. If no PMID, search Europe PMC via the `med-db` skill for `Choi 2025 personality disorders ADHD adult meta-analysis` and archive the first result.
 
 ### 1.7 Magdi et al. (2025) — ADHD and PTSD adult comorbidity: systematic review
 
@@ -111,37 +111,37 @@ Archive under `neurodevelopmental-overlap`.
 
 ## Phase 4: PubMed Search Queries
 
-Broaden evidence base beyond core PMIDs. Run each query via the med-db skill, archive the most relevant results under the stated topic, note findings.
+Broaden evidence base beyond core PMIDs. Run each query via the `med-db` skill, archive the most relevant results under the stated topic, note findings.
 
 ### 4.1 ADHD comorbidity in adults — systematic reviews
 
-Search PubMed via the med-db skill for `adult ADHD comorbidity prevalence systematic review meta-analysis`, archive first 5 under `adhd-comorbidity`.
+Search PubMed via the `med-db` skill for `adult ADHD comorbidity prevalence systematic review meta-analysis`, archive first 5 under `adhd-comorbidity`.
 
 ### 4.2 ASD psychiatric comorbidity in adults
 
-Search PubMed via the med-db skill for `adult autism spectrum disorder psychiatric comorbidity prevalence systematic review`, archive first 5 under `asd-comorbidity`.
+Search PubMed via the `med-db` skill for `adult autism spectrum disorder psychiatric comorbidity prevalence systematic review`, archive first 5 under `asd-comorbidity`.
 
 ### 4.3 ADHD bipolar disorder treatment guidelines
 
-Search PubMed via the med-db skill for `ADHD bipolar disorder treatment guidelines adults comorbidity management`, archive first 3 under `adhd-comorbidity`.
+Search PubMed via the `med-db` skill for `ADHD bipolar disorder treatment guidelines adults comorbidity management`, archive first 3 under `adhd-comorbidity`.
 
 ### 4.4 ASD pharmacological treatment comorbid psychiatric symptoms
 
-Search PubMed via the med-db skill for `autism spectrum disorder pharmacological treatment comorbid anxiety depression guidelines adults`, archive first 5 under `asd-comorbidity`.
+Search PubMed via the `med-db` skill for `autism spectrum disorder pharmacological treatment comorbid anxiety depression guidelines adults`, archive first 5 under `asd-comorbidity`.
 
 ### 4.5 ADHD PTSD comorbidity neurobiological overlap
 
-Search PubMed via the med-db skill for `ADHD PTSD comorbidity adult prevalence neurobiological overlap treatment`, archive first 5 under `adhd-comorbidity`.
+Search PubMed via the `med-db` skill for `ADHD PTSD comorbidity adult prevalence neurobiological overlap treatment`, archive first 5 under `adhd-comorbidity`.
 
 ### 4.6 AuDHD (ADHD + autism combined) psychiatric comorbidity
 
-Search PubMed via the med-db skill for `ADHD autism combined comorbidity adults AuDHD psychiatric disorders prevalence`, archive first 5 under `neurodevelopmental-overlap`.
+Search PubMed via the `med-db` skill for `ADHD autism combined comorbidity adults AuDHD psychiatric disorders prevalence`, archive first 5 under `neurodevelopmental-overlap`.
 
 ---
 
 ## Phase 5: Validation
 
-After all phases, run comprehensive validation via the med-db skill (`med-db-integrity-check`). Then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>`.
+After all phases, run comprehensive validation via the `med-db` skill (`med-db-integrity-check`). Then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>`.
 
 Expected topics: `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap`. If queries returned papers on additional topics, those appear as well.
 
@@ -149,7 +149,7 @@ Expected topics: `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-over
 
 ## Psychotherapist Agent Usage
 
-Once archived, psychotherapist agent queries med-db/ for evidence-backed comorbidity data via the med-db skill (`.claude/skills/med-db/SKILL.md`):
+Once archived, psychotherapist agent queries med-db/ for evidence-backed comorbidity data via the `med-db` skill:
 
 - List all comorbidity papers: `med-db-query --topic <slug>`
 - Look up a specific reference: `med-db-lookup --pmid <ID>`
