@@ -40,9 +40,9 @@ hand-editing `index.json`, no `mv`/`cp`.
 ### med-db Command Reference
 
 See [rules/med-db-commands.md](rules/med-db-commands.md) for the complete `uv run` parameter
-reference covering all 9 entry points (`med-db`, `med-db-lookup`, `med-db-query`,
-`med-db-lookup-icd11`, `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-setup-dsm5`,
-`med-db-setup-therapy-methods`, `med-db-integrity-check`).
+reference covering all 10 entry points (`med-db`, `med-db-lookup`, `med-db-query`,
+`med-db-lookup-icd11`, `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-download-paper`,
+`med-db-setup-dsm5`, `med-db-setup-therapy-methods`, `med-db-integrity-check`).
 
 ## Evidence Quality Standards
 
@@ -149,28 +149,22 @@ publication bias), Retraction Watch.
   Association's abstract database, indexing over 5 million records across 2,500+ journals. Without a paid institutional
   account, only abstracts and summaries are accessible — full text is behind a paywall. Use PsycINFO as a **discovery
   engine**: search for relevant papers by keyword, author, or topic, review the abstracts to identify the most relevant
-  studies, then pursue full text through open-access databases (PubMed, Europe PMC, DOAJ) or Sci-Hub. The abstract-only
-  limitation means PsycINFO findings alone are insufficient for evidence conclusions — you must retrieve and evaluate
-  the full paper through another channel. For psychology- or sociology-heavy research briefs (e.g., from the
-  psychotherapist agent), always include PsycINFO in the search sweep — PubMed alone underrepresents psychology
-  literature.
+  studies, then retrieve the full text with the fetch-paper skill (`.claude/skills/fetch-paper/SKILL.md`). The
+  abstract-only limitation means PsycINFO findings alone are insufficient for evidence conclusions — you must retrieve
+  and evaluate the full paper. For psychology- or sociology-heavy research briefs (e.g., from the psychotherapist
+  agent), always include PsycINFO in the search sweep — PubMed alone underrepresents psychology literature.
 - When no meta-analysis exists, compare at least 2–3 of the most relevant individual studies. A single study is never
 sufficient for a positive conclusion unless it is a large, well-replicated RCT with no contradictory evidence.
 - Do not stop at the first study. Search broadly for conflicting evidence and negative results.
 
 ### Full-Text Access
 
-- **APA PsycINFO → open databases → Sci-Hub pipeline**: PsycINFO provides abstracts only without a paid institutional
-  account. Use it for discovery, then pursue full text: (1) search the paper by title/DOI/author on PubMed and Europe PMC
-  — many psychology journals are also indexed there; (2) check DOAJ and other open-access directories; (3) try Google
-  Scholar for open-access PDFs or author-posted preprints; (4) Sci-Hub fallback as a last resort. A
-  PsycINFO abstract alone is never sufficient for evidence conclusions — you must retrieve and evaluate the full paper.
+- **Full-text retrieval**: follow the fetch-paper skill (`.claude/skills/fetch-paper/SKILL.md`). A PsycINFO abstract
+  alone is never sufficient for evidence conclusions — you must retrieve and evaluate the full paper.
 - **DocCheck Flexicon**: For general medical questions in German (definitions, pathophysiology, diagnostics, clinical
   basics), consult [DocCheck Flexicon](https://flexikon.doccheck.com/de/Hauptseite) first — it's a German-language medical
   wiki suitable for overview knowledge. Fall back to the standard paper-database approach when more detailed,
   literature-backed evidence is required.
-- **Sci-Hub fallback**: Prefer official open-access sources. Use Sci-Hub only as a last resort when a paper is not
-  available through PubMed, Europe PMC, DOAJ, or Google Scholar.
 
 ## Research Output Format
 

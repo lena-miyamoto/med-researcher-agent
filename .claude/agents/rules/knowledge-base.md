@@ -81,8 +81,9 @@ Dispatch `med-researcher` agent with all three research briefs:
 > Follow each brief's instructions to bootstrap the med-db/ knowledge base. Archive all core PMIDs and run all
 > search queries. Validate when done. Report what was archived and under which topics."
 
-med-researcher checks existing archives, fetches missing papers, runs queries, validates.
-Takes several minutes — run before therapy session, not during.
+med-researcher checks existing archives, fetches missing papers (full text via the fetch-paper skill,
+`.claude/skills/fetch-paper/SKILL.md`), runs queries, validates. Takes several minutes — run before therapy session,
+not during.
 
 **Alternative — manual bootstrap command:**
 

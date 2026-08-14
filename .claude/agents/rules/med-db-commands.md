@@ -13,8 +13,7 @@ Direct Python invocation **forbidden**. Access only through `uv run` entry point
 Web discovery sources: `google-scholar`, `doaj`, `open-science-directory`,
 `free-medical-journals`, `openmd`, `trip-database`. Prefer PubMed/Europe PMC for structured records.
 
-Full-text fallback: per Sci-Hub policy in `.claude/agents/med-researcher.md`. Prefer official
-open-access sources first.
+Full-text acquisition: follow the fetch-paper skill (`.claude/skills/fetch-paper/SKILL.md`).
 
 `med-db-integrity-check` runs after every archival, setup, or download. Errors block completion (exit code 1) — fix immediately.
 
@@ -121,6 +120,32 @@ Download ICD-11 MMS data from WHO CDN into `med-db/`. Integrity check runs on co
 | `--language` | str[] | `[]` | Language code to download; repeatable. Defaults to `en` + `de` for 2026-01, `en` only for earlier releases |
 | `--force` | flag | off | Re-download even if files already exist |
 | `--verify` | bool | `true` | Run smoke test after download. Use `--no-verify` to skip |
+
+---
+
+## `uv run med-db-download-paper` — Full-Text Download
+
+Download a paper's full text (PDF + extracted source text) into `med-db/fulltext/`. See the fetch-paper
+skill (`.claude/skills/fetch-paper/SKILL.md`) for the procedure and source policy. Integrity check runs
+on completion.
+
+At least one input required: `--reference`, `--title`, or `--url`. `--topic` is required.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `--reference` | str[] | `[]` | Paper reference (DOI, PMID, arXiv ID, Europe PMC `SOURCE:ID`, or URL); repeatable |
+| `--title` | str | — | Paper title for title search |
+| `--year` | int | — | Publication year for title search; requires `--title` |
+| `--url` | str | — | Direct URL to a paper PDF or landing page |
+| `--topic` | str | required | Medical topic for grouping output (e.g. `adhd`). Kebab-case slug auto-derived |
+| `--topic-slug` | str | — | Explicit kebab-case slug; overrides `--topic` |
+| `--med-db` | str | `med-db` | Target `med-db/` directory path |
+| `--email` | str | — | Contact email for NCBI E-utilities, Unpaywall, Crossref |
+| `--delay` | float | `0.34` | Delay between downloads (seconds) |
+| `--force` | flag | off | Re-download even if the paper is already archived |
+| `--no-sci-hub` | flag | off | Disable the Sci-Hub last-resort fallback entirely |
+| `--sci-hub-mirror` | str | — | Override the Sci-Hub mirror list (takes precedence) |
+| `--format` | choice | `text` | Output format: `json` or `text` |
 
 ---
 

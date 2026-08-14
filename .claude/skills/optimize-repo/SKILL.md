@@ -136,7 +136,7 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 → `.claude/agents/med-researcher.md` only.
 
 `Sci-Hub`
-→ `.claude/agents/med-researcher.md` only. Do not duplicate elsewhere.
+→ `.claude/skills/fetch-paper/SKILL.md` only. Do not duplicate elsewhere.
 
 `DocCheck Flexicon`
 → `.claude/agents/med-researcher.md` only.

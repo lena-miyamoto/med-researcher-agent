@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Reusable medical research agent configuration for Claude Code."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["pypdf>=5.0"]
 
 [project.scripts]
 med-db = "entrypoints:med_db"
@@ -17,6 +17,7 @@ med-db-query = "entrypoints:med_db_query"
 med-db-lookup-icd11 = "entrypoints:med_db_lookup_icd11"
 med-db-lookup-dsm5 = "entrypoints:med_db_lookup_dsm5"
 med-db-download-icd11 = "entrypoints:med_db_download_icd11"
+med-db-download-paper = "entrypoints:med_db_download_paper"
 med-db-setup-dsm5 = "entrypoints:med_db_setup_dsm5"
 med-db-setup-therapy-methods = "entrypoints:med_db_setup_therapy_methods"
 med-db-integrity-check = "entrypoints:med_db_integrity_check"

@@ -98,6 +98,7 @@ querying, or analyzing evidence from the archive:
 | med-db command reference with every parameter       | `.claude/agents/rules/med-db-commands.md`     |
 | Knowledge base bootstrap and component overview     | `.claude/agents/rules/knowledge-base.md`      |
 | Evidence quality standards and search protocol      | `.claude/agents/med-researcher.md`            |
+| Full-text download procedure and source policy      | `.claude/skills/fetch-paper/SKILL.md`         |
 | Script development conventions                      | `.claude/scripts/DEVELOPER.md`                |
 | Overall integration and CLI contract                | `CLAUDE.md`                                   |
 
@@ -106,6 +107,8 @@ querying, or analyzing evidence from the archive:
 - Always include `--topic <name>` on archival commands (human-readable name, e.g. `adhd`,
   `endometriosis`). The tool derives the kebab-case slug automatically.
 - Use `--topic-slug` only when automatic derivation fails.
+- Full-text downloads go through the fetch-paper skill (`.claude/skills/fetch-paper/SKILL.md`),
+  which archives into `fulltext/` via `uv run med-db-download-paper`.
 - Integrity check runs automatically after every archival, setup, or download operation.
   Errors block completion (exit code 1) and must be fixed immediately.
 
@@ -119,6 +122,7 @@ local, no-network** commands are permitted during the session:
 | `uv run med-db-query --search-keyword "..."` | `uv run med-db --pmid ...` (archival — writes) |
 | `uv run med-db-query --search-keyword "..." --identifiers-only` | `uv run med-db --source pubmed --query "..."` (network search) |
 | `uv run med-db-query --list-topics` | `uv run med-db-download-icd11` (setup — writes) |
+| `uv run med-db-query --list-topics` | `uv run med-db-download-paper ...` (full-text download — network + writes) |
 | `uv run med-db-query --list-topics --names-only` | `uv run med-db-setup-dsm5` (setup — writes) |
 | `uv run med-db-query --check-pmid "..."` | `uv run med-db-setup-therapy-methods` (setup — writes) |
 | `uv run med-db-query --check-pmid "..." --locations-only` | `uv run med-db-integrity-check` (harmless but unnecessary mid-session) |

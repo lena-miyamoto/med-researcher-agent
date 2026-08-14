@@ -30,18 +30,19 @@ Required top-level categories:
 
 - `searches/<topic-slug>/` — machine-readable JSON (`uncategorized/` when no topic specified).
 - `papers/<topic-slug>/<identifier>-<title-slug>/` — `metadata.json` + `abstract.txt`. Never split across dirs.
-- `fulltext/<topic-slug>/<identifier>-<title-slug>/` — `source.md` with YAML frontmatter + `metadata.json`.
+- `fulltext/<topic-slug>/<identifier>-<title-slug>/` — `paper.pdf` + `source.md` with YAML frontmatter + `metadata.json`.
 - `guidelines/<topic-slug>/<title-slug>/` — `source.<lang>.md` with YAML frontmatter.
 - `web/<topic-slug>/` — archived web pages or reproducible search definitions.
 
 ## Conventions
 
-- **Paper standard:** `papers/`: `metadata.json` + `abstract.txt`. `fulltext/`: `source.md` + `metadata.json`.
-  No intermediate artifacts.
+- **Paper standard:** `papers/`: `metadata.json` + `abstract.txt`. `fulltext/`: `paper.pdf` + `source.md` +
+  `metadata.json`. No intermediate artifacts.
 - **YAML frontmatter** on every source file: `title`, `authors`, `source`, `source_url`, `access_date`
   (YYYY-MM-DD), `language`, `extraction_notes`.
 - **Source priority:** `index.json` → `searches/` → fetch. PubMed (E-utilities), Europe PMC (REST API) →
-  DOAJ / open-access directories → Google Scholar. Full-text fallback: follow the Sci-Hub policy in `.claude/agents/med-researcher.md`.
+  DOAJ / open-access directories → Google Scholar. Full-text acquisition: see the fetch-paper skill
+  (`.claude/skills/fetch-paper/SKILL.md`).
 - Flag evidence per `med-researcher` Evidence Hierarchy (`../agents/med-researcher.md`).
   Reusable write-ups → `tmp/`, not overwriting source briefs or archived records.
 - **No backwards-compat shims.** Scripts have no version history — the agent only knows the

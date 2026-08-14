@@ -60,6 +60,7 @@
       "^uv run med-db-lookup-icd11(\\s|$)",
       "^uv run med-db-lookup-dsm5(\\s|$)",
       "^uv run med-db-download-icd11(\\s|$)",
+      "^uv run med-db-download-paper(\\s|$)",
       "^uv run med-db-setup-dsm5(\\s|$)",
       "^uv run med-db-setup-therapy-methods(\\s|$)",
       "^uv run med-db-integrity-check(\\s|$)",

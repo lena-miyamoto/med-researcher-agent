@@ -10,12 +10,14 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 | Skill                    | Summary                                                                |
 | ------------------------ | ---------------------------------------------------------------------- |
 | `analyze-med-claims`     | Verify medical claims against literature; produce evidence reports.    |
+| `evaluate-paper`         | Score scientific papers 0-100 for evidence-based quality.              |
 | `create-med-skill`       | Add a new shared skill with harness wrappers.                          |
 | `create-med-agent`       | Add a new shared agent with harness wrappers.                          |
 | `create-workout-routine` | Build a personalized, science-backed workout routine.                  |
 | `create-diet-plan`       | Build a personalized, evidence-based dietary plan.                     |
 | `start-therapy-session`  | Start a live AI therapy session with the psychotherapist agent.        |
 | `optimize-repo`          | Audit and clean up repo instruction files for source-of-truth hygiene. |
+| `fetch-paper`            | Download a paper's full text (PDF + source text) into the med-db archive. |
 
 ### Agents
 
@@ -38,11 +40,11 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 git clone https://github.com/lena-miyamoto/med-researcher-agent.git && cd med-researcher-agent
 
 # uv reads .python-version and installs Python 3.12 automatically,
-# then creates a venv and installs dependencies (pytest, pymarkdownlnt)
+# then creates a venv and installs dependencies (pypdf, pytest, pymarkdownlnt)
 uv sync
 ```
 
-No runtime Python dependencies — only dev tooling (pytest, pymarkdownlnt).
+Runtime dependencies: pypdf (PDF text extraction). Dev tooling: pytest, pymarkdownlnt.
 
 ## Usage
 

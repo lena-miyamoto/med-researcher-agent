@@ -23,3 +23,4 @@ def pytest_configure():
     _load_module("med_db_lookup_icd11", "med-db-lookup-icd11.py")
     _load_module("med_db_lookup_dsm5", "med-db-lookup-dsm5.py")
     _load_module("utils", "utils.py")
+    _load_module("med_db_download_paper", "med-db-download-paper.py")

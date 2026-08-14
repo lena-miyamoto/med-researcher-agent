@@ -50,6 +50,10 @@ def med_db_download_icd11():
     return _load_script("med_db_download_icd11", "med-db-download-icd11.py").main()
 
 
+def med_db_download_paper():
+    return _load_script("med_db_download_paper", "med-db-download-paper.py").main()
+
+
 def med_db_setup_dsm5():
     return _load_script("med_db_setup_dsm5", "med-db-setup-dsm5.py").main()
 
