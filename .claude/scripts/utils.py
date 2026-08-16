@@ -277,6 +277,7 @@ CATEGORY_METADATA = "metadata"
 CATEGORY_SEARCH = "search"
 CATEGORY_WEB = "web"
 CATEGORY_GUIDELINE = "guideline"
+CATEGORY_DICTIONARY = "dictionary"
 
 
 def finding(severity, category, location, description, fix_hint):
@@ -306,7 +307,7 @@ def _indexed_paths(data, key):
 
 
 def check_required_dirs(root, findings):
-    for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+    for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
         p = root / name
         if not p.is_dir():
             findings.append(
@@ -373,7 +374,7 @@ def check_index_valid(root, findings):
         )
         return None
 
-    expected_keys = {"searches", "papers", "fulltext", "guidelines", "web"}
+    expected_keys = {"searches", "papers", "fulltext", "guidelines", "web", "dictionary"}
     actual_keys = set(data.keys())
     missing_keys = expected_keys - actual_keys
     extra_keys = actual_keys - expected_keys
@@ -450,12 +451,18 @@ def check_index_crossref(root, data, findings):
         for p in (root / "web").rglob("*")
         if p.is_file() and (root / "web").is_dir()
     )
+    actual_dictionary = sorted(
+        str(p.parent.relative_to(root))
+        for p in (root / "dictionary").rglob("metadata.json")
+        if (root / "dictionary").is_dir()
+    )
 
     index_searches = _indexed_paths(data, "searches")
     index_papers = _indexed_paths(data, "papers")
     index_fulltext = _indexed_paths(data, "fulltext")
     index_guidelines = _indexed_paths(data, "guidelines")
     index_web = _indexed_paths(data, "web")
+    index_dictionary = _indexed_paths(data, "dictionary")
 
     for label, indexed, on_disk, category in (
         ("search", index_searches, actual_searches, CATEGORY_SEARCH),
@@ -463,6 +470,7 @@ def check_index_crossref(root, data, findings):
         ("fulltext", index_fulltext, actual_fulltext, CATEGORY_METADATA),
         ("guideline", index_guidelines, actual_guidelines, CATEGORY_GUIDELINE),
         ("web", index_web, actual_web, CATEGORY_WEB),
+        ("dictionary", index_dictionary, actual_dictionary, CATEGORY_DICTIONARY),
     ):
         missing = sorted(set(indexed) - set(on_disk))
         extra = sorted(set(on_disk) - set(indexed))
@@ -864,6 +872,110 @@ def check_guideline_integrity(root, findings):
             )
 
 
+def check_dictionary_files(root, findings):
+    dictionary_dir = root / "dictionary"
+    if not dictionary_dir.is_dir():
+        return
+
+    for meta_file in sorted(dictionary_dir.rglob("metadata.json")):
+        term_dir = meta_file.parent
+        rel_dir = str(term_dir.relative_to(root))
+
+        try:
+            meta = json.loads(_read_text(meta_file))
+        except json.JSONDecodeError as exc:
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/metadata.json",
+                    f"metadata.json is not valid JSON: {exc}",
+                    "Fix the JSON syntax or re-archive with uv run med-db-term.",
+                )
+            )
+            continue
+        except OSError as exc:
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/metadata.json",
+                    f"Cannot read metadata.json: {exc}",
+                    "Check file permissions.",
+                )
+            )
+            continue
+
+        if not isinstance(meta, dict) or not str(meta.get("term", "")).strip():
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/metadata.json",
+                    "metadata.json is missing a non-empty \"term\" field.",
+                    "Re-archive with uv run med-db-term --term '<Term>'.",
+                )
+            )
+        if not isinstance(meta, dict) or not str(meta.get("definition", "")).strip():
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/metadata.json",
+                    "metadata.json is missing a non-empty \"definition\" field.",
+                    "Re-archive with uv run med-db-term --definition '<Definition>'.",
+                )
+            )
+
+        source_file = term_dir / "source.md"
+        if not source_file.is_file():
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/source.md",
+                    "Dictionary term directory is missing source.md.",
+                    "Re-archive with uv run med-db-term to regenerate source.md.",
+                )
+            )
+            continue
+
+        try:
+            content = _read_text(source_file)
+        except OSError as exc:
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/source.md",
+                    f"Cannot read source.md: {exc}",
+                    "Check file permissions.",
+                )
+            )
+            continue
+
+        if not content.strip():
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/source.md",
+                    "Dictionary source.md is empty.",
+                    "Re-archive with uv run med-db-term.",
+                )
+            )
+        elif not content.startswith("---"):
+            findings.append(
+                finding(
+                    SEVERITY_WARNING,
+                    CATEGORY_DICTIONARY,
+                    f"{rel_dir}/source.md",
+                    "Dictionary source.md is missing YAML frontmatter (does not start with ---).",
+                    "Add frontmatter with title, english, source_type, source_ref, source_url, access_date, language, and extraction_notes.",
+                )
+            )
+
+
 def check_legacy_dirs(root, findings):
     """Warn about old flat directories left over from pre-migration layouts."""
     for name in ("metadata", "abstracts"):
@@ -927,6 +1039,7 @@ def run_integrity_check(root):
     check_search_json(root, findings)
     check_web_files(root, findings)
     check_guideline_integrity(root, findings)
+    check_dictionary_files(root, findings)
 
     # Phase 4: legacy / cleanup
     check_legacy_dirs(root, findings)

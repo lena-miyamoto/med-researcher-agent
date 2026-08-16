@@ -58,9 +58,9 @@ in real sessions. **None of them are acceptable.**
   tree and initial `index.json`.
 - To bootstrap a fresh checkout: run any archival command (e.g.
   `uv run med-db --pmid 12345678`). The tooling auto-creates the full tree
-  (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`) plus `index.json`.
+  (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`, `dictionary/`) plus `index.json`.
 - To verify bootstrap: `uv run med-db-integrity-check --med-db med-db`. An empty archive
-  passes if all five directories and `index.json` exist.
+  passes if all six directories and `index.json` exist.
 - Query and lookup tools are read-only. If they report that `med-db/` is missing, run an
   archival command first.
 
@@ -236,6 +236,18 @@ Default JSON. Use `--format text` for readable output, or extraction flags for s
 | Lookup PMID        | `uv run med-db-lookup --pmid <ID>`                                                               |
 | Lookup DOI         | `uv run med-db-lookup --doi <DOI>`                                                               |
 | Lookup EPMC record | `uv run med-db-lookup --epmc-record '<SOURCE>:<ID>'`                                             |
+
+### Dictionary Terms (`med-db-term`, `med-db-term-lookup`)
+
+Term definitions for the `define-terms` skill. Archive writes to `dictionary/<term-slug>/`;
+lookup is read-only.
+
+| Operation       | Command                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| Archive term    | `uv run med-db-term --term '<Term>' --definition '<Definition>' --source-type <TYPE>`            |
+| Lookup term     | `uv run med-db-term-lookup --term '<Term>'`                                                       |
+| Keyword search  | `uv run med-db-term-lookup --keyword '<text>'`                                                    |
+| List all terms  | `uv run med-db-term-lookup --list`                                                                |
 
 ### Diagnostic Classification
 

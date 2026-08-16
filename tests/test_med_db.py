@@ -417,20 +417,20 @@ class TestDefaultPaperEntry:
 class TestEnsureMedDbStructure:
     def test_creates_all_dirs(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             assert (tmp_path / name).is_dir()
 
     def test_idempotent(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
         med_db.ensure_med_db_structure(tmp_path)
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             assert (tmp_path / name).is_dir()
 
     def test_partial_existing(self, tmp_path):
         (tmp_path / "searches").mkdir()
         (tmp_path / "papers").mkdir()
         med_db.ensure_med_db_structure(tmp_path)
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             assert (tmp_path / name).is_dir()
 
 
@@ -441,12 +441,12 @@ class TestEnsureMedDbStructure:
 class TestLoadExistingIndexEntries:
     def test_missing_index(self, tmp_path):
         result = med_db.load_existing_index_entries(tmp_path / "index.json")
-        assert result == ({}, {}, {}, {}, {})
+        assert result == ({}, {}, {}, {}, {}, {})
 
     def test_empty_index(self, tmp_path):
         index = tmp_path / "index.json"
         index.write_text(json.dumps({"searches": [], "papers": []}))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         assert searches == {}
         assert papers == {}
 
@@ -457,7 +457,7 @@ class TestLoadExistingIndexEntries:
                 {"path": "searches/endometriosis/pubmed-diet.json", "source": "PubMed", "query": "endometriosis AND diet", "purpose": "Review dietary interventions", "accessed": "2026-06-01"}
             ]
         }))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         key = "searches/endometriosis/pubmed-diet.json"
         assert key in searches
         assert searches[key]["source"] == "PubMed"
@@ -472,7 +472,7 @@ class TestLoadExistingIndexEntries:
                 {"path": "papers/endometriosis/pmid-12345678-title", "identifier": "PMID:12345678", "url": "https://pubmed.ncbi.nlm.nih.gov/12345678/", "purpose": "Endometriosis diet review", "accessed": "2026-06-01"}
             ]
         }))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         key = "papers/endometriosis/pmid-12345678-title"
         assert key in papers
         assert papers[key]["identifier"] == "PMID:12345678"
@@ -485,7 +485,7 @@ class TestLoadExistingIndexEntries:
                 {"path": "fulltext/endometriosis/pmid-12345678-title", "identifier": "PMID:12345678", "url": "https://pubmed.ncbi.nlm.nih.gov/12345678/", "purpose": "Full review", "accessed": "2026-06-01"}
             ]
         }))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         key = "fulltext/endometriosis/pmid-12345678-title"
         assert key in fulltexts
         assert fulltexts[key]["purpose"] == "Full review"
@@ -497,7 +497,7 @@ class TestLoadExistingIndexEntries:
                 {"path": "guidelines/endometriosis/eshre-guideline", "source": "ESHRE", "url": "https://eshre.eu/", "purpose": "Clinical guideline", "accessed": "2026-06-01"}
             ]
         }))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         key = "guidelines/endometriosis/eshre-guideline"
         assert key in guidelines
         assert guidelines[key]["source"] == "ESHRE"
@@ -509,10 +509,23 @@ class TestLoadExistingIndexEntries:
                 {"path": "web/endometriosis/google-scholar-search.html", "url": "https://scholar.google.com/scholar?q=test", "purpose": "Test search", "accessed": "2026-06-01"}
             ]
         }))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         key = "web/endometriosis/google-scholar-search.html"
         assert key in web
         assert web[key]["url"] == "https://scholar.google.com/scholar?q=test"
+
+    def test_parses_dictionary_entry(self, tmp_path):
+        index = tmp_path / "index.json"
+        index.write_text(json.dumps({
+            "dictionary": [
+                {"path": "dictionary/hypertonie", "term": "Hypertonie", "english": "hypertension", "source_type": "who", "source_ref": "https://www.who.int/", "accessed": "2026-06-01"}
+            ]
+        }))
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
+        key = "dictionary/hypertonie"
+        assert key in dictionary
+        assert dictionary[key]["term"] == "Hypertonie"
+        assert dictionary[key]["source_type"] == "who"
 
     def test_ignores_unknown_keys(self, tmp_path):
         index = tmp_path / "index.json"
@@ -522,7 +535,7 @@ class TestLoadExistingIndexEntries:
             ],
             "papers": []
         }))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         assert "papers/something" not in papers
         assert papers == {}
 
@@ -530,7 +543,7 @@ class TestLoadExistingIndexEntries:
         index = tmp_path / "index.json"
         index.write_text("not valid json {{{")
         result = med_db.load_existing_index_entries(index)
-        assert result == ({}, {}, {}, {}, {})
+        assert result == ({}, {}, {}, {}, {}, {})
 
     def test_pipe_in_cell_no_longer_a_problem(self, tmp_path):
         """Pipes in cell values are trivially handled in JSON — no escaping issues."""
@@ -540,7 +553,7 @@ class TestLoadExistingIndexEntries:
                 {"path": "papers/topic/pmid-12345-test", "identifier": "PMID:12345", "url": "https://example.com", "purpose": "Purpose | with pipe", "accessed": "2026-06-01"}
             ]
         }))
-        searches, papers, fulltexts, guidelines, web = med_db.load_existing_index_entries(index)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.load_existing_index_entries(index)
         # JSON handles pipes natively — no parsing ambiguity
         key = "papers/topic/pmid-12345-test"
         assert key in papers
@@ -554,7 +567,7 @@ class TestLoadExistingIndexEntries:
 class TestCollectIndexData:
     def test_empty_med_db(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert searches == []
         assert papers == []
         assert fulltexts == []
@@ -566,7 +579,7 @@ class TestCollectIndexData:
         topic_dir.mkdir(parents=True)
         search_data = json.dumps({"esearchresult": {"querytranslation": "test", "idlist": ["1"]}})
         (topic_dir / "pubmed-test.json").write_text(search_data)
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert len(searches) == 1
         assert searches[0]["source"] == "PubMed"
         assert "searches/endometriosis/pubmed-test.json" in searches[0]["path"]
@@ -578,7 +591,7 @@ class TestCollectIndexData:
         paper_dir.mkdir(parents=True)
         metadata = {"result": {"uids": ["12345"]}}
         (paper_dir / "metadata.json").write_text(json.dumps(metadata))
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert len(papers) == 1
         assert papers[0]["identifier"] == "PMID:12345"
 
@@ -587,7 +600,7 @@ class TestCollectIndexData:
         ft_dir.mkdir(parents=True)
         metadata = {"result": {"uids": ["12345"]}}
         (ft_dir / "metadata.json").write_text(json.dumps(metadata))
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert len(fulltexts) == 1
         assert fulltexts[0]["identifier"] == "PMID:12345"
 
@@ -595,7 +608,7 @@ class TestCollectIndexData:
         gl_dir = tmp_path / "guidelines" / "endometriosis" / "eshre-guideline"
         gl_dir.mkdir(parents=True)
         (gl_dir / "source.en.md").write_text("---\ntitle: Test\n---\n\nContent")
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert len(guidelines) == 1
 
     def test_guideline_deduplication_multilingual(self, tmp_path):
@@ -604,19 +617,30 @@ class TestCollectIndexData:
         gl_dir.mkdir(parents=True)
         (gl_dir / "source.en.md").write_text("---\ntitle: EN\n---\n\nContent")
         (gl_dir / "source.de.md").write_text("---\ntitle: DE\n---\n\nInhalt")
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert len(guidelines) == 1
 
     def test_collects_web_sources(self, tmp_path):
         web_dir = tmp_path / "web" / "endometriosis"
         web_dir.mkdir(parents=True)
         (web_dir / "test.html").write_text("<html><body>test</body></html>")
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert len(web) == 1
+
+    def test_collects_dictionary(self, tmp_path):
+        term_dir = tmp_path / "dictionary" / "hypertonie"
+        term_dir.mkdir(parents=True)
+        (term_dir / "metadata.json").write_text(json.dumps({
+            "term": "Hypertonie", "english": "hypertension", "definition": "Bluthochdruck", "source_type": "who", "source_ref": "https://www.who.int/",
+        }))
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
+        assert len(dictionary) == 1
+        assert dictionary[0]["term"] == "Hypertonie"
+        assert dictionary[0]["source_type"] == "who"
 
     def test_missing_dirs_no_error(self, tmp_path):
         """Should handle missing directory trees gracefully."""
-        searches, papers, fulltexts, guidelines, web = med_db.collect_index_data(tmp_path)
+        searches, papers, fulltexts, guidelines, web, dictionary = med_db.collect_index_data(tmp_path)
         assert searches == []
         assert papers == []
         assert fulltexts == []
@@ -646,6 +670,7 @@ class TestSyncIndex:
         assert "fulltext" in data
         assert "guidelines" in data
         assert "web" in data
+        assert "dictionary" in data
         assert any("pubmed-test.json" in s["path"] for s in data["searches"])
 
     def test_preserves_existing_entry_metadata(self, tmp_path):
@@ -739,6 +764,18 @@ class TestSyncIndex:
         med_db.sync_index(tmp_path)
         data = json.loads((tmp_path / "index.json").read_text())
         assert any("eshre-guideline" in g["path"] for g in data["guidelines"])
+
+    def test_includes_dictionary_entries(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        term_dir = tmp_path / "dictionary" / "hypertonie"
+        term_dir.mkdir(parents=True)
+        (term_dir / "metadata.json").write_text(json.dumps({
+            "term": "Hypertonie", "english": "hypertension", "definition": "Bluthochdruck", "source_type": "who", "source_ref": "https://www.who.int/",
+        }))
+        med_db.sync_index(tmp_path)
+        data = json.loads((tmp_path / "index.json").read_text())
+        assert any("hypertonie" in d["path"] for d in data["dictionary"])
+        assert any("Hypertonie" in d["term"] for d in data["dictionary"])
 
     def test_preserves_guideline_custom_metadata(self, tmp_path):
         med_db.ensure_med_db_structure(tmp_path)

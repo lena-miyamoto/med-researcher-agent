@@ -110,6 +110,44 @@ Query local `med-db/` archive. Exactly one operation flag required (mutually exc
 
 ---
 
+## `uv run med-db-term` — Term Definition Archive (write)
+
+Archive a medical term definition into `med-db/dictionary/<term-slug>/`. Used by the `define-terms`
+skill. No network calls — the caller supplies the definition and source. Integrity check runs on
+completion.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `--term` | str | required | German term to archive (e.g. `Hypertonie`) |
+| `--english` | str | `""` | English translation of the term |
+| `--definition` | str | required | German definition text |
+| `--source-type` | choice | `other` | Source kind: `icd11`, `dsm5`, `mesh`, `who`, `society`, `dictionary`, `literature`, `web`, `other` |
+| `--source-ref` | str | `""` | Source reference: classification code, URL, or PMID/DOI |
+| `--source-url` | str | `""` | Canonical source URL; falls back to `--source-ref` when it is a URL |
+| `--extraction-notes` | str | `""` | Provenance note recorded in `source.md` frontmatter and `metadata.json` (e.g. `non-authoritative community usage`) |
+| `--med-db` | str | `med-db` | Target `med-db/` directory path |
+| `--format` | choice | `text` | Output format: `json` or `text` |
+
+---
+
+## `uv run med-db-term-lookup` — Term Definition Lookup (local, read-only)
+
+Read archived term definitions from `med-db/dictionary/`. At least one of `--term`, `--keyword`, or
+`--list` required. No network calls.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `--term` | str | — | German term to look up (case-insensitive or by slug) |
+| `--keyword` | str | — | Search term, english, definition, and source_ref by keyword |
+| `--list` | flag | off | List all archived terms |
+| `--limit` | int | `50` | Max keyword search results |
+| `--med-db` | str | `med-db` | Target `med-db/` directory path |
+| `--format` | choice | `json` | Output format: `json` or `text` |
+| `--definition-only` | flag | off | Output only the definition text (for `--term`) |
+| `--english-only` | flag | off | Output only the English term (for `--term`) |
+
+---
+
 ## `uv run med-db-download-icd11` — ICD-11 Setup
 
 Download ICD-11 MMS data from WHO CDN into `med-db/`. Integrity check runs on completion.

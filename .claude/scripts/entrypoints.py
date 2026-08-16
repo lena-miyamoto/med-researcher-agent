@@ -66,6 +66,22 @@ def med_db_integrity_check():
     return _load_script("med_db_integrity_check", "med-db-integrity-check.py").main()
 
 
+def med_db_term():
+    return _load_script("med_db_term", "med-db-term.py").main()
+
+
+def med_db_term_lookup():
+    return _load_script("med_db_term_lookup", "med-db-term-lookup.py").main()
+
+
+def med_db_term_wikipedia():
+    return _load_script("med_db_term_wikipedia", "med-db-term-wikipedia.py").main()
+
+
+def med_db_term_mesh():
+    return _load_script("med_db_term_mesh", "med-db-term-mesh.py").main()
+
+
 def check_retraction():
     return _load_script("check_retraction", "check-retraction.py").main()
 

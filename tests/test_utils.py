@@ -439,14 +439,14 @@ class TestIntegrityConstants:
 
 class TestCheckRequiredDirs:
     def test_all_present(self, tmp_path):
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         findings = []
         utils.check_required_dirs(tmp_path, findings)
         assert findings == []
 
     def test_one_missing(self, tmp_path):
-        for name in ("searches", "papers", "fulltext", "guidelines"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "dictionary"):
             (tmp_path / name).mkdir()
         findings = []
         utils.check_required_dirs(tmp_path, findings)
@@ -457,7 +457,7 @@ class TestCheckRequiredDirs:
     def test_all_missing(self, tmp_path):
         findings = []
         utils.check_required_dirs(tmp_path, findings)
-        assert len(findings) == 5
+        assert len(findings) == 6
 
 
 class TestCheckEmptyFiles:
@@ -505,6 +505,7 @@ class TestCheckIndexValid:
             "fulltext": [],
             "guidelines": [],
             "web": [],
+            "dictionary": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         findings = []
@@ -530,7 +531,7 @@ class TestCheckIndexValid:
     def test_extra_keys_warning(self, tmp_path):
         index = {
             "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [], "extra_category": [],
+            "guidelines": [], "web": [], "dictionary": [], "extra_category": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         findings = []
@@ -548,6 +549,7 @@ class TestCheckIndexValid:
             "fulltext": [],
             "guidelines": [],
             "web": [],
+            "dictionary": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         findings = []
@@ -577,7 +579,7 @@ class TestCheckIndexCrossref:
         assert findings == []
 
     def test_indexed_but_missing_on_disk(self, tmp_path):
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         data = {
             "searches": [{"path": "searches/ghost/pubmed-search.json"}],
@@ -608,7 +610,7 @@ class TestCheckIndexCrossref:
         assert len(extra) == 1
 
     def test_papers_are_checked(self, tmp_path):
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         (tmp_path / "papers" / "pmid-123-slug").mkdir()
         (tmp_path / "papers" / "pmid-123-slug" / "metadata.json").write_text("{}")
@@ -622,7 +624,7 @@ class TestCheckIndexCrossref:
         assert len(extra) == 1
 
     def test_web_files_are_checked(self, tmp_path):
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         (tmp_path / "web" / "page.html").write_text("<html></html>")
         data = {
@@ -909,11 +911,11 @@ class TestRunIntegrityCheck:
         assert "not found" in findings[0]["description"]
 
     def test_clean_archive(self, tmp_path):
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         index = {
             "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [],
+            "guidelines": [], "web": [], "dictionary": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         findings = utils.run_integrity_check(tmp_path)
@@ -922,11 +924,11 @@ class TestRunIntegrityCheck:
 
 class TestVerifyAndReportIntegrity:
     def test_clean_returns_zero(self, tmp_path, capsys):
-        for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         index = {
             "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [],
+            "guidelines": [], "web": [], "dictionary": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         result = utils.verify_and_report_integrity(tmp_path)

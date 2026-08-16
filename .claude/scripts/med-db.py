@@ -79,7 +79,7 @@ def save_text(path, content):
 
 
 def ensure_med_db_structure(med_db):
-    for name in ("searches", "papers", "fulltext", "guidelines", "web"):
+    for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
         (med_db / name).mkdir(parents=True, exist_ok=True)
 
 
@@ -183,20 +183,21 @@ WEB_SOURCE_SPECS = {
 def load_existing_index_entries(index_path):
     """Parse existing index.json to preserve user-edited purposes and metadata."""
     if not index_path.is_file():
-        return {}, {}, {}, {}, {}
+        return {}, {}, {}, {}, {}, {}
 
     try:
         data = json.loads(index_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
-        return {}, {}, {}, {}, {}
+        return {}, {}, {}, {}, {}, {}
 
     search_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("searches", [])}
     paper_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("papers", [])}
     fulltext_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("fulltext", [])}
     guideline_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("guidelines", [])}
     web_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("web", [])}
+    dictionary_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("dictionary", [])}
 
-    return search_entries, paper_entries, fulltext_entries, guideline_entries, web_entries
+    return search_entries, paper_entries, fulltext_entries, guideline_entries, web_entries, dictionary_entries
 
 
 def query_from_search_json(path):
@@ -225,6 +226,7 @@ def collect_index_data(med_db):
     fulltexts = []
     guidelines = []
     web_sources = []
+    dictionary = []
 
     # Searches
     searches_dir = med_db / "searches"
@@ -302,13 +304,38 @@ def collect_index_data(med_db):
                 "accessed": today,
             })
 
-    return searches, papers, fulltexts, guidelines, web_sources
+    # Dictionary — term definitions archived by the define-terms skill
+    dictionary_dir = med_db / "dictionary"
+    if dictionary_dir.is_dir():
+        for meta_path in sorted(dictionary_dir.rglob("metadata.json")):
+            term_dir = meta_path.parent
+            rel_dir = str(term_dir.relative_to(med_db))
+            entry = _dictionary_entry(meta_path)
+            dictionary.append({
+                "path": rel_dir,
+                "term": entry.get("term") or "Term unavailable; review and refine.",
+                "english": entry.get("english") or "",
+                "source_type": entry.get("source_type") or "other",
+                "source_ref": entry.get("source_ref") or "",
+                "accessed": today,
+            })
+
+    return searches, papers, fulltexts, guidelines, web_sources, dictionary
 
 
-def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates=None, guideline_updates=None, web_updates=None):
+def _dictionary_entry(meta_path):
+    """Read a dictionary ``metadata.json`` and return its contents, or empty on failure."""
+    try:
+        data = json.loads(Path(meta_path).read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates=None, guideline_updates=None, web_updates=None, dictionary_updates=None):
     """Generate index.json from filesystem, merging in user-provided metadata."""
     index_path = med_db / "index.json"
-    existing_searches, existing_papers, existing_fulltexts, existing_guidelines, existing_web = load_existing_index_entries(index_path)
+    existing_searches, existing_papers, existing_fulltexts, existing_guidelines, existing_web, existing_dictionary = load_existing_index_entries(index_path)
 
     if search_updates:
         existing_searches.update(search_updates)
@@ -320,8 +347,10 @@ def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates
         existing_guidelines.update(guideline_updates)
     if web_updates:
         existing_web.update(web_updates)
+    if dictionary_updates:
+        existing_dictionary.update(dictionary_updates)
 
-    fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web = collect_index_data(med_db)
+    fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web, fs_dictionary = collect_index_data(med_db)
 
     def _merge(fs_list, existing_dict):
         """Merge filesystem-derived items with existing index entries.
@@ -344,6 +373,7 @@ def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates
         "fulltext": _merge(fs_fulltexts, existing_fulltexts),
         "guidelines": _merge(fs_guidelines, existing_guidelines),
         "web": _merge(fs_web, existing_web),
+        "dictionary": _merge(fs_dictionary, existing_dictionary),
     }
     index_path.write_text(json.dumps(index_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

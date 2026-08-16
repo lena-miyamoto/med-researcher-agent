@@ -19,6 +19,7 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 | `start-therapy-session`  | Start a live AI therapy session with the psychotherapist agent.        |
 | `optimize-repo`          | Audit and clean up repo instruction files for source-of-truth hygiene. |
 | `fetch-paper`            | Download a paper's full text (PDF + source text) into the med-db archive. |
+| `define-terms`           | Complete glossary CSVs or define medical terms, backed by sources in med-db. |
 
 ### Agents
 
