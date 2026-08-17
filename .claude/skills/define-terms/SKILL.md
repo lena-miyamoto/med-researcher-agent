@@ -56,6 +56,17 @@ three-column glossary schema.
 Schema, writing rules, and validation live here. Source priority and evidence-gating rules are owned by
 `references/term-source-policy.md`.
 
+## CSV/TSV Tooling
+
+This skill edits `.csv`/`.tsv` files in place. Use CLI tools, not ad-hoc Python snippets:
+
+- Check availability first: `command -v mlr csvcut csvlook csvstat csvjson`.
+- Prefer `mlr` (Miller) for inspecting and transforming CSV/TSV.
+- `csvcut`, `csvlook`, `csvstat`, `csvjson` come from `csvkit` — there is no top-level
+  `csvkit` binary; call the individual tools.
+- Re-read a table before editing it; preserve the existing delimiter; trust file state
+  over memory; validate immediately after writing.
+
 ## Writing Rules
 
 - Match surrounding glossary wording; do not restyle the whole table.

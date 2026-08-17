@@ -7,18 +7,18 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 
 ## Skills
 
-| Skill                    | Summary                                                                |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `analyze-med-claims`     | Verify medical claims against literature; produce evidence reports.    |
-| `evaluate-paper`         | Score scientific papers 0-100 for evidence-based quality.              |
-| `check-retraction`       | Check whether a paper is retracted (Crossref + PubMed APIs).           |
-| `create-med-skill`       | Add a new shared skill with harness wrappers.                          |
-| `create-med-agent`       | Add a new shared agent with harness wrappers.                          |
-| `create-workout-routine` | Build a personalized, science-backed workout routine.                  |
-| `create-diet-plan`       | Build a personalized, evidence-based dietary plan.                     |
-| `start-therapy-session`  | Start a live AI therapy session with the psychotherapist agent.        |
-| `optimize-repo`          | Audit and clean up repo instruction files for source-of-truth hygiene. |
-| `fetch-paper`            | Download a paper's full text (PDF + source text) into the med-db archive. |
+| Skill                    | Summary                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `analyze-med-claims`     | Verify medical claims against literature; produce evidence reports.          |
+| `evaluate-paper`         | Score scientific papers 0-100 for evidence-based quality.                    |
+| `check-retraction`       | Check whether a paper is retracted (Crossref + PubMed APIs).                 |
+| `create-med-skill`       | Add a new shared skill with harness wrappers.                                |
+| `create-med-agent`       | Add a new shared agent with harness wrappers.                                |
+| `create-workout-routine` | Build a personalized, science-backed workout routine.                        |
+| `create-diet-plan`       | Build a personalized, evidence-based dietary plan.                           |
+| `start-therapy-session`  | Start a live AI therapy session with the psychotherapist agent.              |
+| `optimize-repo`          | Audit and clean up repo instruction files for source-of-truth hygiene.       |
+| `fetch-paper`            | Download a paper's full text (PDF + source text) into the med-db archive.    |
 | `define-terms`           | Complete glossary CSVs or define medical terms, backed by sources in med-db. |
 
 ### Agents
@@ -34,6 +34,9 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 
 - [uv](https://docs.astral.sh/uv/) — Python package manager. Reads `.python-version` (3.12)
   and installs the correct Python automatically — no separate Python install needed.
+- CSV tooling for the `define-terms` skill — `mlr` (Miller) and `csvkit`
+  (`csvcut`, `csvlook`, `csvstat`, `csvjson`). Install with the platform commands in
+  [System tools](#system-tools).
 
 ## Setup
 
@@ -47,6 +50,21 @@ uv sync
 ```
 
 Runtime dependencies: pypdf (PDF text extraction). Dev tooling: pytest, pymarkdownlnt.
+
+## System tools
+
+The `define-terms` skill needs two CSV tools beyond `uv`:
+
+- `mlr` — the Miller binary; inspect and transform CSV/TSV.
+- `csvkit` — provides `csvcut`, `csvlook`, `csvstat`, `csvjson` (no top-level `csvkit` binary).
+
+Install on your platform:
+
+| Platform             | Command                                                              |
+| -------------------- | -------------------------------------------------------------------- |
+| Debian/Ubuntu        | `sudo apt install -y miller csvkit`                                  |
+| macOS                | `brew install miller csvkit`                                         |
+| Windows (PowerShell) | `winget install -e --id JohnKerl.Miller`<br>`uv tool install csvkit` |
 
 ## Usage
 
@@ -87,8 +105,6 @@ Native installs auto-update in the background. Verify with `claude --version`.
 | Windows  | `winget install --id=astral-sh.uv -e`              |
 | macOS    | `brew install uv`                                  |
 | Linux    | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-
-Or via pip: `pip install uv`.
 
 ### 3. Python (via uv)
 
