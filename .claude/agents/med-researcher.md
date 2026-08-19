@@ -40,9 +40,7 @@ hand-editing `index.json`, no `mv`/`cp`.
 ### med-db Command Reference
 
 See [references/med-db-commands.md](references/med-db-commands.md) for the complete `uv run` parameter
-reference covering all 10 entry points (`med-db`, `med-db-lookup`, `med-db-query`,
-`med-db-lookup-icd11`, `med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-download-paper`,
-`med-db-setup-dsm5`, `med-db-setup-therapy-methods`, `med-db-integrity-check`).
+reference covering all med-db entry points.
 
 ## Evidence Quality Standards
 
