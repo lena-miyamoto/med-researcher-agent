@@ -53,6 +53,31 @@ Archive under `sex-therapy`.
 **PMID:** 40151032
 **Why:** 10 RCTs (837 patients). CBT showed greater FSFI score increases vs. routine care (MD 7.63) and waitlist (MD 3.13). More recent meta-analysis confirming CBST efficacy.
 
+### 1.5 Bancroft et al. (2009) — Dual Control Model
+
+**PMID:** 19308839
+**Why:** Foundational model of sexual response as the balance of sexual excitation (SE) and sexual inhibition (SI). Validated instruments SIS/SES (men) and SESII-W (women). Core framework for individual differences in sexual desire.
+
+### 1.6 Basson (2001) — Responsive vs. Spontaneous Desire
+
+**PMID:** 11224952 (model); 11554199 (clinical application)
+**Why:** Intimacy-based response cycle; desire can emerge from arousal/context (responsive) rather than precede it (spontaneous). Informed DSM-5 criteria for female sexual interest/arousal disorder.
+
+### 1.7 Willoughby & Vitas (2012) — Sexual Desire Discrepancy in Dating Couples
+
+**PMID:** 21573707
+**Why:** 8,096 dating couples. Higher desire-frequency discrepancy predicted lower relationship stability; satisfaction findings mixed and moderated by gender/relationship length. Establishes SDD as a common, not uniformly negative, dyadic concern.
+
+### 1.8 Willoughby, Farero & Busby (2014) — Desire Discrepancy in Married Couples
+
+**PMID:** 24045904
+**Why:** 1,054 married couples. Higher SDD associated with lower satisfaction, lower stability, more conflict. Extends SDD findings to married dyads.
+
+### 1.9 Kleinplatz & Ménard (2007) — Optimal Sexuality Components
+
+**DOI:** 10.1177/1066480706294126
+**Why:** Six components of "great sex" (being present, authenticity, intense emotional connection, sexual/erotic intimacy, communication, transcendence). Peer-reviewed anchor for the "deep erotic themes" concept.
+
 ---
 
 ## Phase 2: Core PMIDs — Kink-Positive / BDSM-Affirming Practice

@@ -38,6 +38,50 @@ don't pathologize.
 off-limits. Use client's language for their body, practices, identity — mirror their terms. Ask permission
 before clinical terminology. Never assume heterosexuality, monogamy, or vanilla sexuality as the default.
 
+### Sexual Desire & Core Erotic Themes
+
+**The term "core desires" / "core erotic themes."** Traces to Jack Morin's clinical text *The Erotic Mind*
+(1995), which proposes each person's eroticism is organized around an underlying emotional theme or "unifying
+scenario." Influential in sex therapy training, but a single-author book — a clinical heuristic, not
+empirically validated science. Do not present it as established fact. Anchor work on a client's "core
+desires" in the empirically supported constructs below.
+
+**Dual control model** (Bancroft, Graham, Janssen & Sanders 2009, PMID 19308839) — the dominant, empirically
+validated model of individual differences in sexual desire and arousal. Sexual response reflects the balance
+of two independent systems:
+- **Sexual excitation (SE)** — propensity to become aroused by sexual stimuli and context.
+- **Sexual inhibition (SI)** — propensity to suppress arousal, driven by performance concerns or by perceived
+  threat/consequences of arousal.
+Measured with validated instruments: SIS/SES for men, SESII-W for women. Clinical implication: low desire can
+reflect high inhibition, low excitation, or both — assess before intervening; never assume one cause.
+
+**Responsive vs. spontaneous desire** (Basson 2001, PMID 11224952; PMID 11554199) — desire need not precede
+arousal. In the intimacy-based response cycle, desire can *emerge from* arousal and context ("responsive"
+desire) rather than arising spontaneously. Widely accepted; informed the DSM-5 criteria for female sexual
+interest/arousal disorder. Clinical implication: absence of spontaneous desire is not inherently
+pathological — normalize responsive desire, especially in long-term relationships.
+
+**Sexual desire discrepancy (SDD) is common and not, by itself, dysfunction.** SDD — the gap between a
+partner's desired and actual sexual frequency — is a frequent presenting concern, but its relational impact
+is mixed and not uniformly negative:
+- In dating couples, higher SDD predicted lower relationship stability; satisfaction findings were mixed and
+  moderated by gender and relationship length (Willoughby & Vitas 2012, PMID 21573707; n = 8,096 couples).
+- In married couples, higher SDD was associated with lower satisfaction, lower stability, and more conflict
+  (Willoughby, Farero & Busby 2014, PMID 24045904; n = 1,054 couples).
+Clinical implication: treat SDD as a dyadic issue to explore, not as pathology of the lower-desire partner.
+
+**Optimal sexuality — what makes sex deeply satisfying** (Kleinplatz & Ménard 2007,
+DOI 10.1177/1066480706294126; peer-reviewed): interviews with people reporting "great sex" and with sex
+therapists identified six themes — being present, authenticity, intense emotional connection, sexual and
+erotic intimacy, communication, and transcendence. This is the peer-reviewed literature closest to the
+"deep erotic themes" idea: deep eroticism is characterized more by connection, presence, and emotional depth
+than by technique or novelty.
+
+**Clinical stance.** Use the validated constructs above to explore a client's "core desires." Do not assert
+Morin's "core erotic themes" as scientific fact. If a client uses the term, ask what they mean by it and map
+their experience onto the dual control model, responsive desire, desire discrepancy, or optimal-sexuality
+components as applicable.
+
 ### Kink-Positive / BDSM-Affirming Practice
 
 **Prevalence:** BDSM fantasies in 40-70% of people; ~20% report engaging in BDSM behaviors; 7.6% self-identify
