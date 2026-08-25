@@ -162,11 +162,67 @@ class TestFetchPubmed:
             utils.fetch_pubmed("missing.fcgi", {}, timeout=5)
         assert len(calls) == 1
 
+    def test_retries_429_rate_limit(self, monkeypatch):
+        calls = []
+
+        def fake_urlopen(request, timeout):
+            calls.append(request)
+            if len(calls) == 1:
+                raise urllib.error.HTTPError(
+                    request.full_url, 429, "Too Many Requests",
+                    {"Retry-After": "0"}, None,
+                )
+            return _FakeResponse(b'{"ok": true}')
+
+        monkeypatch.setattr(utils.urllib.request, "urlopen", fake_urlopen)
+        monkeypatch.setattr(utils.time, "sleep", lambda delay: None)
+
+        assert utils.fetch_pubmed("esearch.fcgi", {}, timeout=5) == '{"ok": true}'
+        assert len(calls) == 2
+
 
 class TestFetchEuropePmc:
     def test_raises_runtime_error_on_failure(self):
         with pytest.raises(RuntimeError):
             utils.fetch_europe_pmc("nonexistent", {}, timeout=0.1)
+
+
+class TestFetchText:
+    def test_404_raises_lookup_error(self, monkeypatch):
+        def fake_urlopen(request, timeout):
+            raise urllib.error.HTTPError(request.full_url, 404, "not found", {}, None)
+
+        monkeypatch.setattr(utils.urllib.request, "urlopen", fake_urlopen)
+
+        with pytest.raises(LookupError, match="no MeSH record"):
+            utils.fetch_text(
+                "https://example.org/x", "MeSH x",
+                not_found_message="no MeSH record for 'x'",
+            )
+
+    def test_404_without_message_propagates_http_error(self, monkeypatch):
+        def fake_urlopen(request, timeout):
+            raise urllib.error.HTTPError(request.full_url, 404, "not found", {}, None)
+
+        monkeypatch.setattr(utils.urllib.request, "urlopen", fake_urlopen)
+
+        with pytest.raises(urllib.error.HTTPError):
+            utils.fetch_text("https://example.org/x", "MeSH x")
+
+    def test_retries_transient_failure(self, monkeypatch):
+        calls = []
+
+        def fake_urlopen(request, timeout):
+            calls.append(request)
+            if len(calls) == 1:
+                raise urllib.error.URLError("temporary reset")
+            return _FakeResponse(b'{"ok": true}')
+
+        monkeypatch.setattr(utils.urllib.request, "urlopen", fake_urlopen)
+        monkeypatch.setattr(utils.time, "sleep", lambda delay: None)
+
+        assert utils.fetch_text("https://example.org/x", "MeSH x") == '{"ok": true}'
+        assert len(calls) == 2
 
 
 # ---------------------------------------------------------------------------
@@ -283,6 +339,92 @@ class TestDefaultPaperEntry:
         path.write_text(json.dumps(data))
         ident, url = utils.default_paper_entry(path)
         assert ident == "unknown"
+
+    def test_crossref_format(self, tmp_path):
+        data = {
+            "message": {
+                "DOI": "10.1037/sgd0000081",
+                "title": ["Development of the Gender Minority Stress and Resilience Measure"],
+                "URL": "https://doi.org/10.1037/sgd0000081",
+            }
+        }
+        path = tmp_path / "metadata.json"
+        path.write_text(json.dumps(data))
+        ident, url = utils.default_paper_entry(path)
+        assert ident == "DOI:10.1037/sgd0000081"
+        assert url == "https://doi.org/10.1037/sgd0000081"
+
+
+# ---------------------------------------------------------------------------
+# resolve_doi_to_id
+# ---------------------------------------------------------------------------
+
+
+class TestResolveDoiToId:
+    def _pubmed_hit(self, *args, **kwargs):
+        return json.dumps({"esearchresult": {"idlist": ["12345678"]}})
+
+    def _pubmed_miss(self, *args, **kwargs):
+        return json.dumps({"esearchresult": {"idlist": []}})
+
+    def _epmc_hit(self, *args, **kwargs):
+        return json.dumps({"resultList": {"result": [{"source": "MED", "id": "35350465"}]}})
+
+    def _crossref_hit(self, *args, **kwargs):
+        return json.dumps({"message": {"DOI": "10.1037/sgd0000081"}})
+
+    def _boom(self, *args, **kwargs):
+        raise RuntimeError("network down")
+
+    def test_prefers_pubmed(self):
+        source, identifier = utils.resolve_doi_to_id(
+            "10.1000/example",
+            pubmed_fetch_func=self._pubmed_hit,
+            epmc_fetch_func=self._boom,
+            crossref_fetch_func=self._boom,
+        )
+        assert source == "pubmed"
+        assert identifier == "12345678"
+
+    def test_europe_pmc_uses_exact_doi_query(self):
+        captured = {}
+
+        def epmc(module, params):
+            captured.update(params)
+            return self._epmc_hit()
+
+        source, identifier = utils.resolve_doi_to_id(
+            "10.1000/example",
+            pubmed_fetch_func=self._pubmed_miss,
+            epmc_fetch_func=epmc,
+            crossref_fetch_func=self._boom,
+        )
+        assert source == "europe-pmc"
+        assert identifier == "MED:35350465"
+        assert captured["query"] == "DOI:10.1000/example"
+
+    def test_crossref_fallback(self):
+        source, identifier = utils.resolve_doi_to_id(
+            "10.1037/sgd0000081",
+            pubmed_fetch_func=self._boom,
+            epmc_fetch_func=self._boom,
+            crossref_fetch_func=self._crossref_hit,
+        )
+        assert source == "crossref"
+        assert identifier == "10.1037/sgd0000081"
+
+    def test_malformed_crossref_json_falls_through(self):
+        def malformed(*args, **kwargs):
+            return "<html>not json</html>"
+
+        source, identifier = utils.resolve_doi_to_id(
+            "10.1000/example",
+            pubmed_fetch_func=self._boom,
+            epmc_fetch_func=self._boom,
+            crossref_fetch_func=malformed,
+        )
+        assert source is None
+        assert identifier is None
 
 
 # ---------------------------------------------------------------------------
@@ -736,6 +878,28 @@ class TestCheckPaperIntegrity:
         findings = []
         utils.check_paper_integrity(tmp_path, findings)
         assert any("only whitespace" in f["description"] for f in findings)
+
+    def test_valid_crossref_paper(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "crossref-10-1037-sgd0000081-test-title"
+        paper_dir.mkdir()
+        meta = {"message": {"DOI": "10.1037/sgd0000081"}}
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("Abstract.")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert findings == []
+
+    def test_crossref_doi_mismatch(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        paper_dir = tmp_path / "papers" / "adhd" / "crossref-wrong-slug-test"
+        paper_dir.mkdir()
+        meta = {"message": {"DOI": "10.1037/sgd0000081"}}
+        (paper_dir / "metadata.json").write_text(json.dumps(meta))
+        (paper_dir / "abstract.txt").write_text("ok")
+        findings = []
+        utils.check_paper_integrity(tmp_path, findings)
+        assert any("Crossref folder name" in f["description"] for f in findings)
 
 
 # ---------------------------------------------------------------------------

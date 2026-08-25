@@ -7,13 +7,13 @@ description: >
 topics:
   - gender-affirming-care
   - trans-nb-mental-health
-version: 1.0.0
-last_updated: 2026-07-15
+version: 1.0.1
+last_updated: 2026-08-25
 ---
 
 # Gender-Affirming Care & TNB Mental Health — Knowledge Base Bootstrap
 
-Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local evidence base on gender-affirming care and TNB mental health. Read-only.
+Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local evidence base: gender-affirming care, TNB mental health. Read-only.
 
 ## Archive access
 
@@ -55,7 +55,7 @@ Resolve the DOI via the `med-db` skill (`med-db-lookup`), then archive under `ge
 **DOI:** 10.1037/sgd0000081
 **Why:** Validated 58-item GMSR measure (n=844). Nine constructs: discrimination, rejection, victimization, nonaffirmation, internalized transphobia, negative expectations, nondisclosure, community connectedness, pride. Clinical and research tool for assessing minority stress in TNB clients.
 
-Resolve the DOI and archive as 1.3.
+Resolve the DOI and archive as 1.4.
 
 ---
 
@@ -85,7 +85,7 @@ Archive under `trans-nb-mental-health`.
 
 ### 2.5 Kallstrom et al. (2022) — Finnish Population Study
 
-**PMID:** 36327285
+**PMID:** 36331970
 **Why:** Population-based (n=8,589). Non-binary individuals reported highest rates of anxiety and depression among all sexual and gender minority subgroups. Key evidence for non-binary-specific mental health disparities.
 
 ---

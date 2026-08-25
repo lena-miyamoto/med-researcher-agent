@@ -33,7 +33,9 @@ Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always in
 | `--topic-slug` | str | — | Explicit kebab-case slug; overrides `--topic` |
 | `--pmid` | str[] | `[]` | PMID to archive; repeatable (`--pmid 1 --pmid 2`) |
 | `--epmc-record` | str[] | `[]` | Europe PMC record as `SOURCE:ID`; repeatable |
-| `--doi` | str[] | `[]` | DOI to resolve and archive; repeatable. Tries PubMed, then Europe PMC |
+| `--doi` | str[] | `[]` | DOI to resolve and archive; repeatable. Tries PubMed, then Europe PMC, then Crossref metadata (covers DOIs indexed in neither, e.g. APA journals) |
+| `--remove-pmid` | str[] | `[]` | Remove archived paper folders by PMID; repeatable. Cannot combine with archival options |
+| `--remove-epmc-record` | str[] | `[]` | Remove archived paper folders by Europe PMC record as `SOURCE:ID`; repeatable. Cannot combine with archival options |
 | `--archive-first` | int | `0` | Also archive first N PMIDs returned by `--query` |
 | `--retmax` | int | `20` | Machine-readable hits to request for archived search JSON |
 | `--med-db` | str | `med-db` | Target `med-db/` directory path |
@@ -41,6 +43,7 @@ Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always in
 | `--delay` | float | `0.34` | Delay between PMID fetches (seconds) |
 | `--migrate` | flag | off | Migrate flat `med-db/` to topic-based per-paper folders |
 | `--migrate-dry-run` | flag | off | Preview `--migrate` without copying files |
+| `--force` | flag | off | Re-fetch and overwrite papers already archived (useful after transient fetch failures) |
 | `--format` | choice | `text` | Output format: `json` or `text` |
 | `--quiet` | flag | off | Output only created folder paths, one per line |
 

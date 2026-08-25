@@ -64,7 +64,7 @@ Install on your platform:
 | -------------------- | -------------------------------------------------------------------- |
 | Debian/Ubuntu        | `sudo apt install -y miller csvkit`                                  |
 | macOS                | `brew install miller csvkit`                                         |
-| Windows (PowerShell) | `winget install -e --id JohnKerl.Miller`<br>`uv tool install csvkit` |
+| Windows (PowerShell) | `winget install -e --id JohnKerl.Miller; uv tool install csvkit` |
 
 ## Usage
 

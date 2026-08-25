@@ -501,7 +501,7 @@ def setup(force=False):
             tmp_path.unlink()
         raise
 
-    total = sum(len(c["disorders"]) for category in data["categories"])
+    total = sum(len(category["disorders"]) for category in data["categories"])
     print(f"Created DSM-5-TR classification: {len(data['categories'])} categories, {total} disorders")
     return True
 

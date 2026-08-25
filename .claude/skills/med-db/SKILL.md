@@ -14,11 +14,11 @@ command contract, bootstrap logic, and the quick-reference command table.
 
 ## When to Use
 
-Any operation that reads from or writes to the local `./med-db/` archive tree. This includes:
-checking whether a paper is archived; searching the archive by keyword, topic, or PMID; reading
-metadata; listing contents; archiving papers via PMID, DOI, or search query; setting up
-diagnostic classifications (ICD-11, DSM-5-TR, therapy methodologies); looking up codes; syncing
-or validating the index; and running integrity checks.
+Any operation reading from or writing to the local `./med-db/` archive tree: checking whether
+a paper is archived; searching by keyword, topic, or PMID; reading metadata; listing contents;
+archiving via PMID, DOI, or search query; setting up diagnostic classifications (ICD-11,
+DSM-5-TR, therapy methodologies); looking up codes; syncing or validating the index; running
+integrity checks.
 
 Other skills (`analyze-med-claims`, `create-diet-plan`, `start-therapy-session`) and agents
 (med-researcher, psychotherapist, dietologist) delegate archive operations to this skill.
@@ -141,10 +141,10 @@ local, no-network** commands are permitted during the session:
 | Reading `med-db/guidelines/therapy-methodologies/source.md` | |
 | Dispatching Haiku sub-agent for read-only med-db queries | |
 
-Read-only commands are sub-second, local, and equivalent to consulting a reference shelf.
-Network searches and archival are between-session work.
+Read-only commands: sub-second, local, equivalent to consulting a reference shelf.
+Network searches and archival: between-session work.
 
-**Haiku sub-agent pattern for therapy sessions:** The psychotherapist agent may dispatch a
+**Haiku sub-agent pattern for therapy sessions:** Psychotherapist agent may dispatch a
 Haiku-model sub-agent to run read-only med-db commands during a session. The sub-agent must
 use only commands from the "Permitted during session" column above. It must never run archival,
 network, or write commands. This pattern lets the therapist consult the reference shelf without
@@ -152,10 +152,9 @@ breaking therapeutic presence.
 
 ## Extraction Flags — Get Data Without JSON Post-Processing
 
-Every query and lookup command defaults to JSON (`--format json`). When you need a
-single field from that JSON, use an extraction flag instead of piping through
-`python3 -c`, `jq`, `grep`, or `sed`. Extraction flags output plain text, one value
-per line — they exist to make post-processing unnecessary.
+Every query and lookup command defaults to JSON (`--format json`). For a single field,
+use an extraction flag instead of piping through `python3 -c`, `jq`, `grep`, or `sed`.
+Extraction flags output plain text, one value per line — no post-processing needed.
 
 | Flag | Applies to | Output |
 |---|---|---|
@@ -196,10 +195,15 @@ Default text output; `--format json` for structured, `--quiet` for folder paths 
 | Web discovery          | `uv run med-db --source <SOURCE> --query '<query>' --topic '<name>'`                             |
 | Archive first N        | `uv run med-db --source pubmed --query '<query>' --archive-first <N> --topic '<name>'`           |
 | Multiple PMIDs         | `uv run med-db --pmid <ID1> --pmid <ID2> --topic '<name>'`                                       |
+| Remove PMID            | `uv run med-db --remove-pmid <ID>`                                                               |
+| Remove EPMC record     | `uv run med-db --remove-epmc-record '<SOURCE>:<ID>'`                                             |
+| Re-fetch / overwrite   | `uv run med-db ... --force`                                                                      |
 | JSON output            | `uv run med-db ... --format json`                                                                |
 | Paths only (quiet)     | `uv run med-db ... --quiet`                                                                      |
 | Migrate (dry run)      | `uv run med-db --migrate-dry-run`                                                                |
 | Migrate                | `uv run med-db --migrate`                                                                        |
+
+DOI resolution tries PubMed, then Europe PMC, then Crossref metadata — Crossref covers DOIs indexed in neither (e.g. APA journals).
 
 ### Query (`med-db-query`)
 

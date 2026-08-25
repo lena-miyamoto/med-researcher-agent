@@ -151,7 +151,12 @@ def check_retraction(identifier, crossref_fetch=None, pubmed_fetch=None, epmc_fe
     # PubMed cross-check — resolve DOI→PMID, or use the given PMID
     if pmid is None and doi:
         source, resolved = utils.resolve_doi_to_id(
-            doi, email=email, pubmed_fetch_func=pubmed_fetch, epmc_fetch_func=epmc_fetch
+            doi, email=email,
+            pubmed_fetch_func=pubmed_fetch,
+            epmc_fetch_func=epmc_fetch,
+            crossref_fetch_func=lambda doi_value: crossref_fetch(
+                f"{CROSSREF_WORKS_BASE}{doi_value}", f"Crossref works {doi_value}"
+            ),
         )
         if source == "pubmed":
             pmid = resolved

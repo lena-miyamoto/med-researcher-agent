@@ -24,21 +24,28 @@ ICD11_BASE = MED_DB / "guidelines" / "icd-11"
 
 WHO_CDN = "https://icdcdn.who.int/static/releasefiles"
 
-# Files to download per release.  Language-specific entries use {lang}
-# substitution; language-independent files are listed as-is.
+# Files to download per release.
+#   RELEASE_FILES — language-specific; one download per requested language,
+#                   {lang} substituted.
+#   ENGLISH_ONLY_FILES — WHO publishes these in English only; downloaded once.
+#   LANG_INDEPENDENT — no language dimension at all.
 RELEASE_FILES = [
     # (remote_path_template, local_name_template, description)
     ("SimpleTabulation-ICD-11-MMS-{lang}.zip",
      "SimpleTabulation-{lang}.zip",
      "SimpleTabulation"),
-    ("print-ICD-11-MMS-{lang}.zip",
-     "print-{lang}.zip",
+]
+
+ENGLISH_ONLY_FILES = [
+    # (remote_filename, local_name, description)
+    ("print-ICD-11-MMS-en.zip",
+     "print-en.zip",
      "Print PDF"),
-    ("MortalityTabulationList_{lang}.zip",
-     "MortalityTabulationList_{lang}.zip",
+    ("MortalityTabulationList_en.zip",
+     "MortalityTabulationList_en.zip",
      "Mortality tabulation list"),
-    ("MorbidityTabulationList_{lang}.zip",
-     "MorbidityTabulationList_{lang}.zip",
+    ("MorbidityTabulationList_en.zip",
+     "MorbidityTabulationList_en.zip",
      "Morbidity tabulation list"),
 ]
 
@@ -115,6 +122,32 @@ def download_release(release, languages, force=False):
                     msg = f"  ERROR extracting {local_name}: {exc}"
                     print(msg, file=sys.stderr)
                     errors.append(msg)
+
+    # English-only files — single download, stored under extracted/en/
+    for remote_name, local_name, desc in ENGLISH_ONLY_FILES:
+        url = _build_url(release, remote_name)
+        dest = release_dir / local_name
+        try:
+            if _download_file(url, dest, force=force):
+                print(f"  Downloaded: {desc} (en)")
+                downloaded += 1
+            else:
+                print(f"  Already present: {desc} (en)")
+                skipped += 1
+        except Exception as exc:
+            msg = f"  ERROR downloading {desc} (en): {exc}"
+            print(msg, file=sys.stderr)
+            errors.append(msg)
+            continue
+
+        if dest.exists():
+            extract_dir = release_dir / "extracted" / "en"
+            try:
+                _extract_zip(dest, extract_dir)
+            except Exception as exc:
+                msg = f"  ERROR extracting {local_name}: {exc}"
+                print(msg, file=sys.stderr)
+                errors.append(msg)
 
     # Language-independent files
     for remote_name, local_name, desc in LANG_INDEPENDENT:

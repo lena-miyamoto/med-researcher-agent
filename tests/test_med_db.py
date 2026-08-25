@@ -822,6 +822,93 @@ class TestSyncIndex:
 
 
 # ---------------------------------------------------------------------------
+# archive_crossref_doi
+# ---------------------------------------------------------------------------
+
+class TestArchiveCrossrefDoi:
+    def test_archives_crossref_work(self, tmp_path, monkeypatch):
+        med_db_path = tmp_path / "med-db"
+        raw = json.dumps({
+            "message": {
+                "DOI": "10.1037/sgd0000081",
+                "title": ["Development of the Gender Minority Stress and Resilience Measure"],
+                "abstract": "<jats:p>This measure assesses minority stress.</jats:p>",
+                "URL": "https://doi.org/10.1037/sgd0000081",
+            }
+        })
+        monkeypatch.setattr(med_db.utils, "fetch_crossref_work", lambda doi: raw)
+
+        result = med_db.archive_crossref_doi(med_db_path, "10.1037/sgd0000081", "gender-affirming-care")
+        assert result is not None
+        metadata_file, abstract_file, title, identifier, url = result
+        assert identifier == "DOI:10.1037/sgd0000081"
+        assert title == "Development of the Gender Minority Stress and Resilience Measure"
+        assert metadata_file.is_file()
+        assert abstract_file.is_file()
+        assert "minority stress" in abstract_file.read_text(encoding="utf-8")
+
+    def test_skips_existing_archive(self, tmp_path, monkeypatch):
+        med_db_path = tmp_path / "med-db"
+        raw = json.dumps({"message": {"DOI": "10.1037/sgd0000081", "title": ["T"]}})
+        monkeypatch.setattr(med_db.utils, "fetch_crossref_work", lambda doi: raw)
+
+        med_db.archive_crossref_doi(med_db_path, "10.1037/sgd0000081", "topic")
+        result = med_db.archive_crossref_doi(med_db_path, "10.1037/sgd0000081", "topic")
+        assert result is None
+
+
+class TestArchiveDoi:
+    def test_crossref_fallback_archives(self, tmp_path, monkeypatch):
+        med_db_path = tmp_path / "med-db"
+        raw = json.dumps({
+            "message": {
+                "DOI": "10.1037/sgd0000081",
+                "title": ["Development of the Gender Minority Stress and Resilience Measure"],
+                "abstract": "<jats:p>Assesses minority stress.</jats:p>",
+            }
+        })
+        monkeypatch.setattr(
+            med_db.utils,
+            "resolve_doi_to_id",
+            lambda doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None, crossref_fetch_func=None: (
+                "crossref",
+                "10.1037/sgd0000081",
+            ),
+        )
+        monkeypatch.setattr(med_db.utils, "fetch_crossref_work", lambda doi: raw)
+        args = mock.Mock(email=None, force=False)
+
+        result = med_db.archive_doi(args, med_db_path, "10.1037/sgd0000081", "gender-affirming-care")
+        assert result is not None
+        metadata_file, abstract_file, title, identifier, url = result
+        assert identifier == "DOI:10.1037/sgd0000081"
+        assert title == "Development of the Gender Minority Stress and Resilience Measure"
+        assert metadata_file.is_file()
+        assert "minority stress" in abstract_file.read_text(encoding="utf-8")
+        assert metadata_file.parent.name.startswith("crossref-10-1037-sgd0000081-")
+
+
+# ---------------------------------------------------------------------------
+# remove_paper_folders
+# ---------------------------------------------------------------------------
+
+class TestRemovePaperFolders:
+    def test_removes_matching_folders(self, tmp_path):
+        med_db_path = tmp_path / "med-db"
+        paper_dir = med_db_path / "papers" / "topic" / "pmid-33515606-some-title"
+        paper_dir.mkdir(parents=True)
+        (paper_dir / "metadata.json").write_text("{}")
+        keep_dir = med_db_path / "papers" / "topic" / "pmid-99999999-keep"
+        keep_dir.mkdir(parents=True)
+        (keep_dir / "metadata.json").write_text("{}")
+
+        removed = med_db.remove_paper_folders(med_db_path, "pmid-33515606-")
+        assert removed == ["papers/topic/pmid-33515606-some-title"]
+        assert not paper_dir.exists()
+        assert keep_dir.exists()
+
+
+# ---------------------------------------------------------------------------
 # archive_web_query
 # ---------------------------------------------------------------------------
 

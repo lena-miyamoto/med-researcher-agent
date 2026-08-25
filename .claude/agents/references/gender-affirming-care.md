@@ -97,7 +97,7 @@ Non-binary identities are valid, stable identities — not "trans lite" or an in
 - **Mental health:** NB people show worse general mental health than cisgender (d=0.48) and binary trans
   (d=0.24) (Klinger et al. 2024, PMID: 39385290). Highest anxiety and depression rates among all sexual
   and gender minority subgroups in Finnish population study (n=8,589) (Kallstrom et al. 2022,
-  PMID: 36327285).
+  PMID: 36331970).
 
 - **Healthcare:** NB people less likely to feel respected, more likely misgendered, providers less likely
   to have adequate gender affirmation knowledge (PMID: 39247404). Identity-specific stigma, distinct from

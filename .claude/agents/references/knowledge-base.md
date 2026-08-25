@@ -82,8 +82,8 @@ not during.
 
 **Alternative — manual bootstrap:**
 
-Archive the core PMIDs for neurodevelopmental comorbidities via the `med-db` skill: 28830387, 33515606, 27859581, 22303520, 29604351, 37913872, 30903940,
-32873239. Full bootstrapping needs all three research briefs. med-researcher approach (above) strongly preferred.
+Archive the core PMIDs for neurodevelopmental comorbidities via the `med-db` skill: 28830387, 33515607, 27859581, 22303520, 29477617, 37913872, 32847520.
+Full bootstrapping needs all three research briefs. med-researcher approach (above) strongly preferred.
 
 **Querying research evidence:**
 

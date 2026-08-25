@@ -29,6 +29,7 @@ MED_DB = REPO_ROOT / "med-db"
 
 EUTILS_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 EUROPE_PMC_BASE = "https://www.ebi.ac.uk/europepmc/webservices/rest"
+CROSSREF_BASE = "https://api.crossref.org"
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
@@ -75,29 +76,78 @@ def atomic_write(path, content):
 # ---------------------------------------------------------------------------
 
 
-def _fetch_url(url, label, timeout=60, retries=2, retry_delay=0.25):
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    last_error = None
+def _retry_after_seconds(error):
+    """Return a Retry-After header as seconds, or 0 when absent/unparseable."""
+    value = (error.headers or {}).get("Retry-After")
+    if value is None:
+        return 0
+    try:
+        return max(0, int(value))
+    except ValueError:
+        return 0
+
+
+def _request_with_retry(request, label, timeout, retries, retry_delay):
+    """Open *request*, retrying transient HTTP (429/5xx) and network errors.
+
+    Returns the open ``HTTPResponse``.  Raises the underlying
+    ``urllib.error.HTTPError`` (for non-transient HTTP errors, or once
+    retries are exhausted) and ``urllib.error.URLError``/``OSError`` (for
+    network errors), so callers can distinguish 404 from other failures.
+    """
     for attempt in range(retries + 1):
         try:
-            with urllib.request.urlopen(request, timeout=timeout) as response:
-                raw = response.read()
-                charset = response.headers.get_content_charset("utf-8")
-                try:
-                    return raw.decode(charset)
-                except UnicodeDecodeError:
-                    return raw.decode(charset, errors="replace")
+            return urllib.request.urlopen(request, timeout=timeout)
         except urllib.error.HTTPError as exc:
-            last_error = exc
-            if exc.code < 500 or attempt == retries:
-                break
-        except (urllib.error.URLError, OSError) as exc:
-            last_error = exc
+            # 429 (rate limit) and 5xx are transient — retry with backoff.
+            if exc.code != 429 and exc.code < 500:
+                raise
             if attempt == retries:
-                break
-        if retry_delay > 0:
-            time.sleep(retry_delay * (2 ** attempt))
-    raise RuntimeError(f"error fetching {label}: {last_error}")
+                raise
+            time.sleep(_retry_after_seconds(exc) or retry_delay * (2 ** attempt))
+        except (urllib.error.URLError, OSError) as exc:
+            if attempt == retries:
+                raise
+            if retry_delay > 0:
+                time.sleep(retry_delay * (2 ** attempt))
+
+
+def _fetch_url(url, label, timeout=60, retries=2, retry_delay=0.25):
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        response = _request_with_retry(request, label, timeout, retries, retry_delay)
+    except (urllib.error.HTTPError, urllib.error.URLError, OSError) as exc:
+        raise RuntimeError(f"error fetching {label}: {exc}") from exc
+    with response:
+        raw = response.read()
+        charset = response.headers.get_content_charset("utf-8")
+        try:
+            return raw.decode(charset)
+        except UnicodeDecodeError:
+            return raw.decode(charset, errors="replace")
+
+
+def fetch_text(url, label, not_found_message=None, timeout=30, retries=2, retry_delay=0.25):
+    """GET *url* and return decoded UTF-8 text with Retry-After-aware retry.
+
+    Raises ``LookupError(not_found_message)`` on HTTP 404 when
+    *not_found_message* is set; otherwise raises the underlying
+    ``urllib.error.HTTPError``/``URLError``/``OSError``.
+    """
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        response = _request_with_retry(request, label, timeout, retries, retry_delay)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404 and not_found_message:
+            raise LookupError(not_found_message) from exc
+        raise
+    with response:
+        raw = response.read()
+        charset = response.headers.get_content_charset("utf-8")
+        try:
+            return raw.decode(charset)
+        except UnicodeDecodeError:
+            return raw.decode(charset, errors="replace")
 
 
 def fetch_pubmed(endpoint, params, timeout=60):
@@ -117,6 +167,15 @@ def fetch_europe_pmc(module, params, timeout=60):
     """
     url = f"{EUROPE_PMC_BASE}/{module}?{urllib.parse.urlencode(params)}"
     return _fetch_url(url, f"Europe PMC {module}", timeout=timeout)
+
+
+def fetch_crossref_work(doi, timeout=60):
+    """GET a Crossref work record for *doi*, return decoded UTF-8 body.
+
+    Raises ``RuntimeError`` on network / HTTP errors.
+    """
+    url = f"{CROSSREF_BASE}/works/{urllib.parse.quote(doi)}"
+    return _fetch_url(url, f"Crossref {doi}", timeout=timeout)
 
 
 # ---------------------------------------------------------------------------
@@ -162,6 +221,13 @@ def default_paper_entry(meta_path):
         rid = str(record.get("id") or record.get("pmid") or "unknown")
         return f"{source}:{rid}", europe_pmc_article_url(source, rid)
 
+    # Crossref works format
+    crossref_message = data.get("message", {})
+    if isinstance(crossref_message, dict) and crossref_message.get("DOI"):
+        doi = str(crossref_message["DOI"])
+        url = crossref_message.get("URL") or f"https://doi.org/{doi}"
+        return f"DOI:{doi}", url
+
     return "unknown", "URL unavailable; review and refine."
 
 
@@ -170,20 +236,24 @@ def default_paper_entry(meta_path):
 # ---------------------------------------------------------------------------
 
 
-def resolve_doi_to_id(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None):
-    """Resolve a DOI to an identifier via PubMed (preferred) or Europe PMC.
+def resolve_doi_to_id(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None, crossref_fetch_func=None):
+    """Resolve a DOI to an identifier via PubMed (preferred), Europe PMC, or Crossref.
 
-    Returns a ``(source, identifier)`` tuple where *source* is ``"pubmed"``
-    or ``"europe-pmc"``, or ``(None, None)`` if the DOI cannot be resolved.
+    Returns a ``(source, identifier)`` tuple where *source* is ``"pubmed"``,
+    ``"europe-pmc"``, or ``"crossref"``, or ``(None, None)`` if the DOI cannot
+    be resolved.
 
     For PubMed the identifier is a PMID string.
     For Europe PMC the identifier is a ``"SOURCE:ID"`` string.
+    For Crossref the identifier is the normalised DOI string itself.
 
-    *pubmed_fetch_func* and *epmc_fetch_func* allow callers to inject test
-    doubles; when ``None`` the real network fetch helpers are used.
+    *pubmed_fetch_func*, *epmc_fetch_func*, and *crossref_fetch_func* allow
+    callers to inject test doubles; when ``None`` the real network fetch
+    helpers are used.
     """
     pubmed_fetch = pubmed_fetch_func or fetch_pubmed
     epmc_fetch = epmc_fetch_func or fetch_europe_pmc
+    crossref_fetch = crossref_fetch_func or fetch_crossref_work
 
     # Try PubMed first
     try:
@@ -195,12 +265,13 @@ def resolve_doi_to_id(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=N
         idlist = data.get("esearchresult", {}).get("idlist", [])
         if idlist:
             return ("pubmed", str(idlist[0]))
-    except RuntimeError:
+    except (RuntimeError, json.JSONDecodeError):
         pass
 
-    # Fall back to Europe PMC
+    # Fall back to Europe PMC (exact DOI field search — a bare query would
+    # fuzzy-match papers that merely cite the DOI)
     try:
-        params = {"query": doi, "resultType": "core", "format": "json", "pageSize": "1"}
+        params = {"query": f"DOI:{doi}", "resultType": "core", "format": "json", "pageSize": "1"}
         raw = epmc_fetch("search", params)
         data = json.loads(raw)
         hits = data.get("resultList", {}).get("result", [])
@@ -210,7 +281,18 @@ def resolve_doi_to_id(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=N
             record_id = str(record.get("id") or record.get("pmid") or "")
             if record_id:
                 return ("europe-pmc", f"{source_name}:{record_id}")
-    except RuntimeError:
+    except (RuntimeError, json.JSONDecodeError):
+        pass
+
+    # Fall back to Crossref (covers DOIs not indexed in PubMed/Europe PMC,
+    # e.g. APA journals).
+    try:
+        raw = crossref_fetch(doi)
+        data = json.loads(raw)
+        resolved_doi = str(data.get("message", {}).get("DOI") or "").strip()
+        if resolved_doi:
+            return ("crossref", resolved_doi.lower())
+    except (RuntimeError, json.JSONDecodeError):
         pass
 
     return (None, None)
@@ -604,13 +686,29 @@ def check_paper_integrity(root, findings):
                     )
             continue
 
+        crossref_message = meta.get("message", {})
+        if isinstance(crossref_message, dict) and crossref_message.get("DOI"):
+            doi = str(crossref_message["DOI"])
+            expected_prefix = f"crossref-{slugify(doi)}-"
+            if not folder_name.startswith(expected_prefix):
+                findings.append(
+                    finding(
+                        SEVERITY_ERROR,
+                        CATEGORY_METADATA,
+                        f"{rel_dir}/metadata.json",
+                        f"Crossref folder name does not start with expected prefix {expected_prefix!r} (folder: {folder_name!r}).",
+                        "Rename folder to crossref-<doi-slug>-<title-slug> or re-fetch with uv run med-db --doi <DOI>.",
+                    )
+                )
+            continue
+
         findings.append(
             finding(
                 SEVERITY_WARNING,
                 CATEGORY_METADATA,
                 rel_dir,
                 f"Unrecognised paper folder naming pattern: \"{folder_name}\".",
-                "Rename to match pmid-<N>-<title-slug> or epmc-<source>-<id>-<title-slug>.",
+                "Rename to match pmid-<N>-<title-slug>, epmc-<source>-<id>-<title-slug>, or crossref-<doi-slug>-<title-slug>.",
             )
         )
 

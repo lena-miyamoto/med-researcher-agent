@@ -19,7 +19,6 @@ import json
 import sys
 import urllib.error
 import urllib.parse
-import urllib.request
 
 import utils
 
@@ -71,26 +70,14 @@ def parse_scope_note(data):
 
 
 def _fetch_url_text(url, term):
-    """GET *url* and return the decoded body, with one retry on server errors.
+    """GET *url* and return the decoded body via the shared retrying fetcher.
 
     A missing record (HTTP 404) is raised as ``LookupError``; other HTTP
     and network errors propagate.
     """
-    request = urllib.request.Request(url, headers={"User-Agent": utils.USER_AGENT})
-    for attempt in range(2):
-        try:
-            with urllib.request.urlopen(request, timeout=30) as response:
-                raw = response.read()
-                charset = response.headers.get_content_charset("utf-8")
-                return raw.decode(charset)
-        except urllib.error.HTTPError as exc:
-            if exc.code == 404:
-                raise LookupError(f"no MeSH record for '{term}'") from exc
-            if exc.code < 500 or attempt == 1:
-                raise
-        except (urllib.error.URLError, OSError):
-            if attempt == 1:
-                raise
+    return utils.fetch_text(
+        url, f"MeSH {term}", not_found_message=f"no MeSH record for '{term}'"
+    )
 
 
 def _lookup_descriptor(term, fetch_url):

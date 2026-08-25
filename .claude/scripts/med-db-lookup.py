@@ -234,6 +234,9 @@ def resolve_doi(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None):
         doi, email=email,
         pubmed_fetch_func=pubmed_fetch_func,
         epmc_fetch_func=epmc_fetch_func,
+        # This tool has no Crossref metadata path, so return an empty record to
+        # skip the resolver's throwaway Crossref lookup for non-PubMed DOIs.
+        crossref_fetch_func=lambda _doi: "{}",
     )
     if source == "pubmed":
         results = lookup_pmids([identifier], email=email, fetch_func=pubmed_fetch_func)

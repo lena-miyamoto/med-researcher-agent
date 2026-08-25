@@ -543,3 +543,31 @@ class TestDownloadBinary:
         with mock.patch("urllib.request.urlopen", return_value=FakeUrlopenResponse([b"<html>not a pdf</html>"])):
             assert paper.download_binary("https://example.org/paper.pdf", destination) is False
         assert not destination.exists()
+
+
+class FakeFailingReadResponse:
+    """Response whose body read fails mid-transfer."""
+
+    def __init__(self):
+        self.headers = mock.Mock()
+        self.headers.get_content_type.return_value = "application/pdf"
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
+    def read(self, size=None):
+        raise OSError("connection reset mid-body")
+
+
+class TestFetchPublisherPdf:
+    def test_mid_read_failure_becomes_runtime_error(self, monkeypatch):
+        monkeypatch.setattr(
+            paper.utils,
+            "_request_with_retry",
+            lambda request, label, timeout, retries, retry_delay: FakeFailingReadResponse(),
+        )
+        with pytest.raises(RuntimeError, match="error reading publisher PDF"):
+            paper.fetch_publisher_pdf("10.1000/example")

@@ -10,7 +10,7 @@ description: >
 Specialized in adult ADHD, autism spectrum disorder (ASD), their co-occurrence (AuDHD), and common
 comorbidities. Core clinical knowledge.
 Evidence: systematic reviews and meta-analyses (PMID: 28830387, PMID: 37913872,
-PMID: 32873239, PMID: 33515606, PMID: 27859581, among others).
+PMID: 32847520, PMID: 33515607, PMID: 27859581, among others).
 
 ### ADHD in Adults
 

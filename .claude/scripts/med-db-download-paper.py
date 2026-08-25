@@ -246,7 +246,13 @@ def metadata_from_crossref(doi, fetch_url_func):
 
 def metadata_from_doi(doi, email, pubmed_fetch_func, epmc_fetch_func, fetch_url_func):
     source, identifier = utils.resolve_doi_to_id(
-        doi, email=email, pubmed_fetch_func=pubmed_fetch_func, epmc_fetch_func=epmc_fetch_func
+        doi, email=email,
+        pubmed_fetch_func=pubmed_fetch_func,
+        epmc_fetch_func=epmc_fetch_func,
+        # Crossref metadata is fetched by metadata_from_crossref below; skip the
+        # resolver's Crossref lookup to avoid a duplicate, injected-fetcher-
+        # bypassing call.
+        crossref_fetch_func=lambda _doi: "{}",
     )
     if source == "pubmed":
         return metadata_from_pubmed(identifier, email, pubmed_fetch_func)
@@ -503,11 +509,17 @@ def fetch_publisher_pdf(doi, timeout=60):
         headers={"Accept": "application/pdf", "User-Agent": utils.USER_AGENT},
     )
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        response = utils._request_with_retry(
+            request, f"publisher PDF {doi}", timeout, retries=2, retry_delay=0.25
+        )
+    except (urllib.error.HTTPError, urllib.error.URLError, OSError) as exc:
+        raise RuntimeError(f"error fetching publisher PDF for {doi}: {exc}") from exc
+    try:
+        with response:
             content_type = response.headers.get_content_type()
             content = response.read()
     except (urllib.error.HTTPError, urllib.error.URLError, OSError) as exc:
-        raise RuntimeError(f"error fetching publisher PDF for {doi}: {exc}")
+        raise RuntimeError(f"error reading publisher PDF for {doi}: {exc}") from exc
     if content_type != "application/pdf":
         raise RuntimeError(f"publisher did not return PDF for {doi}: {content_type}")
     if not content.startswith(b"%PDF"):
@@ -547,13 +559,20 @@ def fetch_scihub_pdf_url(reference_value, mirror, fetch_url_func=None):
 def download_binary(url, destination, timeout=60):
     """Download *url* to *destination*. Returns True on success.
 
-    Verifies the PDF magic bytes and removes partial files on failure.
+    Verifies the PDF magic bytes, retries transient (429/5xx) and network
+    errors, and removes partial files on failure.
     """
     request = urllib.request.Request(url, headers={"User-Agent": utils.USER_AGENT})
     destination = Path(destination)
     tmp = destination.with_suffix(destination.suffix + ".tmp")
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        response = utils._request_with_retry(
+            request, url, timeout, retries=2, retry_delay=0.25
+        )
+    except (urllib.error.HTTPError, urllib.error.URLError, OSError):
+        return False
+    try:
+        with response:
             first_chunk = response.read(4096)
             if not first_chunk.startswith(b"%PDF"):
                 return False

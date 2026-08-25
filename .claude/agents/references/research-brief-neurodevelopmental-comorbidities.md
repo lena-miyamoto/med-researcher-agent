@@ -8,13 +8,13 @@ topics:
   - adhd-comorbidity
   - asd-comorbidity
   - neurodevelopmental-overlap
-version: 1.0.0
-last_updated: 2026-07-15
+version: 1.1.0
+last_updated: 2026-08-25
 ---
 
 # Neurodevelopmental Comorbidities — Knowledge Base Bootstrap
 
-Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local, reproducible evidence base on adult ADHD, ASD, AuDHD, and common comorbidities. Same papers used to build psychotherapist's Neurodevelopmental Specialization. Read-only. Never edit. Archive under topics in frontmatter.
+Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local, reproducible evidence base: adult ADHD, ASD, AuDHD, common comorbidities. Same papers used to build psychotherapist's Neurodevelopmental Specialization. Read-only. Never edit. Archive under topics in frontmatter.
 
 ## Archive access
 
@@ -41,7 +41,7 @@ Archive under `adhd-comorbidity`. Foundation for ADHD comorbidity prevalence and
 
 ### 1.2 Schiweck et al. (2021) — ADHD and adult bipolar disorder
 
-**PMID:** 33515606
+**PMID:** 33515607
 **Why:** Pooled BD prevalence in adults with ADHD (~7.95%), pooled OR 8.7, BD onset ~4 years earlier with comorbid ADHD. 17.11% of BD adults have ADHD. Critical for bipolar differential diagnosis guidance.
 
 ### 1.3 Nazar et al. (2016) — Eating disorders comorbid with ADHD
@@ -56,22 +56,22 @@ Archive under `adhd-comorbidity`. Foundation for ADHD comorbidity prevalence and
 
 ### 1.5 Diaz-Roman et al. (2018) — Sleep in adults with ADHD
 
-**PMID:** 29604351
+**PMID:** 29477617
 **Why:** Adults with ADHD show longer sleep onset latency, reduced sleep efficiency, elevated subjective insomnia. Foundation for psychotherapist's sleep disorder guidance (43–80% prevalence).
 
-### 1.6 Choi et al. (2025) — Personality disorders in adults with ADHD: meta-analysis
+### 1.6 Adamis et al. (2026) — Personality disorders in adults with ADHD: meta-analysis
 
-**DOI:** 10.1016/j.jad.2025.01.013
+**DOI:** 10.1016/j.psychres.2026.117085
 **Why:** Pooled 57% any PD prevalence in adults with ADHD. High BPD overlap (~22%). Foundation for personality disorder differential diagnosis guidance.
 
-Resolve the DOI via the `med-db` skill (`med-db-lookup`), then archive under `adhd-comorbidity`. If no PMID, search Europe PMC via the `med-db` skill for `Choi 2025 personality disorders ADHD adult meta-analysis` and archive the first result.
+Resolve the DOI via the `med-db` skill (`med-db-lookup`), then archive under `adhd-comorbidity`. If no PMID, search Europe PMC via the `med-db` skill for `Adamis 2026 personality disorders ADHD adult meta-analysis` and archive the first result.
 
 ### 1.7 Magdi et al. (2025) — ADHD and PTSD adult comorbidity: systematic review
 
 **DOI:** 10.1186/s13643-025-02774-7
 **Why:** Pooled PTSD prevalence in ADHD ~36%, ADHD in PTSD ~28%, up to 4× PTSD risk. Genetic correlation rg = 0.66. Foundation for psychotherapist's trauma screening recommendations.
 
-Resolve the DOI and archive as 1.6.
+Resolve the DOI and archive as 1.7.
 
 ---
 
@@ -86,15 +86,17 @@ Archive under `asd-comorbidity`.
 
 ### 2.2 Lugo-Marin et al. (2019) — Psychiatric disorders in adults with ASD
 
-**PMID:** 30903940
+**DOI:** 10.1016/j.rasd.2018.12.004
 **Why:** 54.8% of adults with ASD have ≥1 psychiatric disorder. ADHD most prevalent, then mood and anxiety disorders. Key reference for psychotherapist's ASD specialization.
+
+Resolve the DOI via the `med-db` skill and archive under `asd-comorbidity`. Not PubMed-indexed; falls back to Crossref metadata.
 
 ### 2.3 McDougle et al. (2025) — Pharmacological treatment in autism
 
 **DOI:** 10.1186/s12916-024-03814-0
 **Why:** Lurie Center consensus guidelines. First-line recommendations differ from non-autistic SOC: buspirone and mirtazapine over SSRIs for anxiety; duloxetine, mirtazapine, bupropion, vortioxetine over SSRIs for depression. "Start low, go slow." Foundation for psychotherapist's ASD treatment guidance.
 
-Resolve the DOI and archive as 1.6.
+Resolve the DOI and archive as 2.3.
 
 ---
 
@@ -104,7 +106,7 @@ Archive under `neurodevelopmental-overlap`.
 
 ### 3.1 Xenaki et al. (2020) — Lifetime comorbidity in adults with ADHD or/and ASD
 
-**PMID:** 32873239
+**PMID:** 32847520
 **Why:** 336 newly diagnosed adults. ADHD+ASD group: 72.4% had ≥1 additional disorder. ADHD-only: 72.8%, ASD-only: 50%. Depressive disorder most common across all groups. Foundation for AuDHD profile.
 
 ---
@@ -165,4 +167,4 @@ Read-only queries — work without knowledge of archive layout. Only need topic 
 - **Recency window:** Med-researcher enforces 10-year window (5 years for pharmacology). Most references within window. Older papers (e.g., Bond 2012) flagged as foundational, not superseded.
 - **Counter-evidence:** Med-researcher searches for contradicting evidence per mandatory counter-evidence protocol. Expected and valuable — higher-quality contradicting evidence surfaced to psychotherapist.
 - **Updates:** Re-run every 12 months to capture new systematic reviews and meta-analyses. Review psychotherapist agent's specialization section at same cadence.
-- **DOI-only references:** Choi (2025), Magdi (2025), McDougle (2025) are recent, may lack PMIDs. Resolve via DOI lookup first, fall back to Europe PMC search. May not be PubMed-indexed yet.
+- **DOI-only references:** Adamis (2026), Lugo-Marin (2019), Magdi (2025), McDougle (2025) are recent or non-PubMed-indexed, may lack PMIDs. Resolve via DOI lookup first, fall back to Europe PMC search. May not be PubMed-indexed yet.

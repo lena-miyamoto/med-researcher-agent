@@ -435,7 +435,7 @@ def archive_pmid(args, med_db, pmid, topic):
     folder_name = f"pmid-{pmid}-{paper_slug}"
 
     paper_dir = med_db / "papers" / topic / folder_name
-    if paper_dir.exists():
+    if not args.force and paper_dir.exists():
         print(f"skipping already archived: {folder_name}", file=sys.stderr)
         return None
     paper_dir.mkdir(parents=True, exist_ok=True)
@@ -467,7 +467,7 @@ def parse_europe_pmc_record(record_spec):
     return source_name.upper(), record_id
 
 
-def archive_europe_pmc_record(med_db, record_spec, topic):
+def archive_europe_pmc_record(med_db, record_spec, topic, force=False):
     source_name, record_id = parse_europe_pmc_record(record_spec)
     params = {
         "query": f"EXT_ID:{record_id} AND SRC:{source_name}",
@@ -488,7 +488,7 @@ def archive_europe_pmc_record(med_db, record_spec, topic):
     folder_name = f"epmc-{source_name.lower()}-{record_slug}-{paper_slug}"
 
     paper_dir = med_db / "papers" / topic / folder_name
-    if paper_dir.exists():
+    if not force and paper_dir.exists():
         print(f"skipping already archived: {folder_name}", file=sys.stderr)
         return None
     paper_dir.mkdir(parents=True, exist_ok=True)
@@ -503,20 +503,75 @@ def archive_europe_pmc_record(med_db, record_spec, topic):
     return metadata_file, abstract_file, title, f"{source_name}:{record_id}", europe_pmc_article_url(source_name, record_id)
 
 
+def _crossref_title(message):
+    """Return the first non-empty title from a Crossref work *message*."""
+    for title in message.get("title") or []:
+        if title and str(title).strip():
+            return str(title).strip()
+    return None
+
+
+def _crossref_abstract(message):
+    """Return plain-text abstract from a Crossref work *message*, or None."""
+    abstract = message.get("abstract")
+    if not abstract:
+        return None
+    return utils._strip_html(str(abstract))
+
+
+def archive_crossref_doi(med_db, doi, topic, force=False):
+    """Archive a paper directly from Crossref metadata for a DOI.
+
+    Used when the DOI is not indexed in PubMed or Europe PMC (e.g. APA
+    journals).  Returns the same result tuple shape as ``archive_pmid`` and
+    ``archive_europe_pmc_record``, or ``None`` when already archived (unless
+    *force* is true).  Raises ``RuntimeError`` when Crossref has no record for
+    the DOI.
+    """
+    raw_work = utils.fetch_crossref_work(doi)
+    message = json.loads(raw_work).get("message", {})
+    if not message:
+        raise RuntimeError(f"Crossref record not found for DOI {doi}")
+
+    title = _crossref_title(message) or doi
+    paper_slug = slugify(title, fallback="crossref-record")
+    doi_slug = slugify(doi, fallback="doi")
+    folder_name = f"crossref-{doi_slug}-{paper_slug}"
+
+    paper_dir = med_db / "papers" / topic / folder_name
+    if not force and paper_dir.exists():
+        print(f"skipping already archived: {folder_name}", file=sys.stderr)
+        return None
+    paper_dir.mkdir(parents=True, exist_ok=True)
+
+    metadata_file = paper_dir / "metadata.json"
+    abstract_file = paper_dir / "abstract.txt"
+    save_text(metadata_file, raw_work)
+
+    abstract_text = _crossref_abstract(message) or f"Abstract unavailable from Crossref for DOI {doi}."
+    save_text(abstract_file, abstract_text.rstrip() + "\n")
+
+    url = message.get("URL") or f"https://doi.org/{doi}"
+    identifier = f"DOI:{doi}"
+    return metadata_file, abstract_file, title, identifier, url
+
+
 def archive_doi(args, med_db, doi, topic):
     """Resolve a DOI and archive the paper.
 
-    Tries PubMed first, then falls back to Europe PMC.
-    Returns the archive result tuple from archive_pmid or archive_europe_pmc_record,
-    or raises RuntimeError if the DOI cannot be resolved.
+    Tries PubMed first, then Europe PMC, then Crossref.
+    Returns the archive result tuple from archive_pmid, archive_europe_pmc_record,
+    or archive_crossref_doi, or raises RuntimeError if the DOI cannot be resolved.
     """
     source, identifier = utils.resolve_doi_to_id(doi, email=args.email)
     if source == "pubmed":
         return archive_pmid(args, med_db, identifier, topic)
     elif source == "europe-pmc":
-        return archive_europe_pmc_record(med_db, identifier, topic)
+        return archive_europe_pmc_record(med_db, identifier, topic, force=args.force)
+    elif source == "crossref":
+        return archive_crossref_doi(med_db, identifier, topic, force=args.force)
 
-    raise RuntimeError(f"DOI not found in PubMed or Europe PMC: {doi}")
+    raise RuntimeError(f"DOI not found in PubMed, Europe PMC, or Crossref: {doi}")
 
 
 def archive_web_query(args, med_db, topic):
@@ -577,6 +632,21 @@ def copy2_verified(source, destination):
     shutil.copy2(source, destination)
     if source.stat().st_size != destination.stat().st_size:
         raise OSError(f"copy size mismatch: {source} -> {destination}")
+
+
+def remove_paper_folders(med_db, folder_prefix):
+    """Delete paper folders under papers/ whose name starts with *folder_prefix*.
+
+    Returns a list of removed folder paths relative to *med_db*.
+    """
+    papers_dir = med_db / "papers"
+    removed = []
+    for meta_path in sorted(papers_dir.rglob("metadata.json")):
+        paper_dir = meta_path.parent
+        if paper_dir.name.startswith(folder_prefix):
+            shutil.rmtree(paper_dir)
+            removed.append(str(paper_dir.relative_to(med_db)))
+    return removed
 
 
 # ---------------------------------------------------------------------------
@@ -710,7 +780,19 @@ def parse_args():
         "--doi",
         action="append",
         default=[],
-        help="DOI to resolve and archive. May be passed multiple times. Tries PubMed first, then Europe PMC.",
+        help="DOI to resolve and archive. May be passed multiple times. Tries PubMed, then Europe PMC, then Crossref.",
+    )
+    parser.add_argument(
+        "--remove-pmid",
+        action="append",
+        default=[],
+        help="Remove archived papers by PMID. May be passed multiple times.",
+    )
+    parser.add_argument(
+        "--remove-epmc-record",
+        action="append",
+        default=[],
+        help="Remove archived papers by Europe PMC record (SOURCE:ID). May be passed multiple times.",
     )
     parser.add_argument(
         "--archive-first",
@@ -740,6 +822,11 @@ def parse_args():
         help="Delay between PMID fetches in seconds. Defaults to 0.34.",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-fetch and overwrite papers that are already archived (useful after transient fetch failures).",
+    )
+    parser.add_argument(
         "--migrate",
         action="store_true",
         help="Migrate existing flat med-db/ structure to topic-based per-paper folders. Preserves originals.",
@@ -763,6 +850,11 @@ def parse_args():
     args = parser.parse_args()
 
     if args.migrate or args.migrate_dry_run:
+        return args
+
+    if args.remove_pmid or args.remove_epmc_record:
+        if args.query or args.pmid or args.epmc_record or args.doi:
+            parser.error("--remove-pmid/--remove-epmc-record cannot be combined with archival options")
         return args
 
     if not args.query and not args.pmid and not args.epmc_record and not args.doi:
@@ -841,6 +933,28 @@ def main():
     med_db.mkdir(parents=True, exist_ok=True)
     ensure_med_db_structure(med_db)
 
+    if args.remove_pmid or args.remove_epmc_record:
+        removed = []
+        for pmid in args.remove_pmid:
+            removed.extend(remove_paper_folders(med_db, f"pmid-{pmid}-"))
+        for record_spec in args.remove_epmc_record:
+            try:
+                source_name, record_id = parse_europe_pmc_record(record_spec)
+            except ValueError as exc:
+                print(f"error: {exc}", file=sys.stderr)
+                return 1
+            prefix = f"epmc-{source_name.lower()}-{slugify(record_id)}-"
+            removed.extend(remove_paper_folders(med_db, prefix))
+        sync_index(med_db)
+        if removed:
+            for rel in sorted(removed):
+                print(f"removed: {rel}")
+        else:
+            print("no matching papers found", file=sys.stderr)
+        if utils.verify_and_report_integrity(med_db) != 0:
+            return 1
+        return 0
+
     topic = validate_topic_slug(args.topic_slug or slugify(args.topic, fallback=DEFAULT_TOPIC))
 
     search_file = None
@@ -889,7 +1003,7 @@ def main():
             time.sleep(args.delay)
 
     for index, record_spec in enumerate(epmc_records):
-        result = archive_europe_pmc_record(med_db, record_spec, topic)
+        result = archive_europe_pmc_record(med_db, record_spec, topic, force=args.force)
         if result is None:
             continue
         metadata_file, abstract_file, title, identifier, url = result
