@@ -26,6 +26,7 @@ med-db-term-lookup = "entrypoints:med_db_term_lookup"
 med-db-term-wikipedia = "entrypoints:med_db_term_wikipedia"
 med-db-term-mesh = "entrypoints:med_db_term_mesh"
 check-retraction = "entrypoints:check_retraction"
+csv-util = "entrypoints:csv_util"
 lint-md = "entrypoints:lint_md"
 test = "entrypoints:test"
 

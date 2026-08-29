@@ -34,9 +34,8 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 
 - [uv](https://docs.astral.sh/uv/) — Python package manager. Reads `.python-version` (3.12)
   and installs the correct Python automatically — no separate Python install needed.
-- CSV tooling for the `define-terms` skill — `mlr` (Miller) and `csvkit`
-  (`csvcut`, `csvlook`, `csvstat`, `csvjson`). Install with the platform commands in
-  [System tools](#system-tools).
+- CSV tooling for the `define-terms` skill — the repo's bundled `csv-util`
+  (`uv run csv-util`); no external install needed.
 
 ## Setup
 
@@ -51,20 +50,11 @@ uv sync
 
 Runtime dependencies: pypdf (PDF text extraction). Dev tooling: pytest, pymarkdownlnt.
 
-## System tools
+## CSV tooling
 
-The `define-terms` skill needs two CSV tools beyond `uv`:
-
-- `mlr` — the Miller binary; inspect and transform CSV/TSV.
-- `csvkit` — provides `csvcut`, `csvlook`, `csvstat`, `csvjson` (no top-level `csvkit` binary).
-
-Install on your platform:
-
-| Platform             | Command                                                              |
-| -------------------- | -------------------------------------------------------------------- |
-| Debian/Ubuntu        | `sudo apt install -y miller csvkit`                                  |
-| macOS                | `brew install miller csvkit`                                         |
-| Windows (PowerShell) | `winget install -e --id JohnKerl.Miller; uv tool install csvkit` |
+CSV/TSV work (glossary CSVs, archive tables) is handled by the repo's bundled
+`csv-util` (`uv run csv-util stats|check|cut|head|drop-empty|dedupe|fill`).
+No external install required.
 
 ## Usage
 

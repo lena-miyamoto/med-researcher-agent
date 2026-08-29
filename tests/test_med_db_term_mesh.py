@@ -2,6 +2,7 @@
 
 import json
 import sys
+import urllib.error
 
 import med_db_term_mesh as mesh
 
@@ -161,8 +162,42 @@ class TestMain:
         assert "descriptor:      D056344" in out
         assert "A set of cognitive functions." in out
 
-    def test_not_found_returns_one(self, monkeypatch, capsys):
+    def test_not_found_returns_one_json(self, monkeypatch, capsys):
         monkeypatch.setattr(sys, "argv", ["med-db-term-mesh", "--term", "Nope"])
         monkeypatch.setattr(mesh, "fetch_mesh_scope_note", lambda term, fetch_url_func=None: None)
         assert mesh.main() == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["term"] == "Nope"
+        assert "no MeSH descriptor" in data["error"]
+
+    def test_not_found_returns_one_text(self, monkeypatch, capsys):
+        monkeypatch.setattr(sys, "argv", ["med-db-term-mesh", "--term", "Nope", "--format", "text"])
+        monkeypatch.setattr(mesh, "fetch_mesh_scope_note", lambda term, fetch_url_func=None: None)
+        assert mesh.main() == 1
         assert "no MeSH descriptor" in capsys.readouterr().err
+
+    def test_network_error_json(self, monkeypatch, capsys):
+        monkeypatch.setattr(sys, "argv", ["med-db-term-mesh", "--term", "Executive Function"])
+
+        def boom(term, fetch_url_func=None):
+            raise OSError("network down")
+
+        monkeypatch.setattr(mesh, "fetch_mesh_scope_note", boom)
+        assert mesh.main() == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["term"] == "Executive Function"
+        assert "network down" in data["error"]
+
+    def test_http_error_json(self, monkeypatch, capsys):
+        monkeypatch.setattr(sys, "argv", ["med-db-term-mesh", "--term", "Executive Function"])
+
+        def boom(term, fetch_url_func=None):
+            raise urllib.error.HTTPError(
+                "https://id.nlm.nih.gov/mesh", 500, "Server Error", None, None
+            )
+
+        monkeypatch.setattr(mesh, "fetch_mesh_scope_note", boom)
+        assert mesh.main() == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["term"] == "Executive Function"
+        assert "500" in data["error"]

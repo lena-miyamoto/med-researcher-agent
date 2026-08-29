@@ -498,6 +498,54 @@ class TestWrapText:
 
 
 # ---------------------------------------------------------------------------
+# build_frontmatter / parse_frontmatter
+# ---------------------------------------------------------------------------
+
+
+class TestBuildFrontmatter:
+    def test_basic_fields(self):
+        md = utils.build_frontmatter({"title": "Test", "language": "de"})
+        assert md == "---\ntitle: Test\nlanguage: de\n---\n"
+
+    def test_quotes_special_characters(self):
+        md = utils.build_frontmatter({"source_url": "https://example.org/x"})
+        assert 'source_url: "https://example.org/x"' in md
+
+    def test_skips_none_and_empty(self):
+        md = utils.build_frontmatter({"title": "Test", "english": "", "authors": None})
+        assert "title: Test" in md
+        assert "english" not in md
+        assert "authors" not in md
+
+
+class TestParseFrontmatter:
+    def test_parses_simple(self):
+        data = utils.parse_frontmatter("---\ntitle: Test\nlanguage: de\n---\n\n# Body")
+        assert data == {"title": "Test", "language": "de"}
+
+    def test_returns_none_without_frontmatter(self):
+        assert utils.parse_frontmatter("# No frontmatter") is None
+
+    def test_returns_none_for_unterminated(self):
+        assert utils.parse_frontmatter("---\ntitle: Test\n") is None
+
+    def test_parses_quoted_value(self):
+        data = utils.parse_frontmatter('---\nsource_url: "https://example.org/x"\n---\nbody')
+        assert data["source_url"] == "https://example.org/x"
+
+    def test_roundtrip_embedded_quotes(self):
+        value = 'https://x/?q="hi"'
+        md = utils.build_frontmatter({"source_url": value})
+        assert utils.parse_frontmatter(md)["source_url"] == value
+
+    def test_parses_indented_continuation(self):
+        md = "---\ntitle: X\nauthors: >\n  First author\n  Second author\n---\nbody"
+        data = utils.parse_frontmatter(md)
+        assert data["title"] == "X"
+        assert "First author" in data["authors"]
+
+
+# ---------------------------------------------------------------------------
 # run_cli
 # ---------------------------------------------------------------------------
 

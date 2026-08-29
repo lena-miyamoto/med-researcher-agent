@@ -86,6 +86,10 @@ def check_retraction():
     return _load_script("check_retraction", "check-retraction.py").main()
 
 
+def csv_util():
+    return _load_script("csv_util", "csv-util.py").main()
+
+
 def lint_md(args=None):
     """Run pymarkdownlnt on repo markdown files.
 

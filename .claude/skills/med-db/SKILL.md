@@ -50,6 +50,7 @@ in real sessions. **None of them are acceptable.**
 | `jq` / `sed` / `awk` on JSON output | Extraction flags output plain text directly | `uv run med-db-query ... --identifiers-only` etc. |
 | `python3` or `python` in any form | Forbidden by CLAUDE.md contract | `uv run <entry-point>` |
 | `node -e`, `perl -e` touching med-db files | Same bypass, different language | `uv run med-db-*` tools |
+| `WebFetch` / `WebSearch` / `wget` / `curl` on a Wikipedia article | Scrapes raw HTML, bypasses the REST summary tool and its error contract | `uv run med-db-term-wikipedia --title "<English title>"` |
 
 ## Bootstrap
 
@@ -205,6 +206,16 @@ Default text output; `--format json` for structured, `--quiet` for folder paths 
 
 DOI resolution tries PubMed, then Europe PMC, then Crossref metadata — Crossref covers DOIs indexed in neither (e.g. APA journals).
 
+### Full-Text Download (`med-db-download-paper`)
+
+PDF + extracted text into `med-db/fulltext/`. Owned by the `fetch-paper` skill (procedure, source
+policy, Sci-Hub fallback); full parameter reference in `med-db-commands.md`.
+
+| Operation    | Command                                                                                       |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| Download PDF | `uv run med-db-download-paper --reference '<DOI|PMID|arXiv|SOURCE:ID|URL>' --topic '<name>'`  |
+| Title + year | `uv run med-db-download-paper --title '<title>' --year <YEAR> --topic '<name>'`               |
+
 ### Query (`med-db-query`)
 
 Default JSON. Use `--format text` for readable output, or extraction flags for single-field plain text.
@@ -252,6 +263,16 @@ lookup is read-only.
 | Lookup term     | `uv run med-db-term-lookup --term '<Term>'`                                                       |
 | Keyword search  | `uv run med-db-term-lookup --keyword '<text>'`                                                    |
 | List all terms  | `uv run med-db-term-lookup --list`                                                                |
+
+### Term Source Helpers (`med-db-term-wikipedia`, `med-db-term-mesh`)
+
+Read-only fetchers for the `define-terms` skill. Wikipedia is the stage-5 fallback; MeSH is a
+stage-3 authoritative source. Both default to JSON (`--format text` for readable output).
+
+| Operation       | Command                                                              |
+| --------------- | -------------------------------------------------------------------- |
+| Wikipedia lead  | `uv run med-db-term-wikipedia --title '<English title>'`             |
+| MeSH scope note | `uv run med-db-term-mesh --term '<English term>'`                    |
 
 ### Diagnostic Classification
 

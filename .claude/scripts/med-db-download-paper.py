@@ -630,12 +630,9 @@ def build_fulltext_folder(resolved):
 
 
 def write_source_markdown(path, frontmatter, body_text):
-    """Write source.md with YAML frontmatter (JSON-encoded scalar values)."""
-    lines = ["---"]
-    for key, value in frontmatter.items():
-        lines.append(f"{key}: {json.dumps(value, ensure_ascii=False)}")
-    lines.extend(["---", "", body_text.rstrip()])
-    utils.atomic_write(path, "\n".join(lines) + "\n")
+    """Write source.md with YAML frontmatter and extracted text."""
+    content = utils.build_frontmatter(frontmatter) + "\n" + body_text.rstrip() + "\n"
+    utils.atomic_write(path, content)
 
 
 def write_metadata_json(path, record, provenance):

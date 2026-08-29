@@ -159,15 +159,21 @@ def main():
     args = parse_args()
     try:
         result = fetch_mesh_scope_note(args.term)
-    except LookupError as exc:
-        print(f"error: {exc}", file=sys.stderr)
-        return 1
-    except (urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
-        print(f"error: {exc}", file=sys.stderr)
+    except (LookupError, urllib.error.HTTPError, urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
+        if args.format == "json":
+            print(json.dumps({"term": args.term, "error": str(exc)}, indent=2, ensure_ascii=False))
+        else:
+            print(f"error: {exc}", file=sys.stderr)
         return 1
 
     if result is None:
-        print(f"error: no MeSH descriptor for '{args.term}'", file=sys.stderr)
+        if args.format == "json":
+            print(json.dumps(
+                {"term": args.term, "error": f"no MeSH descriptor for '{args.term}'"},
+                indent=2, ensure_ascii=False,
+            ))
+        else:
+            print(f"error: no MeSH descriptor for '{args.term}'", file=sys.stderr)
         return 1
 
     if args.format == "json":

@@ -151,6 +151,32 @@ Read archived term definitions from `med-db/dictionary/`. At least one of `--ter
 
 ---
 
+## `uv run med-db-term-wikipedia` — Wikipedia Lead Summary (read-only)
+
+Fetch a Wikipedia article's lead section via the Wikimedia REST API. Used by the `define-terms`
+skill as the stage-5 fallback source. Returns the plain-text `extract`, the Wikidata `description`,
+and the canonical article URL. No archival — archive the passage with `med-db-term` afterward.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `--title` | str | required | Wikipedia article title (English), spaces or underscores (e.g. `Artificial intelligence`) |
+| `--lang` | str | `en` | Wikipedia language edition |
+| `--format` | choice | `json` | Output format: `json` or `text` |
+
+---
+
+## `uv run med-db-term-mesh` — MeSH Scope Note (read-only)
+
+Fetch a MeSH descriptor's scope note via the NLM `id.nlm.nih.gov` API. Used by the `define-terms`
+skill as a stage-3 authoritative source. Returns the descriptor ID, preferred label, and scope note.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `--term` | str | required | MeSH term to look up (e.g. `Executive Function`) |
+| `--format` | choice | `json` | Output format: `json` or `text` |
+
+---
+
 ## `uv run med-db-download-icd11` — ICD-11 Setup
 
 Download ICD-11 MMS data from WHO CDN into `med-db/`. Integrity check runs on completion.

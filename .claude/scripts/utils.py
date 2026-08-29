@@ -336,6 +336,82 @@ def wrap_text(text, width=80):
     return lines
 
 
+# ---------------------------------------------------------------------------
+# YAML frontmatter
+# ---------------------------------------------------------------------------
+
+
+def build_frontmatter(fields):
+    """Build a YAML frontmatter block from a dict of fields.
+
+    Skips ``None`` and empty values.  Quotes values containing characters
+    that are YAML-special at the start of an unquoted scalar.  Hyphen (``-``)
+    is not quoted because it is only special as the first character (sequence
+    entry); leading-hyphen values are extremely rare in frontmatter.
+    """
+    lines = ["---"]
+    for key, value in fields.items():
+        if value is None:
+            continue
+        val = str(value).strip()
+        if not val:
+            continue
+        special = (":", "#", "{", "}", "[", "]", ",", "&", "*", "?", "|", "<", ">", "=", "!", "%", "@", "`")
+        if any(ch in val for ch in special):
+            val = val.replace('"', '\\"')
+            lines.append(f'{key}: "{val}"')
+        else:
+            lines.append(f"{key}: {val}")
+    lines.append("---")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def parse_frontmatter(text):
+    """Parse YAML frontmatter from a markdown file. Returns dict or None."""
+    if not text.startswith("---"):
+        return None
+    end = text.find("---", 3)
+    if end == -1:
+        return None
+    block = text[3:end].strip()
+    if not block:
+        return None
+
+    data = {}
+    lines = block.split("\n")
+    current_key = None
+    current_value = None
+
+    for line in lines:
+        if line.startswith(" ") or line.startswith("\t"):
+            if current_key is not None:
+                current_value = (current_value or "") + " " + line.strip()
+            continue
+
+        if current_key is not None:
+            data[current_key] = current_value.strip() if current_value else ""
+
+        match = re.match(r"^([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.*)", line)
+        if match:
+            current_key = match.group(1)
+            raw_value = match.group(2).strip()
+            if raw_value.startswith('"') and raw_value.endswith('"'):
+                current_value = raw_value[1:-1].replace('\\"', '"')
+            elif raw_value.startswith("'") and raw_value.endswith("'"):
+                current_value = raw_value[1:-1]
+            else:
+                current_value = raw_value
+        else:
+            current_key = None
+            current_value = None
+
+    if current_key is not None:
+        data[current_key] = current_value.strip() if current_value else ""
+
+    return data
+
+
 # =============================================================================
 # med-db integrity check — shared library
 # =============================================================================
@@ -930,14 +1006,14 @@ def check_guideline_integrity(root, findings):
                 )
             )
 
-        # Check for YAML frontmatter
-        if not content.startswith("---"):
+        # Check for a parseable YAML frontmatter block.
+        if parse_frontmatter(content) is None:
             findings.append(
                 finding(
                     SEVERITY_WARNING,
                     CATEGORY_GUIDELINE,
                     rel,
-                    "Guideline source.md is missing YAML frontmatter (does not start with ---).",
+                    "Guideline source.md is missing YAML frontmatter (no valid --- ... --- block).",
                     "Add proper frontmatter with title, authors, source, source_url, access_date, language, and extraction_notes.",
                 )
             )
@@ -1062,13 +1138,13 @@ def check_dictionary_files(root, findings):
                     "Re-archive with uv run med-db-term.",
                 )
             )
-        elif not content.startswith("---"):
+        elif parse_frontmatter(content) is None:
             findings.append(
                 finding(
                     SEVERITY_WARNING,
                     CATEGORY_DICTIONARY,
                     f"{rel_dir}/source.md",
-                    "Dictionary source.md is missing YAML frontmatter (does not start with ---).",
+                    "Dictionary source.md is missing YAML frontmatter (no valid --- ... --- block).",
                     "Add frontmatter with title, english, source_type, source_ref, source_url, access_date, language, and extraction_notes.",
                 )
             )

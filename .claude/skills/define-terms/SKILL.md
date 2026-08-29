@@ -33,6 +33,9 @@ three-column glossary schema.
    archival conventions.
    - For definitions not covered by a reference work, invoke `med-researcher` (evidence-backed
    definition) or `fetch-paper` (article-length source) — these own acquisition and archival.
+   - Wikipedia (stage 5) is the exception: fetch the lead section directly with
+   `uv run med-db-term-wikipedia --title "<English title>"` — never `WebFetch`/`WebSearch`/
+   `wget`/`curl` a Wikipedia page, and do not delegate the fetch to `med-researcher`.
    - Only after the source is identified and archived may you define, correct, or translate.
 3. Prefer existing archived evidence and validated wording before drafting new wording.
 4. File mode, per referenced file:
@@ -58,12 +61,13 @@ Schema, writing rules, and validation live here. Source priority and evidence-ga
 
 ## CSV/TSV Tooling
 
-This skill edits `.csv`/`.tsv` files in place. Use CLI tools, not ad-hoc Python snippets:
+This skill edits `.csv`/`.tsv` files in place. Use the repo's bundled `csv-util`, not
+ad-hoc Python snippets:
 
-- Check availability first: `command -v mlr csvcut csvlook csvstat csvjson`.
-- Prefer `mlr` (Miller) for inspecting and transforming CSV/TSV.
-- `csvcut`, `csvlook`, `csvstat`, `csvjson` come from `csvkit` — there is no top-level
-  `csvkit` binary; call the individual tools.
+- Run as `uv run csv-util <command> ...` from the repo root.
+- Subcommands: `stats` (row/column/empty-cell counts), `check` (field-count and required
+  columns), `cut` (select columns), `head` (preview rows), `drop-empty` (remove blank
+  placeholder rows), `dedupe` (remove duplicates), `fill` (fill columns from a JSON map).
 - Re-read a table before editing it; preserve the existing delimiter; trust file state
   over memory; validate immediately after writing.
 

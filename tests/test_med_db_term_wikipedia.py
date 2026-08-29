@@ -167,4 +167,21 @@ class TestMain:
 
         monkeypatch.setattr(wikipedia, "fetch_wikipedia_summary", not_found)
         assert wikipedia.main() == 1
-        assert "no Wikipedia article" in capsys.readouterr().err
+        data = json.loads(capsys.readouterr().out)
+        assert "no Wikipedia article" in data["error"]
+
+    def test_network_error_json(self, monkeypatch, capsys):
+        monkeypatch.setattr(sys, "argv", [
+            "med-db-term-wikipedia",
+            "--title", "Some title",
+            "--format", "json",
+        ])
+
+        def boom(language, title, fetch_url_func=None):
+            raise OSError("connection refused")
+
+        monkeypatch.setattr(wikipedia, "fetch_wikipedia_summary", boom)
+        assert wikipedia.main() == 1
+        data = json.loads(capsys.readouterr().out)
+        assert data["title"] == "Some title"
+        assert "connection refused" in data["error"]

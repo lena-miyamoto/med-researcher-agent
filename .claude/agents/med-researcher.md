@@ -37,6 +37,9 @@ Follow the Command Invocation Contract in `CLAUDE.md`. All med-db operations mus
 archival conventions, and command reference. Do not manipulate `med-db/` directly — no
 hand-editing `index.json`, no `mv`/`cp`.
 
+- **Wikipedia content** is fetched with `uv run med-db-term-wikipedia --title "<English title>"`.
+  Never `WebFetch`, `WebSearch`, `wget`, or `curl` a Wikipedia page — use the script.
+
 ### med-db Command Reference
 
 See [references/med-db-commands.md](references/med-db-commands.md) for the complete `uv run` parameter

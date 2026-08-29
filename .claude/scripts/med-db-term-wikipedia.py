@@ -67,10 +67,11 @@ def _fetch_url_text(url, title):
 def fetch_wikipedia_summary(language, title, fetch_url_func=None):
     """Fetch and parse the Wikipedia lead summary for *title*.
 
-    Raises ``LookupError`` when the article does not exist and
-    ``urllib.error.URLError``/``OSError`` on network failures.
-    ``fetch_url_func`` allows injecting a test double; when ``None`` the
-    real network fetch is used.
+    Raises ``LookupError`` when the article does not exist,
+    ``urllib.error.HTTPError`` on other HTTP failures, and
+    ``urllib.error.URLError``/``OSError`` on network errors.  A malformed
+    response raises ``json.JSONDecodeError``.  ``fetch_url_func`` allows
+    injecting a test double; when ``None`` the real network fetch is used.
     """
     fetch_url = fetch_url_func or _fetch_url_text
     url = build_api_url(language, title)
@@ -118,11 +119,11 @@ def main():
     args = parse_args()
     try:
         result = fetch_wikipedia_summary(args.lang, args.title)
-    except LookupError as exc:
-        print(f"error: {exc}", file=sys.stderr)
-        return 1
-    except (urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
-        print(f"error: {exc}", file=sys.stderr)
+    except (LookupError, urllib.error.HTTPError, urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
+        if args.format == "json":
+            print(json.dumps({"title": args.title, "error": str(exc)}, indent=2, ensure_ascii=False))
+        else:
+            print(f"error: {exc}", file=sys.stderr)
         return 1
 
     if args.format == "json":

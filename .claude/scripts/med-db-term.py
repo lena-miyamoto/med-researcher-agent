@@ -82,8 +82,7 @@ def build_source_md(term, english, definition, source_type, source_ref, source_u
         "language": "de",
         "extraction_notes": extraction_notes,
     }
-    frontmatter = "\n".join(f"{key}: {value}" for key, value in fields.items())
-    return f"---\n{frontmatter}\n---\n\n{definition.rstrip()}\n"
+    return utils.build_frontmatter(fields) + "\n" + definition.rstrip() + "\n"
 
 
 def build_metadata(term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes):
