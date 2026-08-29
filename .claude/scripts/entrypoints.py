@@ -90,6 +90,10 @@ def csv_util():
     return _load_script("csv_util", "csv-util.py").main()
 
 
+def session_protocol():
+    return _load_script("session_protocol", "session-protocol.py").main()
+
+
 def lint_md(args=None):
     """Run pymarkdownlnt on repo markdown files.
 

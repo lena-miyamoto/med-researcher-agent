@@ -94,21 +94,48 @@ missing this in session n+20 degrade therapeutic work?" If yes, it belongs here.
 
 ### 4. Save Full Session Protocol
 
-Create `sessions/protocols/` if it does not exist. Save complete therapeutic dialogue to:
+Run the protocol extraction script from the repository root:
 
-```text
-sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md
+```bash
+uv run session-protocol --slug <client-slug> --session-number <session-no> --date <YYYY-MM-DD>
 ```
 
-Format:
+- `<session-no>`: session number computed at Input (previous `sessions` count + 1).
+- `<YYYY-MM-DD>`: today's date.
+
+The script reads client name and language from `sessions/<client-slug>.md` frontmatter, locates the
+session transcript automatically (newest JSONL under `~/.claude/projects/` containing both the
+`SESSION_ENDED` marker and the `end-therapy-session` Skill call), and writes
+`sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` (directory created if needed).
+
+**Verify the written protocol:**
+
+1. Read `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md`.
+2. Heading is `# S<session-no>: <YYYY-MM-DD> — <Client Name>`; `**Session language:**` matches frontmatter.
+3. First turn is the therapist opening; last therapist turn is the closing message.
+4. No `SESSION_ENDED` marker, tool calls, skill instructions, or intake/consent text anywhere.
+5. Speaker labels correct and alternating: **Therapeutin:** / **Client:** (DE), **Therapist:** / **Client:** (EN).
+6. Turn count (printed by the script) plausible vs. the session as you witnessed it.
+7. Spot-check verbatim: 2–3 client messages and 2–3 therapist messages — compare against the
+   conversation in context; fix any mismatch directly in the file (never regenerate the whole
+   protocol token-by-token).
+
+Script fails (non-zero exit) → manual fallback: construct the protocol yourself from the
+conversation in context with the same format:
 
 - Heading: `# S<session-no>: <YYYY-MM-DD> — <Client Name>`
 - `**Session language:** <de|en|...>`
 - Bold speaker labels: **Therapeutin:** / **Client:** (DE) or **Therapist:** / **Client:** (EN)
 - Separate turns with blank lines
 - Capture every client response and every therapist message verbatim
-- Exclude skill orchestrator output (intake questions, informed consent delivery, crisis screen, research dispatches,
-  meta-commentary)
+- Exclude skill orchestrator output (intake questions, informed consent delivery, crisis screen,
+  research dispatches, meta-commentary)
+
+If the script selected the wrong transcript (rare), re-run with the explicit file:
+
+```bash
+uv run session-protocol --slug <client-slug> --session-number <session-no> --date <YYYY-MM-DD> --session-file <path-to-jsonl>
+```
 
 Protocol files NOT auto-read at session start. Exist for client reference and explicit lookback only.
 
@@ -314,7 +341,9 @@ All checks run in Step 5b. Summarizes what was verified for traceability.
 6. Compressed session log entries have non-empty bodies (Check 5)
 7. Permanent Client Profile untouched except for intentional Step 3 additions (Check 6)
 8. Session count in frontmatter matches actual session entries in file (Check 7)
-9. Full session protocol saved with correct filename format and speaker labels (Step 4)
+9. Full session protocol saved via `uv run session-protocol`; filename format and speaker labels
+   correct; protocol verified (start/end turns, no marker or tool text, verbatim spot checks,
+   turn count) (Step 4)
 10. Backup file deleted after successful verification (Step 5b-C)
 11. Closing statement delivered as statement, not question; no therapeutic re-engagement after closing (Step 6)
 12. If verification failed: session file restored from backup, failure reported to orchestrator, no closing

@@ -30,3 +30,4 @@ def pytest_configure():
     _load_module("med_db_term_mesh", "med-db-term-mesh.py")
     _load_module("check_retraction", "check-retraction.py")
     _load_module("csv_util", "csv-util.py")
+    _load_module("session_protocol", "session-protocol.py")

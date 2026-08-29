@@ -82,6 +82,7 @@
       "^uv run med-db-term-mesh(\\s|$)",
       "^uv run check-retraction(\\s|$)",
       "^uv run csv-util(\\s|$)",
+      "^uv run session-protocol(\\s|$)",
       "^uv run lint-md(\\s|$)",
       "^uv run test(\\s|$)",
       "^python3? -m json.tool(\\s|$)",

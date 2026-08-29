@@ -56,6 +56,12 @@ CSV/TSV work (glossary CSVs, archive tables) is handled by the repo's bundled
 `csv-util` (`uv run csv-util stats|check|cut|head|drop-empty|dedupe|fill`).
 No external install required.
 
+## Session protocol extraction
+
+Therapy-session protocols are extracted from Claude Code JSONL transcripts by the bundled
+`session-protocol` tool (`uv run session-protocol --slug <slug> --session-number <N> --date <YYYY-MM-DD>`),
+invoked automatically by the `end-therapy-session` skill. No manual use required.
+
 ## Usage
 
 All tools are invoked via `uv run <entry-point>` from the repo root.
