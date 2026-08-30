@@ -1,8 +1,9 @@
-"""Tests for session-protocol.py — the therapy-session transcript extractor."""
+"""Tests for session-protocol.py — the session transcript extractor."""
 
 import json
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -37,9 +38,9 @@ def assistant_entry(*blocks):
     return {"type": "assistant", "message": {"role": "assistant", "content": list(blocks)}}
 
 
-def handoff_entry():
+def handoff_entry(handoff_agent="psychotherapist"):
     return assistant_entry(
-        tool_use_block("Agent", {"subagent_type": "psychotherapist", "description": "handoff"})
+        tool_use_block("Agent", {"subagent_type": handoff_agent, "description": "handoff"})
     )
 
 
@@ -47,8 +48,8 @@ def session_end_entry(closing="Closing words."):
     return assistant_entry(text_block(f"{closing}\n\n{SESSION_ENDED}"))
 
 
-def end_skill_entry():
-    return assistant_entry(tool_use_block("Skill", {"skill": "end-therapy-session", "args": "lena"}))
+def end_skill_entry(skill="end-therapy-session"):
+    return assistant_entry(tool_use_block("Skill", {"skill": skill, "args": "lena"}))
 
 
 def write_jsonl(path, entries):
@@ -77,15 +78,23 @@ def set_mtime(path, timestamp):
     return path
 
 
-def make_transcript(directory, name, closing="Bye.", mtime=None, with_skill_call=True):
+def make_transcript(
+    directory,
+    name,
+    closing="Bye.",
+    mtime=None,
+    with_skill_call=True,
+    handoff_agent="psychotherapist",
+    end_skill="end-therapy-session",
+):
     entries = [
-        handoff_entry(),
+        handoff_entry(handoff_agent),
         assistant_entry(text_block("Hi.")),
         user_entry(text_block("Hello.")),
         session_end_entry(closing),
     ]
     if with_skill_call:
-        entries.append(end_skill_entry())
+        entries.append(end_skill_entry(end_skill))
     path = directory / name
     write_jsonl(path, entries)
     if mtime is not None:
@@ -113,6 +122,43 @@ class TestEncodeProjectDirectory:
 
     def test_multi_segment(self):
         assert sp.encode_project_directory("/media/data/repo") == "-media-data-repo"
+
+
+# ---------------------------------------------------------------------------
+# Session kinds
+# ---------------------------------------------------------------------------
+
+
+class TestSessionKindConfig:
+    def test_therapy_config(self):
+        config = sp.session_kind_config("therapy")
+        assert config["handoff_agent"] == "psychotherapist"
+        assert config["end_skill"] == "end-therapy-session"
+        assert config["speaker_label_de"] == "Therapeutin"
+        assert config["speaker_label_en"] == "Therapist"
+        assert config["session_subdirectory"] is None
+
+    def test_voice_config(self):
+        config = sp.session_kind_config("voice")
+        assert config["handoff_agent"] == "voice-trainer"
+        assert config["end_skill"] == "end-voice-training"
+        assert config["speaker_label_de"] == "Trainerin"
+        assert config["speaker_label_en"] == "Trainer"
+        assert config["session_subdirectory"] == "voice"
+
+    def test_unknown_kind_raises(self):
+        with pytest.raises(ValueError):
+            sp.session_kind_config("bogus")
+
+
+class TestHistoryDirectory:
+    def test_therapy_uses_sessions_directory(self):
+        config = sp.session_kind_config("therapy")
+        assert sp.history_directory("/repo/sessions", config) == Path("/repo/sessions")
+
+    def test_voice_appends_subdirectory(self):
+        config = sp.session_kind_config("voice")
+        assert sp.history_directory("/repo/sessions", config) == Path("/repo/sessions") / "voice"
 
 
 # ---------------------------------------------------------------------------
@@ -157,25 +203,40 @@ class TestIsSessionEndEntry:
 
 class TestHasEndSkillCall:
     def test_end_skill(self):
-        assert sp.has_end_skill_call(end_skill_entry()) is True
+        assert sp.has_end_skill_call(end_skill_entry(), "end-therapy-session") is True
+
+    def test_voice_end_skill(self):
+        entry = end_skill_entry("end-voice-training")
+        assert sp.has_end_skill_call(entry, "end-voice-training") is True
+
+    def test_therapy_skill_not_voice_kind(self):
+        assert sp.has_end_skill_call(end_skill_entry(), "end-voice-training") is False
 
     def test_other_skill(self):
-        assert sp.has_end_skill_call(assistant_entry(tool_use_block("Skill", {"skill": "med-db"}))) is False
+        entry = assistant_entry(tool_use_block("Skill", {"skill": "med-db"}))
+        assert sp.has_end_skill_call(entry, "end-therapy-session") is False
 
     def test_agent_tool_use(self):
-        assert sp.has_end_skill_call(handoff_entry()) is False
+        assert sp.has_end_skill_call(handoff_entry(), "end-therapy-session") is False
 
 
 class TestIsHandoffEntry:
     def test_psychotherapist(self):
-        assert sp.is_handoff_entry(handoff_entry()) is True
+        assert sp.is_handoff_entry(handoff_entry(), "psychotherapist") is True
+
+    def test_voice_trainer(self):
+        entry = assistant_entry(tool_use_block("Agent", {"subagent_type": "voice-trainer"}))
+        assert sp.is_handoff_entry(entry, "voice-trainer") is True
+
+    def test_psychotherapist_not_voice_kind(self):
+        assert sp.is_handoff_entry(handoff_entry(), "voice-trainer") is False
 
     def test_med_researcher(self):
         entry = assistant_entry(tool_use_block("Agent", {"subagent_type": "med-researcher"}))
-        assert sp.is_handoff_entry(entry) is False
+        assert sp.is_handoff_entry(entry, "psychotherapist") is False
 
     def test_user_entry(self):
-        assert sp.is_handoff_entry(user_entry(text_block("hello"))) is False
+        assert sp.is_handoff_entry(user_entry(text_block("hello")), "psychotherapist") is False
 
 
 class TestIsNoiseUserEntry:
@@ -231,7 +292,7 @@ class TestExtractTurns:
             user_entry(text_block("Okay.")),
             session_end_entry("Goodbye."),
         ]
-        assert sp.extract_turns(entries, "test.jsonl") == [
+        assert sp.extract_turns(entries, "test.jsonl", "psychotherapist") == [
             ("therapist", "Welcome."),
             ("client", "Hello, I feel bad."),
             ("therapist", "Tell me more."),
@@ -239,13 +300,38 @@ class TestExtractTurns:
             ("therapist", "Goodbye."),
         ]
 
+    def test_voice_handoff_anchor(self):
+        entries = [
+            handoff_entry("voice-trainer"),
+            assistant_entry(text_block("Let's warm up.")),
+            user_entry(text_block("Okay.")),
+            session_end_entry("Goodbye."),
+        ]
+        assert sp.extract_turns(entries, "test.jsonl", "voice-trainer") == [
+            ("therapist", "Let's warm up."),
+            ("client", "Okay."),
+            ("therapist", "Goodbye."),
+        ]
+
+    def test_voice_turns_reject_therapy_handoff(self):
+        entries = [
+            handoff_entry(),
+            assistant_entry(text_block("Hi.")),
+            session_end_entry("Bye."),
+        ]
+        with pytest.raises(ValueError):
+            sp.extract_turns(entries, "test.jsonl", "voice-trainer")
+
     def test_multi_block_join(self):
         entries = [
             handoff_entry(),
             assistant_entry(text_block("Part one."), text_block("Part two.")),
             session_end_entry("Bye."),
         ]
-        assert sp.extract_turns(entries, "test.jsonl")[0] == ("therapist", "Part one.\n\nPart two.")
+        assert sp.extract_turns(entries, "test.jsonl", "psychotherapist")[0] == (
+            "therapist",
+            "Part one.\n\nPart two.",
+        )
 
     def test_noise_skipped(self):
         entries = [
@@ -257,7 +343,7 @@ class TestExtractTurns:
             assistant_entry(thinking_block("thinking only")),
             session_end_entry("Bye."),
         ]
-        assert sp.extract_turns(entries, "test.jsonl") == [
+        assert sp.extract_turns(entries, "test.jsonl", "psychotherapist") == [
             ("therapist", "Hi."),
             ("client", "Real client words."),
             ("therapist", "Bye."),
@@ -269,22 +355,22 @@ class TestExtractTurns:
             handoff_entry(),
             session_end_entry("Bye."),
         ]
-        assert sp.extract_turns(entries, "test.jsonl") == [("therapist", "Bye.")]
+        assert sp.extract_turns(entries, "test.jsonl", "psychotherapist") == [("therapist", "Bye.")]
 
     def test_no_handoff(self):
         entries = [assistant_entry(text_block("hi")), session_end_entry("bye")]
         with pytest.raises(ValueError):
-            sp.extract_turns(entries, "test.jsonl")
+            sp.extract_turns(entries, "test.jsonl", "psychotherapist")
 
     def test_no_end(self):
         entries = [handoff_entry(), assistant_entry(text_block("hi"))]
         with pytest.raises(ValueError):
-            sp.extract_turns(entries, "test.jsonl")
+            sp.extract_turns(entries, "test.jsonl", "psychotherapist")
 
     def test_end_before_handoff(self):
         entries = [session_end_entry("bye"), handoff_entry()]
         with pytest.raises(ValueError):
-            sp.extract_turns(entries, "test.jsonl")
+            sp.extract_turns(entries, "test.jsonl", "psychotherapist")
 
     def test_empty_dialogue(self):
         entries = [
@@ -293,7 +379,7 @@ class TestExtractTurns:
             assistant_entry(text_block(SESSION_ENDED)),
         ]
         with pytest.raises(ValueError):
-            sp.extract_turns(entries, "test.jsonl")
+            sp.extract_turns(entries, "test.jsonl", "psychotherapist")
 
 
 # ---------------------------------------------------------------------------
@@ -349,18 +435,33 @@ class TestRenderProtocol:
             "\n"
             "Guten Tag.\n"
         )
-        assert sp.render_protocol(turns, "Lena", "de", 22, "2026-08-29") == expected
+        assert (
+            sp.render_protocol(turns, "Lena", "de", 22, "2026-08-29", "Therapeutin", "Therapist")
+            == expected
+        )
 
     def test_en_therapist_label(self):
         turns = [("therapist", "Hello.")]
-        result = sp.render_protocol(turns, "Lena", "en", 1, "2026-01-01")
+        result = sp.render_protocol(turns, "Lena", "en", 1, "2026-01-01", "Therapeutin", "Therapist")
         assert "**Therapist:**" in result
         assert "**Therapeutin:**" not in result
 
     def test_language_case_insensitive(self):
         turns = [("therapist", "Hallo.")]
-        result = sp.render_protocol(turns, "Lena", "DE", 1, "2026-01-01")
+        result = sp.render_protocol(turns, "Lena", "DE", 1, "2026-01-01", "Therapeutin", "Therapist")
         assert "**Therapeutin:**" in result
+
+    def test_voice_de_label(self):
+        turns = [("therapist", "Hallo."), ("client", "Hallo!")]
+        result = sp.render_protocol(turns, "Lena", "de", 1, "2026-01-01", "Trainerin", "Trainer")
+        assert "**Trainerin:**" in result
+        assert "**Therapeutin:**" not in result
+
+    def test_voice_en_label(self):
+        turns = [("therapist", "Hello.")]
+        result = sp.render_protocol(turns, "Lena", "en", 1, "2026-01-01", "Trainerin", "Trainer")
+        assert "**Trainer:**" in result
+        assert "**Therapist:**" not in result
 
 
 # ---------------------------------------------------------------------------
@@ -379,11 +480,11 @@ class TestSelectSessionFile:
         make_transcript(primary, "a.jsonl", mtime=100)
         override = tmp_path / "override.jsonl"
         write_jsonl(override, [handoff_entry(), session_end_entry("x"), end_skill_entry()])
-        assert sp.select_session_file(projects, str(override)) == override
+        assert sp.select_session_file(projects, str(override), "end-therapy-session") == override
 
     def test_override_must_exist(self, tmp_path):
         with pytest.raises(ValueError):
-            sp.select_session_file(tmp_path, str(tmp_path / "missing.jsonl"))
+            sp.select_session_file(tmp_path, str(tmp_path / "missing.jsonl"), "end-therapy-session")
 
     def test_primary_beats_fallback(self, tmp_path):
         projects = tmp_path / "projects"
@@ -393,7 +494,7 @@ class TestSelectSessionFile:
         other.mkdir(parents=True)
         primary_file = make_transcript(primary, "primary.jsonl", mtime=10)
         make_transcript(other, "fallback.jsonl", mtime=100)
-        assert sp.select_session_file(projects, None) == primary_file
+        assert sp.select_session_file(projects, None, "end-therapy-session") == primary_file
 
     def test_newest_within_primary(self, tmp_path):
         projects = tmp_path / "projects"
@@ -401,7 +502,7 @@ class TestSelectSessionFile:
         primary.mkdir(parents=True)
         make_transcript(primary, "old.jsonl", mtime=10)
         newest = make_transcript(primary, "new.jsonl", mtime=100)
-        assert sp.select_session_file(projects, None) == newest
+        assert sp.select_session_file(projects, None, "end-therapy-session") == newest
 
     def test_fallback_used_when_primary_empty(self, tmp_path):
         projects = tmp_path / "projects"
@@ -409,7 +510,7 @@ class TestSelectSessionFile:
         other = projects / "other"
         other.mkdir(parents=True)
         fallback_file = make_transcript(other, "fallback.jsonl", mtime=100)
-        assert sp.select_session_file(projects, None) == fallback_file
+        assert sp.select_session_file(projects, None, "end-therapy-session") == fallback_file
 
     def test_marker_without_skill_not_selected(self, tmp_path):
         projects = tmp_path / "projects"
@@ -417,13 +518,29 @@ class TestSelectSessionFile:
         primary.mkdir(parents=True)
         make_transcript(primary, "quote.jsonl", with_skill_call=False)
         with pytest.raises(ValueError):
-            sp.select_session_file(projects, None)
+            sp.select_session_file(projects, None, "end-therapy-session")
+
+    def test_voice_kind_requires_voice_end_skill(self, tmp_path):
+        projects = tmp_path / "projects"
+        primary = self._primary_directory(projects)
+        primary.mkdir(parents=True)
+        make_transcript(primary, "therapy.jsonl", mtime=100)
+        with pytest.raises(ValueError):
+            sp.select_session_file(projects, None, "end-voice-training")
+        make_transcript(
+            primary,
+            "voice.jsonl",
+            mtime=200,
+            handoff_agent="voice-trainer",
+            end_skill="end-voice-training",
+        )
+        assert sp.select_session_file(projects, None, "end-voice-training") == primary / "voice.jsonl"
 
     def test_no_match_raises(self, tmp_path):
         projects = tmp_path / "projects"
         self._primary_directory(projects).mkdir(parents=True)
         with pytest.raises(ValueError):
-            sp.select_session_file(projects, None)
+            sp.select_session_file(projects, None, "end-therapy-session")
 
 
 # ---------------------------------------------------------------------------
@@ -481,6 +598,30 @@ class TestCLI:
         content = (sessions / "protocols" / "2026-01-01_S1_lena.md").read_text(encoding="utf-8")
         assert "**Therapist:**" in content
 
+    def test_voice_kind_end_to_end(self, tmp_path, capsys):
+        projects = tmp_path / "projects"
+        sessions = tmp_path / "sessions"
+        (sessions / "voice").mkdir(parents=True)
+        write_history(sessions / "voice" / "lena.md", client="Lena", language="de")
+        primary = projects / sp.encode_project_directory(utils.REPO_ROOT)
+        primary.mkdir(parents=True)
+        make_transcript(
+            primary,
+            "voice-session.jsonl",
+            mtime=100,
+            handoff_agent="voice-trainer",
+            end_skill="end-voice-training",
+        )
+        assert run_main(self._args(projects, sessions, **{"--session-kind": "voice"})) == 0
+        out = capsys.readouterr().out
+        assert "protocol:" in out
+        output = sessions / "voice" / "protocols" / "2026-08-29_S22_lena.md"
+        assert output.is_file()
+        content = output.read_text(encoding="utf-8")
+        assert content.startswith("# S22: 2026-08-29 — Lena\n")
+        assert "**Trainerin:**" in content
+        assert "**Therapeutin:**" not in content
+
     def test_session_file_flag(self, tmp_path, capsys):
         projects, sessions = self._setup(tmp_path)
         explicit = tmp_path / "explicit.jsonl"
@@ -519,6 +660,10 @@ class TestCLI:
 
     def test_error_bad_slug(self, tmp_path, capsys):
         assert run_main(self._args(tmp_path / "p", tmp_path / "s", **{"--slug": "../lena"})) == 1
+        assert "error:" in capsys.readouterr().err
+
+    def test_error_invalid_session_kind(self, tmp_path, capsys):
+        assert run_main(self._args(tmp_path / "p", tmp_path / "s", **{"--session-kind": "bogus"})) == 1
         assert "error:" in capsys.readouterr().err
 
     def test_error_no_combo_found(self, tmp_path, capsys):

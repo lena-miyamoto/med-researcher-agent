@@ -42,7 +42,9 @@
       "^create-med-skill$",
       "^create-workout-routine$",
       "^start-therapy-session$",
+      "^start-voice-training$",
       "^end-therapy-session$",
+      "^end-voice-training$",
       "^optimize-repo$",
       "^med-db$",
       "^define-terms$"

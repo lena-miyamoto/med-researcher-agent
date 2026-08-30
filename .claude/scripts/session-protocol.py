@@ -1,9 +1,12 @@
-"""Extract a therapy-session protocol from a Claude Code JSONL transcript.
+"""Extract a session protocol from a Claude Code JSONL transcript.
 
-Reads the client name and language from ``sessions/<slug>.md`` frontmatter,
-locates the session transcript (newest ``*.jsonl`` under the project directory
-containing both the ``SESSION_ENDED`` marker and the ``end-therapy-session``
+Reads the client name and language from the history file frontmatter, locates
+the session transcript (newest ``*.jsonl`` under the project directory
+containing both the ``SESSION_ENDED`` marker and the matching end-session
 Skill call), and writes a clean speaker-labelled protocol.
+
+``--session-kind`` selects the session contract (handoff agent, end skill,
+speaker labels, history subdirectory): ``therapy`` (default) or ``voice``.
 
 Run as ``uv run session-protocol --slug <slug> --session-number <N> --date <YYYY-MM-DD>``
 from the repo root.
@@ -28,6 +31,39 @@ NOISE_PREFIXES = (
     "<system-reminder",
     "This session is being continued from a previous conversation",
 )
+
+
+# ---------------------------------------------------------------------------
+# Session kinds
+# ---------------------------------------------------------------------------
+
+
+SESSION_KINDS = {
+    "therapy": {
+        "handoff_agent": "psychotherapist",
+        "end_skill": "end-therapy-session",
+        "speaker_label_de": "Therapeutin",
+        "speaker_label_en": "Therapist",
+        "session_subdirectory": None,
+    },
+    "voice": {
+        "handoff_agent": "voice-trainer",
+        "end_skill": "end-voice-training",
+        "speaker_label_de": "Trainerin",
+        "speaker_label_en": "Trainer",
+        "session_subdirectory": "voice",
+    },
+}
+
+
+def session_kind_config(kind):
+    """Return the per-kind session contract for *kind*, or raise ValueError."""
+    try:
+        return SESSION_KINDS[kind]
+    except KeyError:
+        raise ValueError(
+            f"unknown session kind {kind!r}; expected one of {', '.join(sorted(SESSION_KINDS))}"
+        ) from None
 
 
 # ---------------------------------------------------------------------------
@@ -81,12 +117,12 @@ def _tool_input(block, key):
     return value.get(key)
 
 
-def is_handoff_entry(entry):
-    """Return True when *entry* dispatches the psychotherapist subagent."""
+def is_handoff_entry(entry, handoff_agent):
+    """Return True when *entry* dispatches the *handoff_agent* subagent."""
     if entry.get("type") != "assistant":
         return False
     for block in tool_use_blocks(entry):
-        if block.get("name") == "Agent" and _tool_input(block, "subagent_type") == "psychotherapist":
+        if block.get("name") == "Agent" and _tool_input(block, "subagent_type") == handoff_agent:
             return True
     return False
 
@@ -103,10 +139,10 @@ def is_session_end_entry(entry):
     return False
 
 
-def has_end_skill_call(entry):
-    """Return True when *entry* invokes the ``end-therapy-session`` skill."""
+def has_end_skill_call(entry, end_skill):
+    """Return True when *entry* invokes the *end_skill* skill."""
     for block in tool_use_blocks(entry):
-        if block.get("name") == "Skill" and _tool_input(block, "skill") == "end-therapy-session":
+        if block.get("name") == "Skill" and _tool_input(block, "skill") == end_skill:
             return True
     return False
 
@@ -128,8 +164,8 @@ def is_noise_user_entry(entry):
 # ---------------------------------------------------------------------------
 
 
-def has_session_end_entry(path):
-    """Return True when *path* contains a session end marker and a skill call.
+def has_session_end_entry(path, end_skill):
+    """Return True when *path* contains a session end marker and an *end_skill* call.
 
     Unparseable lines are skipped — this is a lenient search, not a parse.
     """
@@ -144,7 +180,7 @@ def has_session_end_entry(path):
             continue
         if is_session_end_entry(entry):
             found_marker = True
-        if has_end_skill_call(entry):
+        if has_end_skill_call(entry, end_skill):
             found_skill = True
         if found_marker and found_skill:
             return True
@@ -182,10 +218,10 @@ def parse_jsonl_lines(path):
 # ---------------------------------------------------------------------------
 
 
-def find_handoff_index(entries):
-    """Return the index of the first psychotherapist handoff, or None."""
+def find_handoff_index(entries, handoff_agent):
+    """Return the index of the first *handoff_agent* handoff, or None."""
     for index, entry in enumerate(entries):
-        if is_handoff_entry(entry):
+        if is_handoff_entry(entry, handoff_agent):
             return index
     return None
 
@@ -235,17 +271,17 @@ def strip_marker(texts):
 # ---------------------------------------------------------------------------
 
 
-def extract_turns(entries, session_file):
+def extract_turns(entries, session_file, handoff_agent):
     """Return the dialogue between handoff and session end as ``(speaker, text)``.
 
-    Client turns come from non-noise user text entries; therapist turns from
+    Client turns come from non-noise user text entries; assistant turns from
     assistant text entries. Every other entry type and non-text block is ignored.
     Raises ``ValueError`` when the anchors are missing, out of order, or enclose
     no dialogue.
     """
-    handoff_index = find_handoff_index(entries)
+    handoff_index = find_handoff_index(entries, handoff_agent)
     if handoff_index is None:
-        raise ValueError(f"no therapist handoff found in {session_file}")
+        raise ValueError(f"no handoff to {handoff_agent} found in {session_file}")
 
     end_index = find_session_end_index(entries)
     if end_index is None:
@@ -281,7 +317,15 @@ def extract_turns(entries, session_file):
 # ---------------------------------------------------------------------------
 
 
-def render_protocol(turns, client_name, language, session_number, date_string):
+def render_protocol(
+    turns,
+    client_name,
+    language,
+    session_number,
+    date_string,
+    speaker_label_de,
+    speaker_label_en,
+):
     """Render *turns* as a protocol document, byte-exact against existing files."""
     parts = [
         f"# S{session_number}: {date_string} — {client_name}",
@@ -293,7 +337,7 @@ def render_protocol(turns, client_name, language, session_number, date_string):
         if speaker == "client":
             label = "Client"
         else:
-            label = "Therapeutin" if language.lower() == "de" else "Therapist"
+            label = speaker_label_de if language.lower() == "de" else speaker_label_en
         parts.append(f"**{label}:**")
         parts.append("")
         parts.append(text)
@@ -311,19 +355,19 @@ def encode_project_directory(root):
     return str(root).replace("/", "-")
 
 
-def _newest_matching_file(directory):
+def _newest_matching_file(directory, end_skill):
     """Return the newest ``*.jsonl`` with a session end in *directory*, or None."""
     if not directory.is_dir():
         return None
     files = sorted(directory.glob("*.jsonl"), key=lambda path: path.stat().st_mtime, reverse=True)
     for path in files:
-        if has_session_end_entry(path):
+        if has_session_end_entry(path, end_skill):
             return path
     return None
 
 
-def select_session_file(projects_directory, session_file_override):
-    """Select the session transcript JSONL.
+def select_session_file(projects_directory, session_file_override, end_skill):
+    """Select the session transcript JSONL for the *end_skill* contract.
 
     An explicit override wins (must exist). Otherwise the primary project
     directory (encoded from the repo root) is scanned first; the newest matching
@@ -339,7 +383,7 @@ def select_session_file(projects_directory, session_file_override):
     projects_directory = Path(projects_directory)
     primary_directory = projects_directory / encode_project_directory(utils.REPO_ROOT)
 
-    primary_match = _newest_matching_file(primary_directory)
+    primary_match = _newest_matching_file(primary_directory, end_skill)
     if primary_match is not None:
         return primary_match
 
@@ -347,7 +391,7 @@ def select_session_file(projects_directory, session_file_override):
     for directory in projects_directory.iterdir():
         if not directory.is_dir() or directory == primary_directory:
             continue
-        match = _newest_matching_file(directory)
+        match = _newest_matching_file(directory, end_skill)
         if match is not None:
             fallback_matches.append(match)
     if fallback_matches:
@@ -356,6 +400,19 @@ def select_session_file(projects_directory, session_file_override):
     raise ValueError(
         "no session transcript found; pass --session-file explicitly"
     )
+
+
+def history_directory(sessions_directory, kind_config):
+    """Return the history file directory for the session kind.
+
+    Kinds with a ``session_subdirectory`` keep their history files in that
+    subdirectory (e.g. ``sessions/voice``); otherwise the sessions directory
+    itself is used.
+    """
+    subdirectory = kind_config["session_subdirectory"]
+    if subdirectory is None:
+        return Path(sessions_directory)
+    return Path(sessions_directory) / subdirectory
 
 
 # ---------------------------------------------------------------------------
@@ -384,7 +441,8 @@ def load_history_context(history_path):
 
 
 def validate_args(args):
-    """Validate slug, session number, and date, raising ``ValueError``."""
+    """Validate kind, slug, session number, and date, raising ``ValueError``."""
+    session_kind_config(args.session_kind)
     if args.session_number < 1:
         raise ValueError(f"session number must be >= 1, got {args.session_number}")
     if not SLUG_PATTERN.match(args.slug):
@@ -396,7 +454,7 @@ def validate_args(args):
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="session-protocol",
-        description="Extract a therapy-session protocol from a Claude Code JSONL transcript.",
+        description="Extract a session protocol from a Claude Code JSONL transcript.",
     )
     parser.add_argument("--slug", required=True, help="Client slug, e.g. 'lena'.")
     parser.add_argument("--session-number", type=int, required=True, help="Session number (>= 1).")
@@ -412,6 +470,11 @@ def build_parser():
         default=str(utils.REPO_ROOT / "sessions"),
         help="Directory holding history files and protocols.",
     )
+    parser.add_argument(
+        "--session-kind",
+        default="therapy",
+        help="Session kind: 'therapy' or 'voice' (default: therapy).",
+    )
     parser.add_argument("--output", default=None, help="Output protocol path override.")
     return parser
 
@@ -423,13 +486,16 @@ def parse_args():
 def _run(args):
     validate_args(args)
 
-    sessions_directory = Path(args.sessions_directory)
+    kind_config = session_kind_config(args.session_kind)
+    sessions_directory = history_directory(args.sessions_directory, kind_config)
     projects_directory = Path(args.projects_directory)
 
     context = load_history_context(sessions_directory / f"{args.slug}.md")
-    session_file = select_session_file(projects_directory, args.session_file)
+    session_file = select_session_file(
+        projects_directory, args.session_file, kind_config["end_skill"]
+    )
     entries = parse_jsonl_lines(session_file)
-    turns = extract_turns(entries, str(session_file))
+    turns = extract_turns(entries, str(session_file), kind_config["handoff_agent"])
 
     if args.output:
         output = Path(args.output)
@@ -441,7 +507,13 @@ def _run(args):
         )
 
     rendered = render_protocol(
-        turns, context["client"], context["language"], args.session_number, args.date
+        turns,
+        context["client"],
+        context["language"],
+        args.session_number,
+        args.date,
+        kind_config["speaker_label_de"],
+        kind_config["speaker_label_en"],
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     utils.atomic_write(output, rendered)
