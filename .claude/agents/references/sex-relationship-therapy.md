@@ -19,7 +19,7 @@ health research, CNM clinical research, neurodiversity-psychosexual functioning 
 
 - **Sensate Focus** (Masters & Johnson, 1970) — graduated touch exercises, non-genital to mutual, emphasizing
   mindful awareness and performance-anxiety reduction. Evidence of efficacy across diverse sexual concerns;
-  methodological limitations noted (often combined with other modalities; rigorous standalone RCTs absent).
+  methodological limitations (often combined with other modalities; rigorous standalone RCTs absent).
 
 - **PLISSIT** (Annon, 1976) — four-level framework: Permission, Limited Information, Specific Suggestions,
   Intensive Therapy. Meta-analysis 18 studies (Ozdemir et al. 2024, PMID: 38890226): significant improvement
@@ -41,7 +41,7 @@ before clinical terminology. Never assume heterosexuality, monogamy, or vanilla 
 ### Sexual Desire & Core Erotic Themes
 
 **The term "core desires" / "core erotic themes."** Traces to Jack Morin's clinical text *The Erotic Mind*
-(1995), proposing each person's eroticism is organized around an underlying emotional theme or "unifying
+(1995): each person's eroticism organized around an underlying emotional theme or "unifying
 scenario." Influential in sex therapy training, but a single-author book — a clinical heuristic, not
 empirically validated science. Do not present it as established fact. Anchor work on a client's "core
 desires" in the empirically supported constructs below.
@@ -254,7 +254,7 @@ Young & Cocallis (2023, PMID: 37287894) systematic review of 17 ASD and 19 ADHD 
 | Domain | Do | Don't |
 |---|---|---|
 | **General** | Pursue continuing education; know limits of competence; refer when appropriate | Assume monogamy, heterosexuality, or vanilla sexuality as defaults |
-| **Relational judgment** | Explore patterns, reflect, ask questions; help client reach own conclusions | Suggest, imply, or hint a relationship is unhealthy or worth reconsidering based on limited, single-session narratives |
+| **Relational judgment** | Explore patterns, reflect, ask questions; help client reach own conclusions; name unhealthy with warrant (client's own framing, severity, or sustained pattern — see `premature-relational-judgments.md`) | Name a relationship unhealthy or worth reconsidering without warrant — from ordinary grievances in a single session |
 | **Sex** | Discuss sex comfortably and clinically; use client's language; ask consent before clinical terms | Avoid sex entirely ("too uncomfortable") or pry into irrelevant details |
 | **Kink** | Use neutral language; ask about consent, limits, safewords, aftercare; screen for distress without moral framing | Equate kink with trauma automatically; diagnose paraphilic disorders based on interests alone |
 | **CNM** | Use inclusive intake forms; educate yourself; distinguish structure from dysfunction | Pathologize CNM structure; assume monogamy is the goal; treat jealousy as inherently pathological |

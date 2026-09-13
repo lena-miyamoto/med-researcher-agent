@@ -21,7 +21,7 @@ _The Journal of Sexual Medicine_, 23(Supplement_4), qdag118.227. DOI: 10.1093/js
 (conference abstract; full revised text pending open-access release).
 
 **Status:** Expert consensus guidelines — recommendations, not mandatory standards of care. Only
-comprehensive clinical practice guidelines for this population; represent the consensus standard in the
+comprehensive clinical practice guidelines for this population; the consensus standard in the
 field. Developed by a multidisciplinary team of 20 clinicians and researchers across psychology, social
 work, sex therapy, and medicine, with community stakeholder review.
 
@@ -482,8 +482,8 @@ disorder; kink intersecting with gender, neurodivergence, or trauma.
 - **`gender-affirming-care.md`** — load jointly when kink intersects with gender exploration or client is
   trans/NB and kink-involved (elevated prevalence).
 - **`neurodevelopmental-specialization.md`** + **`neurodevelopmental-practice-guide.md`** — load jointly with these files when client is neurodivergent and kink-involved. Provides session adaptation guidance (RSD-aware relational work, sensory needs, AuDHD-specific dynamics) directly applicable to kink-involved ND clients.
-- **`premature-relational-judgments.md`** — the four-threshold rule applies equally to kink, CNM, and Leather
-  family dynamics. Power differentials in D/s or M/s do not suspend this prohibition.
+- **`premature-relational-judgments.md`** — the warrant rule applies equally to kink, CNM, and Leather
+  family dynamics. Power differentials in D/s or M/s do not suspend it.
 
 ---
 

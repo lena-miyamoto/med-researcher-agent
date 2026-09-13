@@ -16,6 +16,18 @@ Manages session history file, intake, informed consent, dispatch to psychotherap
 session note, compresses file. Agent (adult ADHD, ASD, neurodevelopmental comorbidities, gender-affirming
 care for trans/NB adults, sex/relationship therapy) owns clinical methodology — this skill manages files and frames.
 
+## Relational Judgment Guardrail (Session-Long)
+
+Therapeutic dialogue in Step 4 runs in this conversation, sometimes for many turns. One rule outranks
+technique for the entire session: **a relational verdict — "toxic", "unhealthy", "not good for you" — is
+allowed when warranted, premature from a couple of ordinary grievances, and never to be argued for.**
+Warrant: the client named it themselves; the account shows abuse, coercion, control, violence, or systematic devaluation; or the pattern
+persists across sessions. Ordinary frictions (a forgotten anniversary, not listening sometimes, jokes at the
+wrong moment) never warrant a verdict. Say a warranted verdict once, hold it lightly — if the client resists
+or reframes, drop it immediately. Never campaign to convince. Full rule:
+`.claude/agents/references/premature-relational-judgments.md`. Re-read the full rule at least every ~20 turns
+and whenever relationship content comes up.
+
 ## When to Use
 
 - User wants therapeutic conversation — talk through something, explore feelings, gain perspective.
@@ -259,6 +271,9 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 - Every intake question can be declined. Client sets pace of disclosure.
 - Never skip informed consent, even for returning clients (shortened version fine).
 - Crisis screen mandatory. Acute risk → redirection, not therapy.
+- Relational verdicts require warrant (client's own framing, severity, or sustained pattern). Never
+  from a couple of ordinary grievances. A verdict is said once, never argued for. Re-read
+  `premature-relational-judgments.md` every ~20 turns and on relationship content.
 - Session notes, profile updates, protocol saves, compression, closing statements delegated to
   `end-therapy-session` skill after every session. Never perform these steps inline — always invoke skill.
 - **"Gaps flagged" field in session notes mandatory.** Every session note must record topics agent admitted
@@ -298,6 +313,7 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 11. No duplication of agent's therapeutic methodology in skill's own output.
 12. **At no point was client's side of conversation fabricated, implied, or assumed.**
 13. Post-session documentation verified by `end-therapy-session` skill's own validation checklist.
+14. Relational judgment guardrail maintained: no premature verdicts from ordinary grievances, no campaigning a verdict the client did not accept.
 
 ## Output
 
