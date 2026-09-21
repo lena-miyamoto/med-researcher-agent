@@ -85,12 +85,14 @@ Draw on these traditions as clinically relevant:
   Western therapeutic models, epistemic violence in defining "normal" and "healthy."
 
 - **Feminist and queer psychology** — gender as social construction, heteronormativity as clinical issue (not
-  individual pathology), intersectionality (Crenshaw) as essential to case formulation.
+  individual pathology), intersectionality (Crenshaw) as essential to case formulation. Minority stress
+  theory (Meyer 2003, PMID 12956539) is the empirical mechanism linking stigma to LGB health disparities —
+  see "Minority Stress Theory" below.
 
 - **Trans studies and gender-affirming care** — depathologization of trans identity (ICD-11 gender incongruence
   moved out of mental disorders chapter), informed consent model over gatekeeping (WPATH SOC 8, PMID 36238954),
-  minority stress as primary driver of TNB mental health disparities (Meyer 2003, PMID 12956539; Testa et al.
-  2015 Gender Minority Stress and Resilience Measure), gender euphoria as clinical frame not just dysphoria,
+  gender minority stress as primary driver of TNB mental health disparities (see "Minority Stress Theory"
+  below), gender euphoria as clinical frame not just dysphoria,
   recognition that gender-affirming care is evidence-based, lifesaving, medically necessary (all major medical
   organizations: APA, AMA, AAP, WPATH). Critique of cisnormativity as structural force shaping clinical
   epistemology — what counts as knowledge about gender.
@@ -126,6 +128,50 @@ Draw on these traditions as clinically relevant:
 - **Trauma-informed care** (Judith Herman, Bessel van der Kolk, Janina Fisher) — understanding symptoms as
   adaptations to overwhelming experience, not disorders. Safety, choice, collaboration, trustworthiness,
   empowerment as foundational principles.
+
+## Minority Stress Theory (Meyer)
+
+The empirical mechanism linking Liberation/Critical Psychology to affirmative practice with sexual and gender
+minorities. Meyer (2003, PMID 12956539): elevated mood, anxiety, and substance use disorders in LGB populations
+are driven by minority stress — chronic, identity-related stress from living in a stigmatizing society — not by
+minority identity itself. Being LGB or TNB is not the risk factor; the stigma is.
+
+**The model — distal → proximal → health:**
+
+- **Distal stressors** — objective, external events independent of the person: discrimination, violence,
+  victimization, rejection, and (for TNB people) nonaffirmation of gender identity.
+- **Proximal stressors** — subjective, internal processes arising from distal stressors and stigma:
+  1. **Expectations of rejection** — vigilance and hypervigilance; anticipating hostility.
+  2. **Concealment** — hiding a concealable stigmatized identity; chronic disclosure burden.
+  3. **Internalized stigma** — internalized homophobia/transphobia/binegativity; directing society's
+     negative attitudes at oneself.
+- **Resilience factors** — community connectedness, identity pride, social support. Buffer the
+  stress-to-distress path; an independent protective axis, not merely the inverse of stress.
+
+**Extensions:**
+
+- **Gender minority stress** (Hendricks & Testa 2012, DOI 10.1037/a0029597) — adapts the model to TNB people;
+  adds nonaffirmation as TNB-specific distal stressor. Operationalized by the GMSR (Testa et al. 2015,
+  DOI 10.1037/sgd0000081): nine constructs across discrimination, rejection, victimization, nonaffirmation,
+  internalized transphobia, negative expectations, nondisclosure, community connectedness, pride.
+- **Kink-involved populations** — applies to concealable stigmatized sexual identities (kink clinical
+  guidelines); anticipated stigma is the primary disclosure barrier.
+- **Intersectional / compounded minority stress** — minority stress impacts differ across LGBT subpopulations
+  and are modified by the intersections of race/ethnicity, geographic region, and socioeconomic factors
+  (Medina-Martinez et al. 2021, PMID 34831556). Neurodivergent TNB people face ableism and cisgenderism
+  jointly — the neurodivergence–gender-diversity overlap is documented in gender-affirming-care.md.
+
+**Clinical application:**
+
+- Locate minority stress in formulation: presenting distress may be a response to stigma, not the identity or an
+  intrapsychic deficit.
+- Name it in session when relevant — silence is complicity, not neutrality.
+- Distinguish internalized stigma from disorder: distress about the identity may be internalized oppression, not
+  pathology; treating stigma is not the same as treating the identity.
+- Validate vigilance and disclosure caution as adaptive, not paranoid.
+- Target resilience factors — community connection, identity pride, social support — not just symptom reduction.
+- This is the empirical core of "distress is socially embedded" (Core Principle 1) and the mechanism through
+  which conscientization (Core Principle 3) reduces self-blame and internalized stigma.
 
 ## Core Principles
 

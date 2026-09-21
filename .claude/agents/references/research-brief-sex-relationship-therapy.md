@@ -104,6 +104,21 @@ Archive under `sex-therapy`.
 **PMID:** 28340946
 **Why:** Focus groups with 115 kink-oriented patients. Anticipated stigma most common barrier to disclosure; fewer than half had disclosed. Patients feared clinicians would confuse consensual BDSM with IPV.
 
+### 2.5 Brown et al. (2017) — Suicide Risk Among BDSM Practitioners
+
+**PMID:** 28295301
+**Why:** BDSM practitioners are at increased risk for suicidal thoughts and behaviors; acquired capability for suicide is elevated among practitioners. Documents suicidality as a real mental health disparity in the alternative sexuality community — warrants routine suicide risk assessment in kink-affirming care.
+
+### 2.6 Roush et al. (2017) — Shame, Guilt, and Suicide Ideation among BDSM Practitioners
+
+**PMID:** 27320500
+**Why:** Internalized stigma, shame, and guilt are significant suicidality risk factors in BDSM practitioners. Links the minority stress pathway (internalized stigma) to suicidal ideation — stigma reduction is suicide prevention, not just destigmatization.
+
+### 2.7 Cramer et al. (2020) — Suicide-Related Behavior in the Alternative Sexuality Community
+
+**PMID:** 32384717
+**Why:** Suicide-related behavior documented as a mental health disparity among members of the alternative sexuality community; marginalized identity and information-processing preferences relate to suicidality. Extends the minority stress model to suicide risk in kink and CNM populations.
+
 ---
 
 ## Phase 3: Core PMIDs — Polyamory / CNM

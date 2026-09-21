@@ -150,8 +150,10 @@ Minority Stress Theory (Meyer, 2003) applies to kink-involved populations:
 
 **Health impacts:**
 
-- Cramer et al. (2017): NCSF members 2–3× more likely at elevated suicide risk
-- Roush et al. (2017): internalized stigma, shame, guilt — significant suicidality risk factors
+- BDSM practitioners are at increased risk for suicidal thoughts and behaviors (Brown et al. 2017,
+  PMID 28295301); suicide-related behavior is a documented mental health disparity in the alternative
+  sexuality community (Cramer et al. 2020, PMID 32384717)
+- Roush et al. (2017, PMID 27320500): internalized stigma, shame, guilt — significant suicidality risk factors
 - NCSF extensively documented healthcare discrimination against kink-identified individuals
 - Anticipated stigma most common disclosure barrier — fewer than half disclosed to a provider
   (Waldura et al. 2016, PMID: 28340946)
@@ -370,9 +372,10 @@ would happen next?"
 
 ### Stigma and Minority Stress
 
-Assess: internalized stigma/shame; concealment/disclosure dynamics; elevated suicide risk (2–3× in some
-samples, stigma-driven); relationship distress from kink interest discrepancies; distinguish distress from
-kink vs. distress from societal responses to kink.
+Assess: internalized stigma/shame; concealment/disclosure dynamics; elevated suicide risk — BDSM
+practitioners at increased risk for suicidal thoughts/behaviors (Brown et al. 2017, PMID 28295301),
+shame/guilt significant suicidality risk factors (Roush et al. 2017, PMID 27320500); relationship distress
+from kink interest discrepancies; distinguish distress from kink vs. distress from societal responses to kink.
 
 ### Differential Diagnosis: Kink vs. Pathology
 
