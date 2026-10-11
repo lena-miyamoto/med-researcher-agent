@@ -122,6 +122,47 @@ def list_topics(med_db):
     return sorted(topics.values(), key=lambda t: t["topic"])
 
 
+def stats(med_db):
+    """Return overall archive statistics.
+
+    Counts mirror the index.json collection rules: one entry per search JSON,
+    per metadata.json (papers, fulltext, dictionary), per web HTML snapshot,
+    and per guideline directory containing source.md.
+    """
+    counts = {
+        "searches": 0,
+        "papers": 0,
+        "fulltext": 0,
+        "guidelines": 0,
+        "web": 0,
+        "dictionary": 0,
+    }
+
+    searches_dir = med_db / "searches"
+    if searches_dir.is_dir():
+        counts["searches"] = sum(1 for p in searches_dir.rglob("*.json") if p.is_file())
+
+    for category in ("papers", "fulltext", "dictionary"):
+        category_dir = med_db / category
+        if category_dir.is_dir():
+            counts[category] = sum(1 for p in category_dir.rglob("metadata.json") if p.is_file())
+
+    guidelines_dir = med_db / "guidelines"
+    if guidelines_dir.is_dir():
+        guideline_dirs = set()
+        for pattern in ("source.md", "source.*.md"):
+            for source_path in guidelines_dir.rglob(pattern):
+                if source_path.is_file():
+                    guideline_dirs.add(source_path.parent)
+        counts["guidelines"] = len(guideline_dirs)
+
+    web_dir = med_db / "web"
+    if web_dir.is_dir():
+        counts["web"] = sum(1 for p in web_dir.rglob("*.html") if p.is_file())
+
+    return counts
+
+
 def list_topic_papers(med_db, topic):
     """List all papers archived under a topic."""
     topic_dir = med_db / "papers" / topic
@@ -319,6 +360,60 @@ def read_paper_abstract(paper_dir):
         return f"Could not read abstract: {exc}"
 
 
+def _collect_source_files(path):
+    """Return the source files under a directory: ``source*.md`` first, then other text."""
+    source_files = sorted(path.glob("source.md")) + sorted(path.glob("source.*.md"))
+    if source_files:
+        return source_files
+    markdown_files = sorted(path.glob("*.md"))
+    if markdown_files:
+        return markdown_files
+    return sorted(path.glob("*.txt"))
+
+
+def _read_source_text(filepath, body_only=False):
+    """Read a source file, optionally stripping YAML frontmatter down to the body."""
+    try:
+        content = filepath.read_text(encoding="utf-8")
+    except OSError as exc:
+        return f"could not read {filepath}: {exc}"
+
+    if not body_only or not content.startswith("---"):
+        return content
+
+    end = content.find("---", 3)
+    if end == -1:
+        return content
+    return content[end + 3 :].lstrip("\n")
+
+
+def read_source(med_db, archive_path, body_only=False):
+    """Read the full text of an archived source file or directory.
+
+    *archive_path* is relative to the med-db root and may point to a single
+    source file (e.g. ``guidelines/adhd/source.md``) or to a directory (e.g.
+    ``guidelines/adhd-therapy``).  A directory expands to its source files; a
+    directory with exactly one source file returns the same shape as a single
+    file.  When *body_only* is true, YAML frontmatter is stripped and only body
+    text is returned — the common case for drafting summaries from evidence.
+    """
+    path = med_db / archive_path
+    if path.is_file():
+        return {"path": archive_path, "content": _read_source_text(path, body_only)}
+    if path.is_dir():
+        source_files = _collect_source_files(path)
+        if not source_files:
+            return {"error": f"no source files in: {archive_path}"}
+        contents = {
+            str(sf.relative_to(med_db)): _read_source_text(sf, body_only) for sf in source_files
+        }
+        if len(contents) == 1:
+            rel, content = next(iter(contents.items()))
+            return {"path": rel, "content": content}
+        return {"path": archive_path, "files": contents}
+    return {"error": f"path not found: {archive_path}"}
+
+
 def recent_papers(med_db, count=10):
     """List the most recently added papers from index.json.
 
@@ -464,6 +559,16 @@ def _format_text(result, command):
             lines.append(f"  {t['topic']}: {t['paper_count']} papers, {t['search_count']} searches")
         return "\n".join(lines)
 
+    if command == "stats":
+        lines = ["med-db statistics:"]
+        lines.append(f"  searches:   {result.get('searches', 0)}")
+        lines.append(f"  papers:     {result.get('papers', 0)}")
+        lines.append(f"  fulltext:   {result.get('fulltext', 0)}")
+        lines.append(f"  guidelines: {result.get('guidelines', 0)}")
+        lines.append(f"  web:        {result.get('web', 0)}")
+        lines.append(f"  dictionary: {result.get('dictionary', 0)}")
+        return "\n".join(lines)
+
     if command == "topic-papers":
         papers = result.get("papers", [])
         if not papers:
@@ -500,6 +605,21 @@ def _format_text(result, command):
         lines = [f"PMIDs from {result.get('search_path', 'unknown')} ({len(pmids)} total):"]
         for pmid in pmids:
             lines.append(f"  {pmid}")
+        return "\n".join(lines)
+
+    if command == "read-source":
+        if "error" in result:
+            return f"Error: {result['error']}"
+        if "files" in result:
+            lines = [f"Source files in '{result.get('path', '')}':"]
+            for filename, content in result["files"].items():
+                lines.append("")
+                lines.append(f"--- {filename} ---")
+                lines.append(content.rstrip())
+            return "\n".join(lines)
+        lines = [f"Path: {result.get('path', 'N/A')}"]
+        lines.append("")
+        lines.append(result.get("content", "").rstrip())
         return "\n".join(lines)
 
     if command == "read-metadata":
@@ -590,6 +710,9 @@ def parse_args():
     group.add_argument(
         "--list-topics", action="store_true", help="List all topics with paper and search counts."
     )
+    group.add_argument(
+        "--stats", action="store_true", help="Show overall archive statistics by category."
+    )
     group.add_argument("--topic", type=str, help="List all papers under a topic.")
     group.add_argument("--check-pmid", type=str, help="Check if a PMID is already archived.")
     group.add_argument(
@@ -599,6 +722,11 @@ def parse_args():
         "--pmids-from-search", type=str, help="Extract PMID list from a search JSON file."
     )
     group.add_argument("--read-metadata", type=str, help="Read metadata from a paper directory.")
+    group.add_argument(
+        "--read-source",
+        type=str,
+        help="Read the source file(s) at an archive-relative file or directory path.",
+    )
     group.add_argument(
         "--search-keyword", type=str, help="Search papers by keyword (case-insensitive)."
     )
@@ -617,6 +745,11 @@ def parse_args():
         "--show-abstract",
         action="store_true",
         help="Include abstract text with --read-metadata output.",
+    )
+    parser.add_argument(
+        "--body-only",
+        action="store_true",
+        help="Strip YAML frontmatter and output only the body text (for --read-source).",
     )
     parser.add_argument(
         "--summary",
@@ -661,6 +794,8 @@ def parse_args():
         parser.error("--title-only requires --read-metadata")
     if args.abstract_only and not args.read_metadata:
         parser.error("--abstract-only requires --read-metadata")
+    if args.body_only and not args.read_source:
+        parser.error("--body-only requires --read-source")
     if args.names_only and not args.list_topics:
         parser.error("--names-only requires --list-topics")
     if args.locations_only and not any([args.check_pmid, args.check_epmc]):
@@ -683,6 +818,9 @@ def main():
     if args.list_topics:
         command = "list-topics"
         result = {"topics": list_topics(med_db)}
+    elif args.stats:
+        command = "stats"
+        result = stats(med_db)
     elif args.topic:
         command = "topic-papers"
         result = {"topic": args.topic, "papers": list_topic_papers(med_db, args.topic)}
@@ -713,6 +851,9 @@ def main():
         result = read_paper_metadata(args.read_metadata)
         if (args.show_abstract or args.abstract_only) and "error" not in result:
             result["abstract"] = read_paper_abstract(args.read_metadata)
+    elif args.read_source:
+        command = "read-source"
+        result = read_source(med_db, args.read_source, body_only=args.body_only)
     elif args.search_keyword:
         command = "search-keyword"
         matches = search_keyword(med_db, args.search_keyword, topic=args.search_topic)
