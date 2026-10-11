@@ -53,7 +53,7 @@ From the file list, keep only `.md` files under these directories:
 
 - `.claude/agents/`
 - `.claude/agents/references/`
-- `.claude/reference/`
+- `.claude/references/`
 - `.claude/skills/`
 - `.github/agents/`
 - `.github/skills/`
@@ -128,7 +128,7 @@ Check that:
 - The frontmatter `name` matches, and `description` is **byte-identical** between wrapper and source. Any
   description drift is a finding.
 - Wrapper frontmatter carries only Copilot-valid fields, per
-  `.claude/reference/frontmatter-fields.md`. A Claude-only field in a wrapper is a finding — **Error** for
+  `.claude/references/frontmatter-fields.md`. A Claude-only field in a wrapper is a finding — **Error** for
   skill wrappers (`disable-model-invocation`, `user-invocable`, `model`, `effort`, `context`,
   `background`, `argument-hint`, and the rest are ignored/rejected by Copilot), **Warning** for agent
   wrappers.
@@ -142,10 +142,10 @@ Check that:
 ### 7. Model & Effort Appropriateness
 
 For every changed `.claude/` skill or agent file carrying a `model` and/or `effort` field, read
-`.claude/reference/model-capabilities.md` and resolve the value there before judging it. Resolve
+`.claude/references/model-capabilities.md` and resolve the value there before judging it. Resolve
 aliases against the service the session is pointed at — never the Claude model of the same alias
-name. Under this repo's default DeepSeek wiring `haiku` → `deepseek-flash` and `sonnet`/`opus` →
-`deepseek-v4-pro`; on an Anthropic session the aliases map to the Claude models of those names. Flag:
+name. Under this repo's default DeepSeek wiring `haiku`/`sonnet` → `deepseek-flash` and `opus`/`fable`
+→ `deepseek-v4-pro`; on an Anthropic session the aliases map to the Claude models of those names. Flag:
 
 - **Error** — `model` is not one of `haiku`, `sonnet`, `opus`, `fable`, `best`, `opusplan`,
   `default`, `inherit`, or a full `claude-*` / `deepseek-*` model ID; or `effort` is not one of
@@ -156,9 +156,9 @@ name. Under this repo's default DeepSeek wiring `haiku` → `deepseek-flash` and
   hard-codes a model instead of `inherit`.
 - **Info** — `effort` is `medium` or `xhigh`: on the DeepSeek wiring both collapse to `high` and add
   no capability over `high`. Flag only when the file's prose implies they do.
-- **Info** — `model` is `opus`: on the DeepSeek wiring it resolves to the same model as `sonnet`.
+- **Info** — `model` is `opus`: on the DeepSeek wiring it resolves to the same model as `fable`.
 
-Cite `.claude/reference/model-capabilities.md` in every finding from this step. This step never edits
+Cite `.claude/references/model-capabilities.md` in every finding from this step. This step never edits
 frontmatter — corrections go into the fix plan like any other finding.
 
 ### 8. Internal Consistency
@@ -222,7 +222,7 @@ If there are no Errors or Warnings, state that and stop — no plan, no handoff.
 - Every flagged issue must cite the specific contradiction or missing reference. No vague findings.
 - Cross-file consistency checks are the highest-value part of this skill — prioritize them over
   exhaustive internal checks when time is limited.
-- Model/effort findings must cite `.claude/reference/model-capabilities.md` and name the model the
+- Model/effort findings must cite `.claude/references/model-capabilities.md` and name the model the
   alias resolves to under the session's wiring — never call a value wrong based on the Claude model
   of the same alias name.
 
@@ -237,7 +237,7 @@ If there are no Errors or Warnings, state that and stop — no plan, no handoff.
 7. Report includes severity, location, and description for every finding. "No issues found" is an
    acceptable result when the changeset is clean.
 8. Every changed file carrying `model` or `effort` was checked against
-   `.claude/reference/model-capabilities.md`, and each such finding names the model the alias
+   `.claude/references/model-capabilities.md`, and each such finding names the model the alias
    resolves to under the session's wiring.
 9. If Errors or Warnings found: a fix plan was returned as text with concrete fixes, and the final
    message instructs the caller to invoke `apply-fixes` after user approval. No plan file was written.
