@@ -38,13 +38,16 @@
       "Skill(create-med-agent)",
       "Skill(create-med-skill)",
       "Skill(create-workout-routine)",
+      "Skill(define-terms)",
       "Skill(end-therapy-session)",
+      "Skill(end-voice-training)",
       "Skill(evaluate-paper)",
       "Skill(fetch-paper)",
       "Skill(med-db)",
       "Skill(optimize-repo)",
       "Skill(review-changeset)",
-      "Skill(start-therapy-session)"
+      "Skill(start-therapy-session)",
+      "Skill(start-voice-training)"
     ]
   }
 }

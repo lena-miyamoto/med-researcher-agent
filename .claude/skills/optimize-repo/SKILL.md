@@ -42,10 +42,10 @@ Skills and docs must point to these owner files instead of restating their rules
 | Domain                                                 | Owner                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------- |
 | Archive layout, naming, frontmatter, required tools    | `CLAUDE.md` (Medical DB section)                                                |
-| Command invocation contract (`uv run ...` only)        | `CLAUDE.md` (Command Invocation Contract section)                               |
+| Command invocation contract (`uv run ...` only)        | `CLAUDE.md` (Command Contract section)                                          |
 | Bootstrap after fresh checkout                         | `CLAUDE.md` (Medical DB section)                                                |
-| Canonical markdown lint command (`uv run lint-md`)     | `CLAUDE.md` (Command Invocation Contract section)                               |
-| Markdown lint config                                   | `.pymarkdown.yaml`                                                              |
+| Canonical markdown lint command (`uv run lint-md`)     | `CLAUDE.md` (Command Contract section)                                          |
+| Markdown lint config                                   | `.rumdl.toml`                                                                   |
 | Evidence hierarchy, quality standards, search protocol | `.claude/agents/med-researcher.md`                                              |
 | Harms/safety search, counter-evidence requirements     | `.claude/agents/med-researcher.md`                                              |
 | Research output format                                 | `.claude/agents/med-researcher.md`                                              |
@@ -145,7 +145,7 @@ Evidence hierarchy, quality criteria, counter-evidence, harms/safety, Research O
 `DocCheck Flexicon`
 → `.claude/agents/med-researcher.md` only.
 
-`.pymarkdown.yaml`
+`.rumdl.toml`
 → Config file. `CLAUDE.md` may reference the lint command.
 
 ## Preferred Shapes

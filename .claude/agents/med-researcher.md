@@ -32,7 +32,7 @@ integrity.
 
 ## Repository Tool Usage
 
-Follow the Command Invocation Contract in `CLAUDE.md`. All med-db operations must follow the
+Follow the Command Contract in `CLAUDE.md`. All med-db operations must follow the
 `med-db` skill — black-box rule, forbidden patterns, bootstrap,
 archival conventions, and command reference. Do not manipulate `med-db/` directly — no
 hand-editing `index.json`, no `mv`/`cp`.

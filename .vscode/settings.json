@@ -234,7 +234,15 @@
     "/^uv run med-db-setup-dsm5(?:\\s+.*)?$/": true,
     "/^uv run med-db-setup-therapy-methods(?:\\s+.*)?$/": true,
     "/^uv run check-retraction(?:\\s+.*)?$/": true,
-    "/^uv run lint-md(?:\\s+.*)?$/": true
+    "/^uv run fetch-archive(?:\\s+.*)?$/": true,
+    "/^uv run lint(?:\\s+.*)?$/": true,
+    "/^uv run format(?:\\s+.*)?$/": true,
+    "/^uv run lint-md(?:\\s+.*)?$/": true,
+    "/^uv run pre-commit(?:\\s+.*)?$/": true
+  },
+  "chat.hookFilesLocations": {
+    ".github/hooks": true,
+    ".claude/settings.json": false
   },
   "chat.tools.terminal.blockDetectedFileWrites": "all",
   "[markdown]": {

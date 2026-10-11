@@ -1,44 +1,33 @@
 # CLAUDE.md
 
-Reusable medical research agent configuration and Medical DB workflow.
+## Command Contract
 
-## MANDATORY Command Invocation Contract
+- Run all repo Python tools through `uv run ...` from repo root. Applies to Claude Code, Copilot, every subagent.
+- Forbidden: `python`, `python3`, `python -c` inline code, `node -e`, `perl -e` touching `med-db/`; no direct filesystem access to `med-db/` — exclusive domain of the `med-db` skill. The tool layer is the only interface.
+- After edits to any `*.md`: `uv run lint-md` (or `--fix`). **Never run `uv run rumdl` directly** — only `lint-md`.
+- After edits to `*.md` under `./med-db/`: also `uv run lint-md --fix-source-md <PATH>` on the changed file or containing archive dir.
+- Canonical test command after editing any `*.py`: `uv run test`.
+- Lint/format: `uv run lint` and `uv run format` (default `.claude/scripts` + `tests`; `--fix` to autofix; paths to override).
+- Diagnose repo Python bugs through the test harness: write a regression test, run `uv run test`, fix, re-run. Never poke script internals with an inline interpreter or throwaway script.
 
-> **Every repo Python tool must be run via `uv run <entry-point>` from the repository root.** Applies to Claude
-> Code, Copilot, all subagents. No exceptions.
+## Source Of Truth
 
-**Forbidden:** `python3`, `python`, `python*` — shebang, direct invocation, or `-c` inline code. `node -e`, `perl -e`, or any inline-code touching `med-db/`! No direct filesystem access to `med-db/` — directory is the exclusive domain of `med-db` skill!
+- `.claude/` owns skills/agents/scripts; `.github/` holds thin wrappers only. Shared utilities: `.claude/scripts/utils.py` (extract helpers used by ≥2 scripts; don't pre-emptively generalize).
+- Instruction files must not cite generated, ignored, or archive output paths as templates, exemplars, or sources of truth.
+- German prose: standard orthography (umlauts, `ß`), unless requested.
 
-**Rationale:** `med-db/` data integrity depends on the tool layer. Direct file access erodes the norm that the tools are the only interface.
+## Working Rules
 
-## Source-of-Truth Architecture
+- Make the smallest local change that works. If patch context is stale, re-read and retry.
+- Scratch files are ephemeral unless asked otherwise.
+- **Never format by hand.** Run the formatter: `uv run lint-md --fix` (`*.md`), `uv run format` (`*.py`).
+- Read `.claude/agents/references/coding-style.md` before writing or editing Python.
+- Read `.claude/scripts/DEVELOPER.md` before modifying `.claude/scripts/`.
 
-- Skills: `.claude/skills/<name>/SKILL.md` owns full procedure; `.github/skills` are thin wrappers pointing to `.claude/`.
-- Agents: `.claude/agents/<name>.md` owns behavior; `.github/agents` are thin wrappers pointing to `.claude/`.
-- Shared utilities: `.claude/scripts/utils.py`. Extract helpers used by ≥2 scripts; don't pre-emptively generalize.
-- `.claude/` is sole source of truth for all shared instruction files. No separate `.agents/` directory.
-- German prose: standard orthography (umlauts, `ß`), not ASCII substitutions, unless requested.
+## Medical DB
 
-## Medical DB (`./med-db/`)
-
-Literature archive for medical, psychological, nutritional or exercise-related research.
-
-**All med-db access must go through the `med-db` skill**.
-Skill owns the black-box rule, forbidden patterns, bootstrap, archival conventions,
-command reference, diagnostic classification setup, and during-session usage rules.
-Invoke via `Skill: "med-db"` or follow the skill file directly.
-
-## Script Development
-
-Read `.claude/agents/references/coding-style.md` before writing or editing any Python file.
-No-abbreviation naming, functional programming by default — applies to `.claude/scripts/` and
-any other Python code.
-
-Read `.claude/scripts/DEVELOPER.md` before modifying files in `.claude/scripts/`. Internal
-directory structure and conventions — only relevant when extending the med-db script stack,
-not when using `uv run` entry points.
+**Only the `med-db` skill may touch `./med-db/` files directly.** Sole executor.
 
 ## Architecture (Claude-Specific)
 
-Context engineering: `.claude/skills/optimize-repo/references/context-engineering-best-practices.md` — authoritative standard for all instruction files.
-Agent dispatch: invoke via Agent tool with `subagent_type: "<name>"` per YAML frontmatter `name` field.
+Context engineering: `.claude/skills/optimize-repo/references/context-engineering-best-practices.md`. Agent dispatch: Agent tool with `subagent_type: "<name>"` per YAML `name`.

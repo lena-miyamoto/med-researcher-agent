@@ -18,8 +18,8 @@ stack.** Agents and skills must never manipulate `med-db/` directly — all acce
   regression surfaced. Do not ship code with known failures unless the user explicitly approves them.
   Spot-checking touched files insufficient — refactor in one module can break distant tests through
   shared imports or CLI contract changes.
-- **`uv run lint-md`** after batch-editing tracked `*.md` files. Never `uv run pymarkdownlnt` directly — only
-  `uv run lint-md` (or `--fix`); wraps the linter with correct config (`.pymarkdown.yaml`).
+- **`uv run lint-md`** after batch-editing tracked `*.md` files. Never `uv run rumdl` directly — only
+  `uv run lint-md` (or `--fix`); wraps the linter with correct config (`.rumdl.toml`).
 
 ## Directory Structure (`./med-db/`)
 

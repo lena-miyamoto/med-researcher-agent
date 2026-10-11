@@ -44,11 +44,11 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 git clone https://github.com/lena-miyamoto/med-researcher-agent.git && cd med-researcher-agent
 
 # uv reads .python-version and installs Python 3.12 automatically,
-# then creates a venv and installs dependencies (pypdf, pytest, pymarkdownlnt)
+# then creates a venv and installs dependencies (pypdf, pytest, ruff, rumdl, pre-commit, playwright)
 uv sync
 ```
 
-Runtime dependencies: pypdf (PDF text extraction). Dev tooling: pytest, pymarkdownlnt.
+Runtime dependencies: pypdf (PDF text extraction). Dev tooling: pytest, ruff, rumdl, pre-commit, playwright.
 
 ## CSV tooling
 
@@ -75,10 +75,19 @@ outside the skill — the skill is the single source of truth.
 ### Development
 
 ```bash
-uv run test          # Run test suite
-uv run lint-md       # Lint Markdown files
-uv run lint-md --fix # Auto-fix lint violations
+uv run test               # Run test suite
+uv run lint               # Ruff check + format check (.claude/scripts, tests)
+uv run lint --fix         # Ruff autofix
+uv run format             # Apply ruff format
+uv run lint-md            # Lint Markdown files
+uv run lint-md --fix      # Auto-fix lint violations
+uv run pre-commit install # One-time per clone: install git hooks
 ```
+
+`uv run fetch-archive <url> -o tmp/out.txt` opens a headed browser to scrape a
+paywalled article via archive.is (interactive CAPTCHA solve); ingest the result with
+`uv run med-db-download-paper --reference '<doi>' --body-file tmp/out.txt --topic <topic>`.
+Host prerequisite for the browser: `uvx playwright install chromium`.
 
 ## Environment setup
 

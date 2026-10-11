@@ -37,6 +37,7 @@
     ],
     "Skill": [
       "^analyze-med-claims$",
+      "^check-retraction$",
       "^compress-skill$",
       "^create-diet-plan$",
       "^create-med-agent$",
@@ -46,9 +47,12 @@
       "^start-voice-training$",
       "^end-therapy-session$",
       "^end-voice-training$",
+      "^evaluate-paper$",
+      "^fetch-paper$",
       "^optimize-repo$",
       "^med-db$",
-      "^define-terms$"
+      "^define-terms$",
+      "^review-changeset$"
     ],
     "Bash": [
       "^uv run med-db(\\s|$)",
@@ -68,10 +72,29 @@
       "^uv run check-retraction(\\s|$)",
       "^uv run csv-util(\\s|$)",
       "^uv run session-protocol(\\s|$)",
+      "^uv run fetch-archive(\\s|$)",
+      "^uv run lint(\\s|$)",
+      "^uv run format(\\s|$)",
       "^uv run lint-md(\\s|$)",
+      "^uv run pre-commit(\\s|$)",
       "^uv run test(\\s|$)",
       "^python3? -m json\\.tool(\\s|$)",
       "^html2text(\\s|$)"
+    ]
+  },
+  "deny": {
+    "Write|Edit|MultiEdit|NotebookEdit": ["^{project-dir}/med-db(/|$)"],
+    "Bash": [
+      "python.*med-db/",
+      "node.*med-db/",
+      "\\bcat\\b.*med-db/",
+      "\\bhead\\b.*med-db/",
+      "\\btail\\b.*med-db/",
+      "grep.*med-db/",
+      "\\bjq\\b.*med-db/",
+      "\\bsed\\b.*med-db/",
+      "\\bawk\\b.*med-db/",
+      "rg.*med-db/"
     ]
   }
 }

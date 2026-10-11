@@ -5,6 +5,11 @@ description: >
   classifications, or bootstrap. Every read and write to the local archive must go
   through this skill. Never touch med-db/ files directly.
 user-invocable: false
+disable-model-invocation: false
+model: haiku
+effort: low
+context: fork
+background: false
 ---
 
 # med-db
@@ -38,7 +43,7 @@ Other skills (`analyze-med-claims`, `create-diet-plan`, `start-therapy-session`)
 
 ### Forbidden Patterns — Never Do Any of These
 
-These patterns violate the Command Invocation Contract. Each one has been observed
+These patterns violate the Command Contract. Each one has been observed
 in real sessions. **None of them are acceptable.**
 
 | Forbidden | Why | Use Instead |
@@ -123,6 +128,7 @@ local, no-network** commands are permitted during the session:
 | `uv run med-db-query --search-keyword "..."` | `uv run med-db --pmid ...` (archival — writes) |
 | `uv run med-db-query --search-keyword "..." --identifiers-only` | `uv run med-db --source pubmed --query "..."` (network search) |
 | `uv run med-db-query --list-topics` | `uv run med-db-download-icd11` (setup — writes) |
+| `uv run med-db-query --stats` | |
 | `uv run med-db-query --list-topics` | `uv run med-db-download-paper ...` (full-text download — network + writes) |
 | `uv run med-db-query --list-topics --names-only` | `uv run med-db-setup-dsm5` (setup — writes) |
 | `uv run med-db-query --check-pmid "..."` | `uv run med-db-setup-therapy-methods` (setup — writes) |
@@ -139,7 +145,7 @@ local, no-network** commands are permitted during the session:
 | `uv run med-db-lookup-dsm5 --code "..."` | |
 | `uv run med-db-lookup-dsm5 --code "..." --title-only` | |
 | `uv run med-db-lookup --doi ...` | |
-| Reading `med-db/guidelines/therapy-methodologies/source.md` | |
+| `uv run med-db-query --read-source "guidelines/therapy-methodologies" --body-only` | |
 | Dispatching Haiku sub-agent for read-only med-db queries | |
 
 Read-only commands: sub-second, local, equivalent to consulting a reference shelf.
@@ -198,6 +204,7 @@ Default text output; `--format json` for structured, `--quiet` for folder paths 
 | Multiple PMIDs         | `uv run med-db --pmid <ID1> --pmid <ID2> --topic '<name>'`                                       |
 | Remove PMID            | `uv run med-db --remove-pmid <ID>`                                                               |
 | Remove EPMC record     | `uv run med-db --remove-epmc-record '<SOURCE>:<ID>'`                                             |
+| Remove entry           | `uv run med-db --remove --path '<CATEGORY>/<REL>'`                                               |
 | Re-fetch / overwrite   | `uv run med-db ... --force`                                                                      |
 | JSON output            | `uv run med-db ... --format json`                                                                |
 | Paths only (quiet)     | `uv run med-db ... --quiet`                                                                      |
@@ -205,6 +212,10 @@ Default text output; `--format json` for structured, `--quiet` for folder paths 
 | Migrate                | `uv run med-db --migrate`                                                                        |
 
 DOI resolution tries PubMed, then Europe PMC, then Crossref metadata — Crossref covers DOIs indexed in neither (e.g. APA journals).
+
+`--remove --path` deletes any full archive entry (paper folder, search JSON, web HTML snapshot,
+guideline dir, dictionary term); container directories and category roots are rejected by a
+min-depth guard, and empty parent dirs are pruned.
 
 ### Full-Text Download (`med-db-download-paper`)
 
@@ -215,14 +226,21 @@ policy, Sci-Hub fallback); full parameter reference in `med-db-commands.md`.
 | ------------ | --------------------------------------------------------------------------------------------- |
 | Download PDF | `uv run med-db-download-paper --reference '<DOI|PMID|arXiv|SOURCE:ID|URL>' --topic '<name>'`  |
 | Title + year | `uv run med-db-download-paper --title '<title>' --year <YEAR> --topic '<name>'`               |
+| archive.is text | `uv run med-db-download-paper --reference '<DOI>' --body-file <FILE> --topic '<name>'`     |
+
+When the automatic source chain fails, an interactive `uv run fetch-archive '<url>' -o tmp/<slug>.txt`
+scrape (headed browser, human CAPTCHA; host prerequisite `uvx playwright install chromium`) can be
+ingested with `--body-file` — see the `fetch-paper` skill.
 
 ### Query (`med-db-query`)
 
-Default JSON. Use `--format text` for readable output, or extraction flags for single-field plain text.
+Default JSON. Use `--format text` for readable output, or extraction flags for single-field plain text
+(`--read-source` is most readable with `--format text`).
 
 | Operation               | Command                                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------------------ |
 | List topics             | `uv run med-db-query --list-topics`                                                              |
+| Archive stats           | `uv run med-db-query --stats`                                                                    |
 | Topic names only        | `uv run med-db-query --list-topics --names-only`                                                 |
 | List papers/topic       | `uv run med-db-query --topic '<slug>'`                                                           |
 | Paper IDs only          | `uv run med-db-query --topic '<slug>' --identifiers-only`                                        |
@@ -233,6 +251,8 @@ Default JSON. Use `--format text` for readable output, or extraction flags for s
 | PMIDs from search       | `uv run med-db-query --pmids-from-search '<path>'`                                               |
 | PMIDs only              | `uv run med-db-query --pmids-from-search '<path>' --identifiers-only`                            |
 | Read metadata           | `uv run med-db-query --read-metadata '<path>'`                                                   |
+| Read source             | `uv run med-db-query --read-source '<CATEGORY>/<REL>' --format text`                             |
+| Source body only        | `uv run med-db-query --read-source '<CATEGORY>/<REL>' --body-only --format text`                 |
 | Title only              | `uv run med-db-query --read-metadata '<path>' --title-only`                                      |
 | Abstract only           | `uv run med-db-query --read-metadata '<path>' --abstract-only`                                   |
 | Read + abstract (JSON)  | `uv run med-db-query --read-metadata '<path>' --show-abstract`                                   |
@@ -300,5 +320,5 @@ stage-3 authoritative source. Both default to JSON (`--format text` for readable
 
 ### Lint Rules
 
-Follow `CLAUDE.md` (Command Invocation Contract section) for `uv run lint-md` and
+Follow `CLAUDE.md` (Command Contract section) for `uv run lint-md` and
 `uv run test` invocation rules.
