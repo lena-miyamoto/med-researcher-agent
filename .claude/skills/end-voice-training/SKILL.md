@@ -218,17 +218,17 @@ into log. Move content back to correct section.
 For each `### S<N>: <YYYY-MM-DD>` heading above `## Permanent Client Profile` (uncompressed recent
 sessions), verify all 10 mandatory fields:
 
-| Field | Label |
-|---|---|
-| Presenting | `- Presenting:` |
-| Themes | `- Themes:` |
-| Exercises done | `- Exercises done:` |
-| Measurements | `- Measurements:` |
-| Home practice | `- Home practice:` |
-| Adherence | `- Adherence:` |
-| Gaps flagged | `- Gaps flagged:` |
-| State at close | `- State at close:` |
-| Thread for next | `- Thread for next:` |
+| Field              | Label                   |
+| ------------------ | ----------------------- |
+| Presenting         | `- Presenting:`         |
+| Themes             | `- Themes:`             |
+| Exercises done     | `- Exercises done:`     |
+| Measurements       | `- Measurements:`       |
+| Home practice      | `- Home practice:`      |
+| Adherence          | `- Adherence:`          |
+| Gaps flagged       | `- Gaps flagged:`       |
+| State at close     | `- State at close:`     |
+| Thread for next    | `- Thread for next:`    |
 | Trainer reflection | `- Trainer reflection:` |
 
 - **Any field missing from recent session note:** ERROR. Identify session and field. Restore missing

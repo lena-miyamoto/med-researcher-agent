@@ -69,7 +69,9 @@ def resolve_source_url(source_ref, source_url):
     return ""
 
 
-def build_source_md(term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes):
+def build_source_md(
+    term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes
+):
     """Build the ``source.md`` content with YAML frontmatter and a definition body."""
     fields = {
         "title": term,
@@ -85,7 +87,9 @@ def build_source_md(term, english, definition, source_type, source_ref, source_u
     return utils.build_frontmatter(fields) + "\n" + definition.rstrip() + "\n"
 
 
-def build_metadata(term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes):
+def build_metadata(
+    term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes
+):
     """Build the machine-readable ``metadata.json`` mirror."""
     return {
         "term": term,
@@ -99,17 +103,41 @@ def build_metadata(term, english, definition, source_type, source_ref, source_ur
     }
 
 
-def archive_term(med_db, term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes):
+def archive_term(
+    med_db,
+    term,
+    english,
+    definition,
+    source_type,
+    source_ref,
+    source_url,
+    access_date,
+    extraction_notes,
+):
     """Write the term definition into ``dictionary/<term-slug>/`` and return the directory."""
     term_slug = utils.slugify(term, fallback="term")
     term_dir = med_db / "dictionary" / term_slug
     term_dir.mkdir(parents=True, exist_ok=True)
 
     source_md = build_source_md(
-        term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes
+        term,
+        english,
+        definition,
+        source_type,
+        source_ref,
+        source_url,
+        access_date,
+        extraction_notes,
     )
     metadata = build_metadata(
-        term, english, definition, source_type, source_ref, source_url, access_date, extraction_notes
+        term,
+        english,
+        definition,
+        source_type,
+        source_ref,
+        source_url,
+        access_date,
+        extraction_notes,
     )
     utils.atomic_write(term_dir / "source.md", source_md)
     utils.atomic_write(

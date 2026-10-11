@@ -217,7 +217,6 @@ Young & Cocallis (2023, PMID: 37287894) systematic review of 17 ASD and 19 ADHD 
 
 - **Poorer psychosexual functioning** for both ASD and ADHD groups: less sexual relationship satisfaction,
   more sexual dysfunction, more risky sexual behaviors, more victimization — especially females
-
 - **Non-heterosexual orientation more common** in ASD (5 of 7 studies), especially ASD females
 - **ASD females:** problems across all FSFI domains (desire, arousal, orgasm, satisfaction, pain, lubrication)
 - **ADHD:** higher risky sexual behaviors, lower relationship quality, higher intimate partner violence risk
@@ -251,15 +250,15 @@ Young & Cocallis (2023, PMID: 37287894) systematic review of 17 ASD and 19 ADHD 
 
 ### Sex/Relationship-Affirming Practice — Key Do's and Don'ts
 
-| Domain | Do | Don't |
-|---|---|---|
-| **General** | Pursue continuing education; know limits of competence; refer when appropriate | Assume monogamy, heterosexuality, or vanilla sexuality as defaults |
+| Domain                  | Do                                                                                                                                                                                                        | Don't                                                                                                               |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **General**             | Pursue continuing education; know limits of competence; refer when appropriate                                                                                                                            | Assume monogamy, heterosexuality, or vanilla sexuality as defaults                                                  |
 | **Relational judgment** | Explore patterns, reflect, ask questions; help client reach own conclusions; name unhealthy with warrant (client's own framing, severity, or sustained pattern — see `premature-relational-judgments.md`) | Name a relationship unhealthy or worth reconsidering without warrant — from ordinary grievances in a single session |
-| **Sex** | Discuss sex comfortably and clinically; use client's language; ask consent before clinical terms | Avoid sex entirely ("too uncomfortable") or pry into irrelevant details |
-| **Kink** | Use neutral language; ask about consent, limits, safewords, aftercare; screen for distress without moral framing | Equate kink with trauma automatically; diagnose paraphilic disorders based on interests alone |
-| **CNM** | Use inclusive intake forms; educate yourself; distinguish structure from dysfunction | Pathologize CNM structure; assume monogamy is the goal; treat jealousy as inherently pathological |
-| **LGBTQI+** | Display affirming indicators; recognize minority stress; use correct names/pronouns | Endorse heteronormativity; treat identity as the problem; use SOCE (contraindicated) |
-| **Mistakes** | Brief apology, correct, move on; therapist initiates rupture repair | Become defensive; over-apologize and make it about your guilt; expect client to educate you |
+| **Sex**                 | Discuss sex comfortably and clinically; use client's language; ask consent before clinical terms                                                                                                          | Avoid sex entirely ("too uncomfortable") or pry into irrelevant details                                             |
+| **Kink**                | Use neutral language; ask about consent, limits, safewords, aftercare; screen for distress without moral framing                                                                                          | Equate kink with trauma automatically; diagnose paraphilic disorders based on interests alone                       |
+| **CNM**                 | Use inclusive intake forms; educate yourself; distinguish structure from dysfunction                                                                                                                      | Pathologize CNM structure; assume monogamy is the goal; treat jealousy as inherently pathological                   |
+| **LGBTQI+**             | Display affirming indicators; recognize minority stress; use correct names/pronouns                                                                                                                       | Endorse heteronormativity; treat identity as the problem; use SOCE (contraindicated)                                |
+| **Mistakes**            | Brief apology, correct, move on; therapist initiates rupture repair                                                                                                                                       | Become defensive; over-apologize and make it about your guilt; expect client to educate you                         |
 
 **Recovery when you make a mistake:** Name the impact ("That felt pathologizing"), ask for reframe ("Could we
 center consent?"), check the alliance ("What would repair look like?"). If pattern continues, offer referral

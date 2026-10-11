@@ -15,10 +15,10 @@ Usage:
 import argparse
 import json
 import sys
-from pathlib import Path
 
 import utils
-from utils import REPO_ROOT, MED_DB
+from utils import MED_DB
+
 GUIDELINE_DIR = MED_DB / "guidelines" / "therapy-methodologies"
 SOURCE_MD = GUIDELINE_DIR / "source.md"
 METHODOLOGIES_JSON = GUIDELINE_DIR / "methodologies.json"
@@ -27,6 +27,7 @@ METHODOLOGIES_JSON = GUIDELINE_DIR / "methodologies.json"
 # ---------------------------------------------------------------------------
 # Methodology data
 # ---------------------------------------------------------------------------
+
 
 def _build_methodologies_categorized():
     """Return the complete methodology reference data."""
@@ -97,6 +98,7 @@ def _build_methodologies_categorized():
 
 
 # --- Foundational Frameworks ---
+
 
 def _liberation_psychology():
     return {
@@ -211,7 +213,11 @@ def _critical_psychology():
         "name": "Critical Psychology",
         "slug": "critical-psychology",
         "key_figures": [
-            {"name": "Klaus Holzkamp", "role": "Founder of German Critical Psychology", "years": "1927–1995"},
+            {
+                "name": "Klaus Holzkamp",
+                "role": "Founder of German Critical Psychology",
+                "years": "1927–1995",
+            },
             {"name": "Ian Parker", "role": "British critical psychologist", "years": "b. 1956"},
         ],
         "origin": "Free University of West Berlin, 1960s–1970s",
@@ -332,6 +338,7 @@ def _critical_psychology():
 
 # --- Integrative Modalities ---
 
+
 def _narrative_therapy():
     return {
         "name": "Narrative Therapy",
@@ -447,10 +454,18 @@ def _systemic_therapy():
         "name": "Systemic Therapy",
         "slug": "systemic-therapy",
         "key_figures": [
-            {"name": "Mara Selvini-Palazzoli", "role": "Milan School founder", "years": "1916–1999"},
+            {
+                "name": "Mara Selvini-Palazzoli",
+                "role": "Milan School founder",
+                "years": "1916–1999",
+            },
             {"name": "Gianfranco Cecchin", "role": "Milan School", "years": "1932–2004"},
             {"name": "Luigi Boscolo", "role": "Milan School", "years": "1932–2015"},
-            {"name": "Gregory Bateson", "role": "Cybernetic/epistemological foundation", "years": "1904–1980"},
+            {
+                "name": "Gregory Bateson",
+                "role": "Cybernetic/epistemological foundation",
+                "years": "1904–1980",
+            },
             {"name": "Tom Andersen", "role": "Reflecting team", "years": "1936–2007"},
         ],
         "origin": "Multiple centers, 1950s–1970s; Milan School 1970s",
@@ -572,14 +587,23 @@ def _systemic_therapy():
 
 # --- Broader Critical Canon ---
 
+
 def _postcolonial_decolonial():
     return {
         "name": "Postcolonial and Decolonial Psychology",
         "slug": "postcolonial-decolonial-psychology",
         "key_figures": [
-            {"name": "Frantz Fanon", "role": "Anticolonial psychiatrist and theorist", "years": "1925–1961"},
+            {
+                "name": "Frantz Fanon",
+                "role": "Anticolonial psychiatrist and theorist",
+                "years": "1925–1961",
+            },
             {"name": "Aimé Césaire", "role": "Poet, theorist of négritude", "years": "1913–2008"},
-            {"name": "W. E. B. Du Bois", "role": "Sociologist, double consciousness", "years": "1868–1963"},
+            {
+                "name": "W. E. B. Du Bois",
+                "role": "Sociologist, double consciousness",
+                "years": "1868–1963",
+            },
         ],
         "origin": "Mid-20th century anticolonial movements; academic field 1980s–present",
         "historical_context": (
@@ -805,9 +829,21 @@ def _trauma_informed_care():
         "name": "Trauma-Informed Care",
         "slug": "trauma-informed-care",
         "key_figures": [
-            {"name": "Judith Herman", "role": "Foundational theorist of complex trauma", "years": "b. 1942"},
-            {"name": "Bessel van der Kolk", "role": "Trauma researcher and clinician", "years": "b. 1943"},
-            {"name": "Janina Fisher", "role": "Trauma and dissociation specialist", "years": "contemporary"},
+            {
+                "name": "Judith Herman",
+                "role": "Foundational theorist of complex trauma",
+                "years": "b. 1942",
+            },
+            {
+                "name": "Bessel van der Kolk",
+                "role": "Trauma researcher and clinician",
+                "years": "b. 1943",
+            },
+            {
+                "name": "Janina Fisher",
+                "role": "Trauma and dissociation specialist",
+                "years": "contemporary",
+            },
         ],
         "origin": "USA, 1990s; rooted in feminist and veteran advocacy movements",
         "historical_context": (
@@ -934,9 +970,21 @@ def _disability_justice_neurodiversity():
         "name": "Disability Justice and Neurodiversity Paradigm",
         "slug": "disability-justice-neurodiversity",
         "key_figures": [
-            {"name": "Judy Singer", "role": "Sociologist, early neurodiversity theorist", "years": "b. 1951"},
-            {"name": "Nick Walker", "role": "Neurodiversity paradigm scholar", "years": "contemporary"},
-            {"name": "Sins Invalid", "role": "Disability justice performance collective", "years": "founded 2006"},
+            {
+                "name": "Judy Singer",
+                "role": "Sociologist, early neurodiversity theorist",
+                "years": "b. 1951",
+            },
+            {
+                "name": "Nick Walker",
+                "role": "Neurodiversity paradigm scholar",
+                "years": "contemporary",
+            },
+            {
+                "name": "Sins Invalid",
+                "role": "Disability justice performance collective",
+                "years": "founded 2006",
+            },
         ],
         "origin": "Disability rights: 1970s UK (social model); Neurodiversity: 1990s autistic activist communities; Disability Justice: 2000s USA",
         "historical_context": (
@@ -1065,10 +1113,26 @@ def _mad_studies():
         "name": "Mad Studies",
         "slug": "mad-studies",
         "key_figures": [
-            {"name": "Brenda A. LeFrançois", "role": "Mad Studies scholar and editor", "years": "contemporary"},
-            {"name": "Robert Menzies", "role": "Mad Studies scholar and editor", "years": "contemporary"},
-            {"name": "Geoffrey Reaume", "role": "Mad historian and activist", "years": "contemporary"},
-            {"name": "Richard A. Ingram", "role": "Coined 'Mad Studies' (2008)", "years": "contemporary"},
+            {
+                "name": "Brenda A. LeFrançois",
+                "role": "Mad Studies scholar and editor",
+                "years": "contemporary",
+            },
+            {
+                "name": "Robert Menzies",
+                "role": "Mad Studies scholar and editor",
+                "years": "contemporary",
+            },
+            {
+                "name": "Geoffrey Reaume",
+                "role": "Mad historian and activist",
+                "years": "contemporary",
+            },
+            {
+                "name": "Richard A. Ingram",
+                "role": "Coined 'Mad Studies' (2008)",
+                "years": "contemporary",
+            },
         ],
         "origin": "Canada (Ryerson/York Universities), 2000s; psychiatric survivor movement since 1960s–1970s",
         "historical_context": (
@@ -1189,6 +1253,7 @@ def _mad_studies():
 
 
 # --- Clinical Modalities ---
+
 
 def _cognitive_behavioral_therapy():
     return {
@@ -1455,6 +1520,7 @@ def _acceptance_commitment_therapy():
 # source.md generation
 # ---------------------------------------------------------------------------
 
+
 def _build_source_md_frontmatter():
     return """---
 title: Clinical Therapy Methodology Guidelines
@@ -1507,7 +1573,7 @@ def _build_source_md_body(data):
     lines.append("")
     lines.append("# Programmatic access (JSON)")
     lines.append(
-        "uv run python -c \"import json; d=json.load(open("
+        'uv run python -c "import json; d=json.load(open('
         "'med-db/guidelines/therapy-methodologies/methodologies.json')); "
         "print([m['name'] for c in d['categories'] for m in c['methodologies']])\""
     )
@@ -1526,8 +1592,7 @@ def _build_source_md_body(data):
 
             # Key figures
             figures = ", ".join(
-                f"{f['name']} ({f['role']}, {f['years']})"
-                for f in meth["key_figures"]
+                f"{f['name']} ({f['role']}, {f['years']})" for f in meth["key_figures"]
             )
             lines.append(f"**Key Figures:** {figures}")
             lines.append("")
@@ -1569,7 +1634,9 @@ def _build_source_md_body(data):
             lines.append("")
 
             # Relationships
-            lines.append(f"**Relationship to Other Methodologies:** {meth['relationship_to_other_methods']}")
+            lines.append(
+                f"**Relationship to Other Methodologies:** {meth['relationship_to_other_methods']}"
+            )
             lines.append("")
 
     lines.append("## Using These Guidelines")
@@ -1594,6 +1661,7 @@ def _build_source_md(data):
 # ---------------------------------------------------------------------------
 # index.json update
 # ---------------------------------------------------------------------------
+
 
 def _build_index_entry():
     return {
@@ -1662,6 +1730,7 @@ def _update_index_json(entry):
 # setup / verify / main
 # ---------------------------------------------------------------------------
 
+
 def setup(force=False):
     """Create source.md, methodologies.json, and update index.json.
 
@@ -1693,9 +1762,7 @@ def setup(force=False):
     # Update index.json
     _update_index_json(_build_index_entry())
 
-    total = sum(
-        len(cat["methodologies"]) for cat in data["categories"]
-    )
+    total = sum(len(cat["methodologies"]) for cat in data["categories"])
     print(
         f"Created therapy methodology guidelines: "
         f"{len(data['categories'])} categories, {total} methodologies"
@@ -1722,10 +1789,7 @@ def verify():
             return False, f"methodologies.json is invalid: {e}"
 
     cats = len(json_data.get("categories", []))
-    total = sum(
-        len(cat.get("methodologies", []))
-        for cat in json_data.get("categories", [])
-    )
+    total = sum(len(cat.get("methodologies", [])) for cat in json_data.get("categories", []))
     return True, f"{cats} categories, {total} methodologies"
 
 
@@ -1771,10 +1835,7 @@ def main():
     if created:
         print("Therapy methodology guidelines ready.")
     else:
-        print(
-            "Therapy methodology guidelines already present "
-            "(use --force to regenerate)."
-        )
+        print("Therapy methodology guidelines already present (use --force to regenerate).")
 
     # Always verify after setup
     ok, msg = verify()

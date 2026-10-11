@@ -247,18 +247,18 @@ The plan must survive real life: fewer exercises done daily beats many done once
 
 ## 9. Evidence Quick Reference
 
-| Finding | Source |
-|---|---|
-| F0 + formants together change perceived sex ~82%; either alone usually fails | Hillenbrand & Clark 2009, PMID 19525544 |
-| Gender identifications follow F0 even against formant info | Gelfer & Mikos 2005, PMID 16301101 |
-| F0–femininity r = .89; lowest female-identified average F0 = 155 Hz | Wolfe et al. 1990, PMID 2299839 |
-| Therapy F0 gains +27/+39/+25 Hz (vowel/reading/spontaneous) | Schwarz 2023, PMID 37481572 |
-| 14-week PET+ART RCT: +49 Hz speaking F0; combination > single dimension | Leyns et al. 2024, PMID 39465090 |
-| Gains largely stable at 1 year; lower F0 limit unchanged | Leyns et al. 2024, PMID 38704279 |
-| Hybrid clinic+app: 3/4 reached 170–220 Hz | Hawley et al. 2024, PMID 34706847 |
-| Estrogen does not change adult voice; therapy first line | WPATH SOC-8, PMID 36238954 |
-| TWVQ: validated 30-item voice-related QoL for trans women | Dacakis et al. 2013, PMID 23415146 |
-| German consensus: conservative therapy first, HNO check first, ST1 coverage | Heydrich & Rustemeier-Holtwick 2022, PMID 36328187 |
+| Finding                                                                      | Source                                             |
+| ---------------------------------------------------------------------------- | -------------------------------------------------- |
+| F0 + formants together change perceived sex ~82%; either alone usually fails | Hillenbrand & Clark 2009, PMID 19525544            |
+| Gender identifications follow F0 even against formant info                   | Gelfer & Mikos 2005, PMID 16301101                 |
+| F0–femininity r = .89; lowest female-identified average F0 = 155 Hz          | Wolfe et al. 1990, PMID 2299839                    |
+| Therapy F0 gains +27/+39/+25 Hz (vowel/reading/spontaneous)                  | Schwarz 2023, PMID 37481572                        |
+| 14-week PET+ART RCT: +49 Hz speaking F0; combination > single dimension      | Leyns et al. 2024, PMID 39465090                   |
+| Gains largely stable at 1 year; lower F0 limit unchanged                     | Leyns et al. 2024, PMID 38704279                   |
+| Hybrid clinic+app: 3/4 reached 170–220 Hz                                    | Hawley et al. 2024, PMID 34706847                  |
+| Estrogen does not change adult voice; therapy first line                     | WPATH SOC-8, PMID 36238954                         |
+| TWVQ: validated 30-item voice-related QoL for trans women                    | Dacakis et al. 2013, PMID 23415146                 |
+| German consensus: conservative therapy first, HNO check first, ST1 coverage  | Heydrich & Rustemeier-Holtwick 2022, PMID 36328187 |
 
 Guidelines not in med-db: ASHA Practice Portal "Gender Affirming Voice and Communication" (professional
 scope: SLP-delivered, client-centered goals, voice dysphoria as communication concern, trauma-informed

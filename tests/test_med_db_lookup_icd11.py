@@ -1,12 +1,7 @@
 """Tests for med-db-lookup-icd11.py — ICD-11 MMS lookup functions."""
 
-import sys
-from pathlib import Path
-
-import pytest
-
 import med_db_lookup_icd11 as icd11
-
+import pytest
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -22,35 +17,66 @@ def _create_tabulation_file(base_dir, release="2026-01", language="en", rows=Non
     if rows is None:
         rows = [
             [
-                "Foundation URI", "Linearization URI", "Code", "BlockId",
-                "Title", "ClassKind", "DepthInKind", "IsResidual",
-                "ChapterNo", "BrowserLink", "isLeaf", "Primary tabulation",
-                "Grouping1", "Grouping2", "Grouping3", "Grouping4",
-                "Grouping5", "CodingNote", "Parent",
+                "Foundation URI",
+                "Linearization URI",
+                "Code",
+                "BlockId",
+                "Title",
+                "ClassKind",
+                "DepthInKind",
+                "IsResidual",
+                "ChapterNo",
+                "BrowserLink",
+                "isLeaf",
+                "Primary tabulation",
+                "Grouping1",
+                "Grouping2",
+                "Grouping3",
+                "Grouping4",
+                "Grouping5",
+                "CodingNote",
+                "Parent",
             ],
             [
                 "http://id.who.int/icd/entity/123",
                 "http://id.who.int/icd/entity/123",  # same as foundation_uri so both ancestor/child lookups work
-                "6A02", "Block_6A02",
-                "Autism spectrum disorder", "category", "4", "False",
+                "6A02",
+                "Block_6A02",
+                "Autism spectrum disorder",
+                "category",
+                "4",
+                "False",
                 "06",
                 "https://icd.who.int/browse/2026-01/mms/en#123",
-                "True", "1", "Neurodevelopmental disorders",
+                "True",
+                "1",
+                "Neurodevelopmental disorders",
                 "Mental, behavioural or neurodevelopmental disorders",
-                "", "", "", "",
+                "",
+                "",
+                "",
+                "",
                 "http://id.who.int/icd/entity/456",
             ],
             [
                 "http://id.who.int/icd/entity/789",
                 "http://id.who.int/icd/release/11/2026-01/mms/789",
-                "6A02.0", "Block_6A02_0",
+                "6A02.0",
+                "Block_6A02_0",
                 "Autism spectrum disorder without disorder of intellectual development",
-                "category", "5", "False",
+                "category",
+                "5",
+                "False",
                 "06",
                 "https://icd.who.int/browse/2026-01/mms/en#789",
-                "True", "1", "Neurodevelopmental disorders",
+                "True",
+                "1",
+                "Neurodevelopmental disorders",
                 "Mental, behavioural or neurodevelopmental disorders",
-                "", "", "", "",
+                "",
+                "",
+                "",
+                "",
                 "http://id.who.int/icd/entity/123",  # parent = parent's foundation_uri
             ],
         ]
@@ -71,18 +97,27 @@ def _create_mapping_file(base_dir, release="2026-01", rows=None):
     if rows is None:
         rows = [
             [
-                "icd10Code", "icd10Title", "icd10Chapter",
-                "icd11Code", "icd11Title", "icd11Chapter",
+                "icd10Code",
+                "icd10Title",
+                "icd10Chapter",
+                "icd11Code",
+                "icd11Title",
+                "icd11Chapter",
             ],
             [
-                "F84.0", "Autistic disorder", "Mental and behavioural disorders",
-                "6A02", "Autism spectrum disorder",
+                "F84.0",
+                "Autistic disorder",
+                "Mental and behavioural disorders",
+                "6A02",
+                "Autism spectrum disorder",
                 "Mental, behavioural or neurodevelopmental disorders",
             ],
             [
-                "F90.0", "Disturbance of activity and attention",
+                "F90.0",
+                "Disturbance of activity and attention",
                 "Mental and behavioural disorders",
-                "6A05", "Attention deficit hyperactivity disorder",
+                "6A05",
+                "Attention deficit hyperactivity disorder",
                 "Mental, behavioural or neurodevelopmental disorders",
             ],
         ]
@@ -110,11 +145,25 @@ def _load_entries(tmp_path, monkeypatch):
 class TestBuildColumnMap:
     def test_en_header(self):
         header = [
-            "Foundation URI", "Linearization URI", "Code", "BlockId",
-            "Title", "ClassKind", "DepthInKind", "IsResidual",
-            "ChapterNo", "BrowserLink", "isLeaf", "Primary tabulation",
-            "Grouping1", "Grouping2", "Grouping3", "Grouping4",
-            "Grouping5", "CodingNote", "Parent",
+            "Foundation URI",
+            "Linearization URI",
+            "Code",
+            "BlockId",
+            "Title",
+            "ClassKind",
+            "DepthInKind",
+            "IsResidual",
+            "ChapterNo",
+            "BrowserLink",
+            "isLeaf",
+            "Primary tabulation",
+            "Grouping1",
+            "Grouping2",
+            "Grouping3",
+            "Grouping4",
+            "Grouping5",
+            "CodingNote",
+            "Parent",
         ]
         col_map = icd11._build_column_map(header, "en")
         assert col_map["code"] is not None
@@ -126,8 +175,14 @@ class TestBuildColumnMap:
 
     def test_de_header_has_title_en(self):
         header = [
-            "Foundation URI", "Linearization URI", "Code", "BlockId",
-            "Title", "TitleEN", "ClassKind", "DepthInKind",
+            "Foundation URI",
+            "Linearization URI",
+            "Code",
+            "BlockId",
+            "Title",
+            "TitleEN",
+            "ClassKind",
+            "DepthInKind",
         ]
         col_map = icd11._build_column_map(header, "de")
         assert col_map["title"] is not None
@@ -189,7 +244,7 @@ class TestIsMatch:
 
     def test_quote_normalization(self):
         """Dashes and quotes are normalized before matching."""
-        assert icd11._is_match("it's \"fine\"", "its fine") is True
+        assert icd11._is_match('it\'s "fine"', "its fine") is True
 
 
 # ---------------------------------------------------------------------------

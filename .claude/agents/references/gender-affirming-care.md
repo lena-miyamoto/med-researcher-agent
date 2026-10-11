@@ -67,14 +67,14 @@ binding protocol.
 
 Hainey et al. (2025) umbrella review (PMID: 40768163) synthesized 24 systematic reviews. Pooled estimates:
 
-| Outcome | TNB prevalence | OR vs. cisgender |
-|---|---|---|
-| Suicidal ideation | 50% (95% CI 42-57%) | 3.48 |
-| Suicide attempts | 29% (95% CI 25-34%) | 3.45 |
-| Nonsuicidal self-injury | 47% (95% CI 40-54%) | 3.42 |
-| Eating disorders | 18% (95% CI 16-19%) | — |
-| Autistic spectrum | 11% (95% CI 8-16%) | — |
-| PTSD | — | 2.52 |
+| Outcome                 | TNB prevalence      | OR vs. cisgender |
+| ----------------------- | ------------------- | ---------------- |
+| Suicidal ideation       | 50% (95% CI 42-57%) | 3.48             |
+| Suicide attempts        | 29% (95% CI 25-34%) | 3.45             |
+| Nonsuicidal self-injury | 47% (95% CI 40-54%) | 3.42             |
+| Eating disorders        | 18% (95% CI 16-19%) | —                |
+| Autistic spectrum       | 11% (95% CI 8-16%)  | —                |
+| PTSD                    | —                   | 2.52             |
 
 Polidori et al. (2024, PMID: 38320410): suicide attempt rate 20.1% in gender-diverse vs. 1.90% cisgender —
 10.6-fold difference.
@@ -104,6 +104,7 @@ Non-binary identities are valid, stable identities — not "trans lite" or an in
   binary trans experience.
 
 - **No assumed trajectory.** NB people may pursue no, partial, or full medical transition. Don't assume.
+
 - **Language.** Ask pronouns (they/them, neopronouns, multiple sets). Gendered languages (German): work
   with client on affirming solutions. Fill-in-the-blank gender fields, not M/F checkboxes.
 
@@ -169,18 +170,18 @@ Overlap between gender diversity and autism/ADHD is substantial and clinically i
 
 ### Trans-Affirming Clinical Practice — Key Do's and Don'ts
 
-| Mistake | What to do instead |
-|---|---|
-| Misgendering or deadnaming | Use correct name/pronouns. Mistake → brief apology, correct, move on. Client does not comfort you. |
-| Pathologizing trans identity | Being trans is not the clinical problem. Treat distress, not identity. |
-| Asking invasive, irrelevant questions about body/genitals | Ask only what's clinically relevant. Explain why. Ask consent first. |
-| Attributing all problems to gender identity | Trans people have full range of human experience. Don't overlook non-gender concerns. |
-| Avoiding gender entirely out of fear | Cis therapists who never bring up gender when relevant are also failing. Let client lead but don't avoid. |
-| Remaining "neutral" about systemic injustice | Silence about oppression is not neutrality. Name structural factors. |
-| Expecting client to educate you | Do your own learning. Therapy hour is not your personal seminar. |
-| Outdated language | Use: "transgender"/"trans," "assigned male/female at birth," "pronouns" (not "preferred"), "gender dysphoria"/"gender incongruence." |
-| Becoming defensive after a mistake | Acknowledge, apologize briefly, move on. Therapist — not client — initiates rupture repair. |
-| Cisnormative intake forms | Fill-in-the-blank gender fields. Ask pronouns. Gender-neutral language in all documentation. |
+| Mistake                                                   | What to do instead                                                                                                                   |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Misgendering or deadnaming                                | Use correct name/pronouns. Mistake → brief apology, correct, move on. Client does not comfort you.                                   |
+| Pathologizing trans identity                              | Being trans is not the clinical problem. Treat distress, not identity.                                                               |
+| Asking invasive, irrelevant questions about body/genitals | Ask only what's clinically relevant. Explain why. Ask consent first.                                                                 |
+| Attributing all problems to gender identity               | Trans people have full range of human experience. Don't overlook non-gender concerns.                                                |
+| Avoiding gender entirely out of fear                      | Cis therapists who never bring up gender when relevant are also failing. Let client lead but don't avoid.                            |
+| Remaining "neutral" about systemic injustice              | Silence about oppression is not neutrality. Name structural factors.                                                                 |
+| Expecting client to educate you                           | Do your own learning. Therapy hour is not your personal seminar.                                                                     |
+| Outdated language                                         | Use: "transgender"/"trans," "assigned male/female at birth," "pronouns" (not "preferred"), "gender dysphoria"/"gender incongruence." |
+| Becoming defensive after a mistake                        | Acknowledge, apologize briefly, move on. Therapist — not client — initiates rupture repair.                                          |
+| Cisnormative intake forms                                 | Fill-in-the-blank gender fields. Ask pronouns. Gender-neutral language in all documentation.                                         |
 
 **Structural signals:** Display LGBTQ+ affirming indicators. Include own pronouns in introductions and
 materials — normalizes practice, signals safety without requiring client disclosure.

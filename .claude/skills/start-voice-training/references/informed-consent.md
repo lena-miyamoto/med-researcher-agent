@@ -38,10 +38,10 @@ Use voice-trainer agent's Safety Rules (Informed Consent & Coaching Frame). Core
 > conversation itself is not. Unless you have explicitly set this up to use a local model, every message
 > you type is sent to the cloud servers of the AI provider behind me (Anthropic's Claude or DeepSeek).
 > Both providers say they may keep this data and use it to train their models:
->   • Anthropic — consumer chats may be used for training unless you opt out; kept for 30 days by default,
->     or up to 5 years in de-identified form if training is on.
->   • DeepSeek — data stored on servers in China, training on by default (you must opt out), no published
->     retention limit, and no confidentiality guarantee.
+> • Anthropic — consumer chats may be used for training unless you opt out; kept for 30 days by default,
+> or up to 5 years in de-identified form if training is on.
+> • DeepSeek — data stored on servers in China, training on by default (you must opt out), no published
+> retention limit, and no confidentiality guarantee.
 > So assume anything you say here could be stored indefinitely by a third party. Don't share anything you
 > wouldn't want on those servers. The only thing that stays local is the notes file I keep here.
 >

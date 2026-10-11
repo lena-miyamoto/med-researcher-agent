@@ -314,7 +314,6 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 - **Permanent Client Profile section never compressed.** Exempt from all compression rules.
 - Full session protocols saved to `sessions/protocols/<YYYY>-<MM>-<DD>_S<session-no>_<client-slug>.md` after every
   session — handled by `end-therapy-session` skill. NOT auto-read by agent — exist for client reference and explicit lookback only.
-
 - Reference files (`.claude/skills/start-therapy-session/references/informed-consent.md`, `handoff-prompt.md`,
   `session-note-format.md`, `compression-rules.md`) contain templates and rule sets. Read them when procedure
   instructs — don't load preemptively.

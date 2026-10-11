@@ -1,12 +1,9 @@
 """Tests for med-db-lookup-dsm5.py — DSM-5-TR classification lookup."""
 
 import json
-from pathlib import Path
-
-import pytest
 
 import med_db_lookup_dsm5 as dsm5
-
+import pytest
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -120,7 +117,7 @@ class TestSearchByCode:
         result = dsm5.search_by_code(self.data, "F32.0")
         assert isinstance(result, list)
         assert len(result) == 1
-        cat, disorder = result[0]
+        _cat, disorder = result[0]
         assert disorder["code"] == "F32.0"
 
     def test_partial_match_multiple(self):
@@ -151,7 +148,7 @@ class TestSearchByKeyword:
     def test_match_found(self):
         results = dsm5.search_by_keyword(self.data, "attention")
         assert len(results) == 1
-        cat, disorder = results[0]
+        _cat, disorder = results[0]
         assert "Hyperactivity" in disorder["name"]
 
     def test_no_match(self):

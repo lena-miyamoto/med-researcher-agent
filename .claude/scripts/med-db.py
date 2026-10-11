@@ -46,7 +46,6 @@ def unique_filename(directory, stem, suffix):
         n += 1
 
 
-
 # ---------------------------------------------------------------------------
 # Thin fetch wrappers — delegate to utils, convert RuntimeError → SystemExit
 # for CLI use
@@ -58,7 +57,7 @@ def _fetch_text(endpoint, params, timeout=60):
         return utils.fetch_pubmed(endpoint, params, timeout)
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
 
 def _fetch_europe_pmc_text(module, params, timeout=60):
@@ -66,7 +65,7 @@ def _fetch_europe_pmc_text(module, params, timeout=60):
         return utils.fetch_europe_pmc(module, params, timeout)
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
 
 # Re-export shared helpers (referenced by other modules and tests)
@@ -190,14 +189,39 @@ def load_existing_index_entries(index_path):
     except (json.JSONDecodeError, OSError):
         return {}, {}, {}, {}, {}, {}
 
-    search_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("searches", [])}
-    paper_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("papers", [])}
-    fulltext_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("fulltext", [])}
-    guideline_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("guidelines", [])}
-    web_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("web", [])}
-    dictionary_entries = {entry["path"]: {k: v for k, v in entry.items() if k != "path"} for entry in data.get("dictionary", [])}
+    search_entries = {
+        entry["path"]: {k: v for k, v in entry.items() if k != "path"}
+        for entry in data.get("searches", [])
+    }
+    paper_entries = {
+        entry["path"]: {k: v for k, v in entry.items() if k != "path"}
+        for entry in data.get("papers", [])
+    }
+    fulltext_entries = {
+        entry["path"]: {k: v for k, v in entry.items() if k != "path"}
+        for entry in data.get("fulltext", [])
+    }
+    guideline_entries = {
+        entry["path"]: {k: v for k, v in entry.items() if k != "path"}
+        for entry in data.get("guidelines", [])
+    }
+    web_entries = {
+        entry["path"]: {k: v for k, v in entry.items() if k != "path"}
+        for entry in data.get("web", [])
+    }
+    dictionary_entries = {
+        entry["path"]: {k: v for k, v in entry.items() if k != "path"}
+        for entry in data.get("dictionary", [])
+    }
 
-    return search_entries, paper_entries, fulltext_entries, guideline_entries, web_entries, dictionary_entries
+    return (
+        search_entries,
+        paper_entries,
+        fulltext_entries,
+        guideline_entries,
+        web_entries,
+        dictionary_entries,
+    )
 
 
 def query_from_search_json(path):
@@ -206,7 +230,11 @@ def query_from_search_json(path):
     if result:
         return result.get("querytranslation") or "Query unavailable; review and refine."
     request = data.get("request", {})
-    return request.get("queryString") or request.get("query") or "Query unavailable; review and refine."
+    return (
+        request.get("queryString")
+        or request.get("query")
+        or "Query unavailable; review and refine."
+    )
 
 
 def source_from_search_json(path):
@@ -235,13 +263,15 @@ def collect_index_data(med_db):
             rel = str(path.relative_to(med_db))
             query = query_from_search_json(path)
             source_name = source_from_search_json(path)
-            searches.append({
-                "path": rel,
-                "source": source_name,
-                "query": query,
-                "purpose": DEFAULT_SEARCH_PURPOSE,
-                "accessed": today,
-            })
+            searches.append(
+                {
+                    "path": rel,
+                    "source": source_name,
+                    "query": query,
+                    "purpose": DEFAULT_SEARCH_PURPOSE,
+                    "accessed": today,
+                }
+            )
 
     # Papers
     papers_dir = med_db / "papers"
@@ -250,13 +280,15 @@ def collect_index_data(med_db):
             paper_dir = meta_path.parent
             rel_dir = str(paper_dir.relative_to(med_db))
             identifier, url = default_paper_entry(meta_path)
-            papers.append({
-                "path": rel_dir,
-                "identifier": identifier,
-                "url": url,
-                "purpose": DEFAULT_PAPER_PURPOSE,
-                "accessed": today,
-            })
+            papers.append(
+                {
+                    "path": rel_dir,
+                    "identifier": identifier,
+                    "url": url,
+                    "purpose": DEFAULT_PAPER_PURPOSE,
+                    "accessed": today,
+                }
+            )
 
     # Fulltext
     fulltext_dir = med_db / "fulltext"
@@ -265,13 +297,15 @@ def collect_index_data(med_db):
             ft_dir = meta_path.parent
             rel_dir = str(ft_dir.relative_to(med_db))
             identifier, url = default_paper_entry(meta_path)
-            fulltexts.append({
-                "path": rel_dir,
-                "identifier": identifier,
-                "url": url,
-                "purpose": DEFAULT_PAPER_PURPOSE,
-                "accessed": today,
-            })
+            fulltexts.append(
+                {
+                    "path": rel_dir,
+                    "identifier": identifier,
+                    "url": url,
+                    "purpose": DEFAULT_PAPER_PURPOSE,
+                    "accessed": today,
+                }
+            )
 
     # Guidelines — scan both source.md and source.LANG.md patterns
     guidelines_dir = med_db / "guidelines"
@@ -284,25 +318,29 @@ def collect_index_data(med_db):
                 if rel_dir in seen_dirs:
                     continue
                 seen_dirs.add(rel_dir)
-                guidelines.append({
-                    "path": rel_dir,
-                    "source": "Review and refine source.",
-                    "url": "URL unavailable; review and refine.",
-                    "purpose": DEFAULT_PAPER_PURPOSE,
-                    "accessed": today,
-                })
+                guidelines.append(
+                    {
+                        "path": rel_dir,
+                        "source": "Review and refine source.",
+                        "url": "URL unavailable; review and refine.",
+                        "purpose": DEFAULT_PAPER_PURPOSE,
+                        "accessed": today,
+                    }
+                )
 
     # Web
     web_dir = med_db / "web"
     if web_dir.is_dir():
         for path in sorted(web_dir.rglob("*.html")):
             rel = str(path.relative_to(med_db))
-            web_sources.append({
-                "path": rel,
-                "url": "URL unavailable; review and refine.",
-                "purpose": DEFAULT_WEB_PURPOSE,
-                "accessed": today,
-            })
+            web_sources.append(
+                {
+                    "path": rel,
+                    "url": "URL unavailable; review and refine.",
+                    "purpose": DEFAULT_WEB_PURPOSE,
+                    "accessed": today,
+                }
+            )
 
     # Dictionary — term definitions archived by the define-terms skill
     dictionary_dir = med_db / "dictionary"
@@ -311,14 +349,16 @@ def collect_index_data(med_db):
             term_dir = meta_path.parent
             rel_dir = str(term_dir.relative_to(med_db))
             entry = _dictionary_entry(meta_path)
-            dictionary.append({
-                "path": rel_dir,
-                "term": entry.get("term") or "Term unavailable; review and refine.",
-                "english": entry.get("english") or "",
-                "source_type": entry.get("source_type") or "other",
-                "source_ref": entry.get("source_ref") or "",
-                "accessed": today,
-            })
+            dictionary.append(
+                {
+                    "path": rel_dir,
+                    "term": entry.get("term") or "Term unavailable; review and refine.",
+                    "english": entry.get("english") or "",
+                    "source_type": entry.get("source_type") or "other",
+                    "source_ref": entry.get("source_ref") or "",
+                    "accessed": today,
+                }
+            )
 
     return searches, papers, fulltexts, guidelines, web_sources, dictionary
 
@@ -332,10 +372,25 @@ def _dictionary_entry(meta_path):
     return data if isinstance(data, dict) else {}
 
 
-def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates=None, guideline_updates=None, web_updates=None, dictionary_updates=None):
+def sync_index(
+    med_db,
+    search_updates=None,
+    paper_updates=None,
+    fulltext_updates=None,
+    guideline_updates=None,
+    web_updates=None,
+    dictionary_updates=None,
+):
     """Generate index.json from filesystem, merging in user-provided metadata."""
     index_path = med_db / "index.json"
-    existing_searches, existing_papers, existing_fulltexts, existing_guidelines, existing_web, existing_dictionary = load_existing_index_entries(index_path)
+    (
+        existing_searches,
+        existing_papers,
+        existing_fulltexts,
+        existing_guidelines,
+        existing_web,
+        existing_dictionary,
+    ) = load_existing_index_entries(index_path)
 
     if search_updates:
         existing_searches.update(search_updates)
@@ -350,7 +405,9 @@ def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates
     if dictionary_updates:
         existing_dictionary.update(dictionary_updates)
 
-    fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web, fs_dictionary = collect_index_data(med_db)
+    fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web, fs_dictionary = collect_index_data(
+        med_db
+    )
 
     def _merge(fs_list, existing_dict):
         """Merge filesystem-derived items with existing index entries.
@@ -375,7 +432,9 @@ def sync_index(med_db, search_updates=None, paper_updates=None, fulltext_updates
         "web": _merge(fs_web, existing_web),
         "dictionary": _merge(fs_dictionary, existing_dictionary),
     }
-    index_path.write_text(json.dumps(index_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    index_path.write_text(
+        json.dumps(index_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -408,11 +467,13 @@ def archive_search(args, med_db, topic):
         return search_file, records
 
     params = build_common_params(args)
-    params.update({
-        "retmode": "json",
-        "term": args.query,
-        "retmax": str(args.retmax),
-    })
+    params.update(
+        {
+            "retmode": "json",
+            "term": args.query,
+            "retmax": str(args.retmax),
+        }
+    )
     raw_search = _fetch_text("esearch.fcgi", params)
     parsed_search = json.loads(raw_search)
     search_slug = args.search_slug or slugify(args.query, fallback="pubmed-search")
@@ -445,11 +506,13 @@ def archive_pmid(args, med_db, pmid, topic):
     save_text(metadata_file, raw_summary)
 
     params = build_common_params(args)
-    params.update({
-        "id": str(pmid),
-        "rettype": "abstract",
-        "retmode": "text",
-    })
+    params.update(
+        {
+            "id": str(pmid),
+            "rettype": "abstract",
+            "retmode": "text",
+        }
+    )
     try:
         raw_abstract = utils.fetch_pubmed("efetch.fcgi", params)
     except RuntimeError as exc:
@@ -457,7 +520,13 @@ def archive_pmid(args, med_db, pmid, topic):
         raw_abstract = f"Abstract unavailable from PubMed for PMID {pmid}.\n"
     save_text(abstract_file, raw_abstract)
 
-    return metadata_file, abstract_file, title, f"PMID:{pmid}", f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
+    return (
+        metadata_file,
+        abstract_file,
+        title,
+        f"PMID:{pmid}",
+        f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+    )
 
 
 def parse_europe_pmc_record(record_spec):
@@ -497,10 +566,19 @@ def archive_europe_pmc_record(med_db, record_spec, topic, force=False):
     abstract_file = paper_dir / "abstract.txt"
     save_text(metadata_file, raw_record)
 
-    abstract_text = record.get("abstractText") or f"Abstract unavailable from Europe PMC for {source_name}:{record_id}."
+    abstract_text = (
+        record.get("abstractText")
+        or f"Abstract unavailable from Europe PMC for {source_name}:{record_id}."
+    )
     save_text(abstract_file, abstract_text.rstrip() + "\n")
 
-    return metadata_file, abstract_file, title, f"{source_name}:{record_id}", europe_pmc_article_url(source_name, record_id)
+    return (
+        metadata_file,
+        abstract_file,
+        title,
+        f"{source_name}:{record_id}",
+        europe_pmc_article_url(source_name, record_id),
+    )
 
 
 def _crossref_title(message):
@@ -548,7 +626,9 @@ def archive_crossref_doi(med_db, doi, topic, force=False):
     abstract_file = paper_dir / "abstract.txt"
     save_text(metadata_file, raw_work)
 
-    abstract_text = _crossref_abstract(message) or f"Abstract unavailable from Crossref for DOI {doi}."
+    abstract_text = (
+        _crossref_abstract(message) or f"Abstract unavailable from Crossref for DOI {doi}."
+    )
     save_text(abstract_file, abstract_text.rstrip() + "\n")
 
     url = message.get("URL") or f"https://doi.org/{doi}"
@@ -585,9 +665,7 @@ def archive_web_query(args, med_db, topic):
     web_file = topic_dir / filename
     today = datetime.date.today().isoformat()
     if query_url_builder:
-        archive_note = (
-            f"This file archives a reproducible {spec['label']} search URL for discovery use in the med-db workflow."
-        )
+        archive_note = f"This file archives a reproducible {spec['label']} search URL for discovery use in the med-db workflow."
         link_label = f"Open this {spec['label']} query"
     else:
         archive_note = (
@@ -595,23 +673,25 @@ def archive_web_query(args, med_db, topic):
             "This file preserves the query text together with the source landing page used for manual lookup."
         )
         link_label = f"Open the {spec['label']} search entry"
-    html_body = "\n".join([
-        "<!doctype html>",
-        "<html lang=\"en\">",
-        "<head>",
-        "  <meta charset=\"utf-8\">",
-        f"  <title>{spec['label']} query archive: {html.escape(args.query)}</title>",
-        "</head>",
-        "<body>",
-        f"  <h1>{spec['label']} Query Archive</h1>",
-        f"  <p><strong>Source:</strong> {spec['label']}</p>",
-        f"  <p><strong>Query:</strong> {html.escape(args.query)}</p>",
-        f"  <p><strong>Access date:</strong> {today}</p>",
-        f"  <p>{archive_note}</p>",
-        f"  <p><a href=\"{target_url}\">{link_label}</a></p>",
-        "</body>",
-        "</html>",
-    ])
+    html_body = "\n".join(
+        [
+            "<!doctype html>",
+            '<html lang="en">',
+            "<head>",
+            '  <meta charset="utf-8">',
+            f"  <title>{spec['label']} query archive: {html.escape(args.query)}</title>",
+            "</head>",
+            "<body>",
+            f"  <h1>{spec['label']} Query Archive</h1>",
+            f"  <p><strong>Source:</strong> {spec['label']}</p>",
+            f"  <p><strong>Query:</strong> {html.escape(args.query)}</p>",
+            f"  <p><strong>Access date:</strong> {today}</p>",
+            f"  <p>{archive_note}</p>",
+            f'  <p><a href="{target_url}">{link_label}</a></p>',
+            "</body>",
+            "</html>",
+        ]
+    )
     save_text(web_file, html_body + "\n")
     return web_file, target_url
 
@@ -625,7 +705,6 @@ def dedupe(values):
         seen.add(value)
         ordered.append(value)
     return ordered
-
 
 
 def copy2_verified(source, destination):
@@ -734,7 +813,9 @@ def migrate_flat_to_topic(med_db, dry_run=False):
     else:
         print(f"Migrated {migrated} items ({errors} errors).")
         if migrated > 0:
-            print("Original files preserved. Verify the new structure, then remove old flat directories.")
+            print(
+                "Original files preserved. Verify the new structure, then remove old flat directories."
+            )
     return 0 if errors == 0 else 1
 
 
@@ -749,7 +830,7 @@ def parse_args():
     )
     parser.add_argument(
         "--source",
-        choices=("pubmed", "europe-pmc") + tuple(WEB_SOURCE_SPECS),
+        choices=("pubmed", "europe-pmc", *tuple(WEB_SOURCE_SPECS)),
         default="pubmed",
         help="Primary source for the current run. Defaults to pubmed.",
     )
@@ -854,7 +935,9 @@ def parse_args():
 
     if args.remove_pmid or args.remove_epmc_record:
         if args.query or args.pmid or args.epmc_record or args.doi:
-            parser.error("--remove-pmid/--remove-epmc-record cannot be combined with archival options")
+            parser.error(
+                "--remove-pmid/--remove-epmc-record cannot be combined with archival options"
+            )
         return args
 
     if not args.query and not args.pmid and not args.epmc_record and not args.doi:
@@ -980,9 +1063,9 @@ def main():
                 "accessed": datetime.date.today().isoformat(),
             }
             if args.source == "pubmed":
-                pmids.extend(search_hits[:args.archive_first])
+                pmids.extend(search_hits[: args.archive_first])
             else:
-                epmc_records.extend(search_hits[:args.archive_first])
+                epmc_records.extend(search_hits[: args.archive_first])
 
     pmids = dedupe([str(pmid) for pmid in pmids])
     epmc_records = dedupe([r.upper() for r in epmc_records])
@@ -1037,14 +1120,15 @@ def main():
         if index < len(dois) - 1 and args.delay > 0:
             time.sleep(args.delay)
 
-    sync_index(med_db, search_updates=search_updates, paper_updates=paper_updates, web_updates=web_updates)
+    sync_index(
+        med_db, search_updates=search_updates, paper_updates=paper_updates, web_updates=web_updates
+    )
 
     result = {
         "search_file": str(search_file) if search_file else None,
         "search_source": None,
         "web_sources": [
-            {"path": path, "url": details["url"]}
-            for path, details in sorted(web_updates.items())
+            {"path": path, "url": details["url"]} for path, details in sorted(web_updates.items())
         ],
         "archived_records": [
             {

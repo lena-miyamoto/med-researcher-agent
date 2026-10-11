@@ -1,32 +1,33 @@
 """Tests for med-db-lookup.py — external lookup without network calls."""
 
+import contextlib
 import json
 import sys
 
-import pytest
-
 import med_db_lookup as ml
-
+import pytest
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
 # ---------------------------------------------------------------------------
 
-PUBMED_ESUMMARY = json.dumps({
-    "result": {
-        "uids": ["25946513"],
-        "25946513": {
-            "title": "Lisdexamfetamine increases cortical acetylcholine efflux",
-            "source": "J Neurochem",
-            "pubdate": "2015 Jul",
-            "authors": [{"name": "Hutson PH"}, {"name": "Heal DJ"}],
-            "articleids": [
-                {"idtype": "pubmed", "value": "25946513"},
-                {"idtype": "doi", "value": "10.1111/jnc.13157"},
-            ],
-        },
+PUBMED_ESUMMARY = json.dumps(
+    {
+        "result": {
+            "uids": ["25946513"],
+            "25946513": {
+                "title": "Lisdexamfetamine increases cortical acetylcholine efflux",
+                "source": "J Neurochem",
+                "pubdate": "2015 Jul",
+                "authors": [{"name": "Hutson PH"}, {"name": "Heal DJ"}],
+                "articleids": [
+                    {"idtype": "pubmed", "value": "25946513"},
+                    {"idtype": "doi", "value": "10.1111/jnc.13157"},
+                ],
+            },
+        }
     }
-})
+)
 
 PUBMED_EFETCH = (
     "1.  J Neurochem. 2015 Jul.\n\n"
@@ -38,39 +39,48 @@ PUBMED_EFETCH = (
     "Copyright 2015.\n"
 )
 
-PUBMED_ESEARCH_DOI = json.dumps({
-    "esearchresult": {
-        "idlist": ["25946513"],
-        "querytranslation": "10.1111/jnc.13157[doi]",
-        "count": "1",
+PUBMED_ESEARCH_DOI = json.dumps(
+    {
+        "esearchresult": {
+            "idlist": ["25946513"],
+            "querytranslation": "10.1111/jnc.13157[doi]",
+            "count": "1",
+        }
     }
-})
+)
 
-EUROPE_PMC_SEARCH = json.dumps({
-    "resultList": {
-        "result": [{
-            "source": "MED",
-            "id": "25946513",
-            "pmid": "25946513",
-            "doi": "10.1111/jnc.13157",
-            "title": "Lisdexamfetamine increases cortical acetylcholine efflux",
-            "authorString": "Hutson PH, Heal DJ",
-            "journalTitle": "J Neurochem",
-            "firstPublicationDate": "2015-07-01",
-            "abstractText": "<h4>Background</h4><p>Lisdexamfetamine dimesylate (LDX) is a prodrug.</p><h4>Results</h4><p>LDX increased cortical ACh.</p>",
-        }],
-    },
-})
+EUROPE_PMC_SEARCH = json.dumps(
+    {
+        "resultList": {
+            "result": [
+                {
+                    "source": "MED",
+                    "id": "25946513",
+                    "pmid": "25946513",
+                    "doi": "10.1111/jnc.13157",
+                    "title": "Lisdexamfetamine increases cortical acetylcholine efflux",
+                    "authorString": "Hutson PH, Heal DJ",
+                    "journalTitle": "J Neurochem",
+                    "firstPublicationDate": "2015-07-01",
+                    "abstractText": "<h4>Background</h4><p>Lisdexamfetamine dimesylate (LDX) is a prodrug.</p><h4>Results</h4><p>LDX increased cortical ACh.</p>",
+                }
+            ],
+        },
+    }
+)
 
 
 # ---------------------------------------------------------------------------
 # _extract_abstract_medline
 # ---------------------------------------------------------------------------
 
+
 class TestExtractAbstractMedline:
     def test_plain_text_single_newline_after_heading(self):
         raw = "1. Citation\n\nAbstract\nThis abstract uses one newline after the heading.\n"
-        assert ml._extract_abstract_medline(raw) == "This abstract uses one newline after the heading."
+        assert (
+            ml._extract_abstract_medline(raw) == "This abstract uses one newline after the heading."
+        )
 
     def test_plain_text_cuts_known_sections(self):
         raw = "Abstract\n\nMain abstract.\n\nMeSH terms\nTerm A\n"
@@ -80,6 +90,7 @@ class TestExtractAbstractMedline:
 # ---------------------------------------------------------------------------
 # lookup_pmids
 # ---------------------------------------------------------------------------
+
 
 class TestLookupPmids:
     def test_single_pmid(self):
@@ -102,21 +113,27 @@ class TestLookupPmids:
         assert r["journal"] == "J Neurochem"
 
     def test_batch_pmids(self):
-        batch_summary = json.dumps({
-            "result": {
-                "uids": ["11111", "22222"],
-                "11111": {
-                    "title": "Paper One", "source": "J One", "pubdate": "2024",
-                    "authors": [{"name": "A B"}],
-                    "articleids": [{"idtype": "pubmed", "value": "11111"}],
-                },
-                "22222": {
-                    "title": "Paper Two", "source": "J Two", "pubdate": "2024",
-                    "authors": [{"name": "C D"}],
-                    "articleids": [{"idtype": "pubmed", "value": "22222"}],
-                },
+        batch_summary = json.dumps(
+            {
+                "result": {
+                    "uids": ["11111", "22222"],
+                    "11111": {
+                        "title": "Paper One",
+                        "source": "J One",
+                        "pubdate": "2024",
+                        "authors": [{"name": "A B"}],
+                        "articleids": [{"idtype": "pubmed", "value": "11111"}],
+                    },
+                    "22222": {
+                        "title": "Paper Two",
+                        "source": "J Two",
+                        "pubdate": "2024",
+                        "authors": [{"name": "C D"}],
+                        "articleids": [{"idtype": "pubmed", "value": "22222"}],
+                    },
+                }
             }
-        })
+        )
         calls = []
 
         def fake_fetch(endpoint, params):
@@ -138,11 +155,13 @@ class TestLookupPmids:
         assert "22222" in esummary_calls[0][1]["id"]
 
     def test_missing_pmid(self):
-        summary = json.dumps({
-            "result": {
-                "uids": ["99999"],
+        summary = json.dumps(
+            {
+                "result": {
+                    "uids": ["99999"],
+                }
             }
-        })
+        )
 
         def fake_fetch(endpoint, params):
             if "esummary" in endpoint:
@@ -197,23 +216,34 @@ class TestLookupPmids:
         sleep_calls = []
         monkeypatch.setattr("time.sleep", sleep_calls.append)
 
-        batch_summary = json.dumps({
-            "result": {
-                "uids": ["11111", "22222", "33333"],
-                "11111": {
-                    "title": "P1", "source": "J", "pubdate": "2024",
-                    "authors": [], "articleids": [],
-                },
-                "22222": {
-                    "title": "P2", "source": "J", "pubdate": "2024",
-                    "authors": [], "articleids": [],
-                },
-                "33333": {
-                    "title": "P3", "source": "J", "pubdate": "2024",
-                    "authors": [], "articleids": [],
-                },
+        batch_summary = json.dumps(
+            {
+                "result": {
+                    "uids": ["11111", "22222", "33333"],
+                    "11111": {
+                        "title": "P1",
+                        "source": "J",
+                        "pubdate": "2024",
+                        "authors": [],
+                        "articleids": [],
+                    },
+                    "22222": {
+                        "title": "P2",
+                        "source": "J",
+                        "pubdate": "2024",
+                        "authors": [],
+                        "articleids": [],
+                    },
+                    "33333": {
+                        "title": "P3",
+                        "source": "J",
+                        "pubdate": "2024",
+                        "authors": [],
+                        "articleids": [],
+                    },
+                }
             }
-        })
+        )
 
         def fake_fetch(endpoint, params):
             if "esummary" in endpoint:
@@ -264,6 +294,7 @@ class TestLookupPmids:
 # lookup_epmc_records
 # ---------------------------------------------------------------------------
 
+
 class TestLookupEpmcRecords:
     def test_single_record(self):
         def fake_fetch(module, params):
@@ -306,17 +337,25 @@ class TestLookupEpmcRecords:
         sleep_calls = []
         monkeypatch.setattr("time.sleep", sleep_calls.append)
 
-        epmc_response = json.dumps({
-            "resultList": {
-                "result": [{
-                    "source": "MED", "id": "11111", "pmid": "11111",
-                    "doi": "10.1/foo", "title": "Test P1",
-                    "authorString": "Smith J", "journalTitle": "J Test",
-                    "firstPublicationDate": "2024-01-01",
-                    "abstractText": "<p>Abstract 1</p>",
-                }],
-            },
-        })
+        epmc_response = json.dumps(
+            {
+                "resultList": {
+                    "result": [
+                        {
+                            "source": "MED",
+                            "id": "11111",
+                            "pmid": "11111",
+                            "doi": "10.1/foo",
+                            "title": "Test P1",
+                            "authorString": "Smith J",
+                            "journalTitle": "J Test",
+                            "firstPublicationDate": "2024-01-01",
+                            "abstractText": "<p>Abstract 1</p>",
+                        }
+                    ],
+                },
+            }
+        )
 
         def fake_fetch(module, params):
             return epmc_response
@@ -336,17 +375,25 @@ class TestLookupEpmcRecords:
         sleep_calls = []
         monkeypatch.setattr("time.sleep", sleep_calls.append)
 
-        epmc_response = json.dumps({
-            "resultList": {
-                "result": [{
-                    "source": "MED", "id": "11111", "pmid": "11111",
-                    "doi": "10.1/foo", "title": "Test P1",
-                    "authorString": "Smith J", "journalTitle": "J Test",
-                    "firstPublicationDate": "2024-01-01",
-                    "abstractText": "<p>Abstract 1</p>",
-                }],
-            },
-        })
+        epmc_response = json.dumps(
+            {
+                "resultList": {
+                    "result": [
+                        {
+                            "source": "MED",
+                            "id": "11111",
+                            "pmid": "11111",
+                            "doi": "10.1/foo",
+                            "title": "Test P1",
+                            "authorString": "Smith J",
+                            "journalTitle": "J Test",
+                            "firstPublicationDate": "2024-01-01",
+                            "abstractText": "<p>Abstract 1</p>",
+                        }
+                    ],
+                },
+            }
+        )
 
         def fake_fetch(module, params):
             return epmc_response
@@ -363,17 +410,25 @@ class TestLookupEpmcRecords:
         sleep_calls = []
         monkeypatch.setattr("time.sleep", sleep_calls.append)
 
-        epmc_response = json.dumps({
-            "resultList": {
-                "result": [{
-                    "source": "MED", "id": "11111", "pmid": "11111",
-                    "doi": "10.1/foo", "title": "Test P1",
-                    "authorString": "Smith J", "journalTitle": "J Test",
-                    "firstPublicationDate": "2024-01-01",
-                    "abstractText": "<p>Abstract 1</p>",
-                }],
-            },
-        })
+        epmc_response = json.dumps(
+            {
+                "resultList": {
+                    "result": [
+                        {
+                            "source": "MED",
+                            "id": "11111",
+                            "pmid": "11111",
+                            "doi": "10.1/foo",
+                            "title": "Test P1",
+                            "authorString": "Smith J",
+                            "journalTitle": "J Test",
+                            "firstPublicationDate": "2024-01-01",
+                            "abstractText": "<p>Abstract 1</p>",
+                        }
+                    ],
+                },
+            }
+        )
 
         def fake_fetch(module, params):
             return epmc_response
@@ -385,6 +440,7 @@ class TestLookupEpmcRecords:
 # ---------------------------------------------------------------------------
 # resolve_doi
 # ---------------------------------------------------------------------------
+
 
 class TestResolveDoi:
     def test_found_in_pubmed(self):
@@ -410,23 +466,29 @@ class TestResolveDoi:
             if isinstance(params, dict) and params.get("term", "").endswith("[doi]"):
                 return empty_pubmed
             # Europe PMC search — return a DOI search result
-            return json.dumps({
-                "resultList": {
-                    "result": [{
-                        "source": "MED",
-                        "id": "25946513",
-                        "pmid": "25946513",
-                        "doi": "10.1111/jnc.13157",
-                        "title": "Test Title",
-                        "authorString": "Hutson PH, Heal DJ",
-                        "journalTitle": "J Neurochem",
-                        "firstPublicationDate": "2015-07-01",
-                        "abstractText": "<p>Abstract text</p>",
-                    }],
-                },
-            })
+            return json.dumps(
+                {
+                    "resultList": {
+                        "result": [
+                            {
+                                "source": "MED",
+                                "id": "25946513",
+                                "pmid": "25946513",
+                                "doi": "10.1111/jnc.13157",
+                                "title": "Test Title",
+                                "authorString": "Hutson PH, Heal DJ",
+                                "journalTitle": "J Neurochem",
+                                "firstPublicationDate": "2015-07-01",
+                                "abstractText": "<p>Abstract text</p>",
+                            }
+                        ],
+                    },
+                }
+            )
 
-        result = ml.resolve_doi("10.1111/jnc.13157", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch)
+        result = ml.resolve_doi(
+            "10.1111/jnc.13157", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch
+        )
         assert result is not None
         assert result["source"] == "europe-pmc"
         assert result["pmid"] == "25946513"
@@ -441,7 +503,9 @@ class TestResolveDoi:
                 return empty_esearch
             return empty_epmc
 
-        result = ml.resolve_doi("10.9999/nonexistent", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch)
+        result = ml.resolve_doi(
+            "10.9999/nonexistent", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch
+        )
         assert result is None
 
     def test_europe_pmc_fallback_empty_record_id(self):
@@ -452,17 +516,23 @@ class TestResolveDoi:
             if isinstance(params, dict) and params.get("term", "").endswith("[doi]"):
                 return empty_pubmed
             # EPMC record missing both 'id' and 'pmid' keys
-            return json.dumps({
-                "resultList": {
-                    "result": [{
-                        "source": None,
-                        "title": "Mystery paper with no identifier",
-                        "doi": "10.9999/ghost",
-                    }],
-                },
-            })
+            return json.dumps(
+                {
+                    "resultList": {
+                        "result": [
+                            {
+                                "source": None,
+                                "title": "Mystery paper with no identifier",
+                                "doi": "10.9999/ghost",
+                            }
+                        ],
+                    },
+                }
+            )
 
-        result = ml.resolve_doi("10.9999/ghost", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch)
+        result = ml.resolve_doi(
+            "10.9999/ghost", pubmed_fetch_func=fake_fetch, epmc_fetch_func=fake_fetch
+        )
         assert result is None
 
 
@@ -470,23 +540,41 @@ class TestResolveDoi:
 # output formatting
 # ---------------------------------------------------------------------------
 
+
 class TestFormatOutput:
     def test_json_output(self):
-        results = [{
-            "source": "pubmed", "pmid": "123", "doi": "10.x", "title": "T",
-            "abstract": "A", "authors": ["X"], "journal": "J", "publication_date": "2024", "url": "https://...",
-        }]
+        results = [
+            {
+                "source": "pubmed",
+                "pmid": "123",
+                "doi": "10.x",
+                "title": "T",
+                "abstract": "A",
+                "authors": ["X"],
+                "journal": "J",
+                "publication_date": "2024",
+                "url": "https://...",
+            }
+        ]
         out = ml._format_json(results)
         data = json.loads(out)
         assert len(data["results"]) == 1
         assert data["results"][0]["pmid"] == "123"
 
     def test_text_output(self):
-        results = [{
-            "source": "pubmed", "pmid": "123", "doi": "10.x", "title": "Test Title",
-            "abstract": "Test abstract.", "authors": ["Smith J"], "journal": "J Test",
-            "publication_date": "2024 Mar", "url": "https://pubmed.ncbi.nlm.nih.gov/123/",
-        }]
+        results = [
+            {
+                "source": "pubmed",
+                "pmid": "123",
+                "doi": "10.x",
+                "title": "Test Title",
+                "abstract": "Test abstract.",
+                "authors": ["Smith J"],
+                "journal": "J Test",
+                "publication_date": "2024 Mar",
+                "url": "https://pubmed.ncbi.nlm.nih.gov/123/",
+            }
+        ]
         out = ml._format_text(results)
         assert "PMID:    123" in out
         assert "Title:   Test Title" in out
@@ -501,6 +589,7 @@ class TestFormatOutput:
 # ---------------------------------------------------------------------------
 # CLI / main
 # ---------------------------------------------------------------------------
+
 
 class TestMain:
     def test_requires_id(self, capsys):
@@ -520,10 +609,8 @@ class TestMain:
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(sys, "argv", ["med-db-lookup", "--pmid", "25946513"])
             mp.setattr(ml, "fetch_pubmed", fake_fetch)
-            try:
+            with contextlib.suppress(SystemExit):
                 ml.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert len(out["results"]) == 1
@@ -536,10 +623,8 @@ class TestMain:
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(sys, "argv", ["med-db-lookup", "--epmc-record", "MED:25946513"])
             mp.setattr(ml, "fetch_europe_pmc", fake_fetch)
-            try:
+            with contextlib.suppress(SystemExit):
                 ml.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert len(out["results"]) == 1
@@ -557,10 +642,8 @@ class TestMain:
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(sys, "argv", ["med-db-lookup", "--pmid", "25946513", "--format", "text"])
             mp.setattr(ml, "fetch_pubmed", fake_fetch)
-            try:
+            with contextlib.suppress(SystemExit):
                 ml.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out
         assert "Result 1" in out
@@ -570,6 +653,7 @@ class TestMain:
 # ---------------------------------------------------------------------------
 # utility: _strip_html
 # ---------------------------------------------------------------------------
+
 
 class TestStripHtml:
     def test_removes_tags(self):

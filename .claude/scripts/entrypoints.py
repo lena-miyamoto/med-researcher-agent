@@ -1,7 +1,9 @@
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
 
+import utils
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
 
@@ -27,7 +29,6 @@ def _load_script(module_name: str, filename: str):
 
 def med_db():
     return _load_script("med_db", "med-db.py").main()
-
 
 
 def med_db_lookup():
@@ -94,21 +95,30 @@ def session_protocol():
     return _load_script("session_protocol", "session-protocol.py").main()
 
 
+def fetch_archive():
+    return _load_script("fetch_archive", "fetch-archive.py").main()
+
+
 def lint_md(args=None):
-    """Run pymarkdownlnt on repo markdown files.
+    """Run rumdl on repo markdown files.
 
-    Falls back to scanning AGENTS.md, README.md, CLAUDE.md, .github,
-    and .claude when no paths are given.  Pass --fix to auto-fix violations.
+    Delegates to utils.lint_source_md when --check-source-md or
+    --fix-source-md is passed.  Otherwise scans AGENTS.md, README.md,
+    CLAUDE.md, .github, and .claude by default.  Pass --fix to auto-fix
+    violations.  rumdl reads its rule set from .rumdl.toml.
     """
-    import subprocess
-
     if args is None:
         args = sys.argv[1:]
+    args = list(args)
+
+    source_md_result = utils.lint_source_md(args)
+    if source_md_result != -1:
+        return source_md_result
 
     fix_mode = False
     if "--fix" in args:
-        args.remove("--fix")
         fix_mode = True
+        args = [a for a in args if a != "--fix"]
 
     if not args:
         repo_root = Path(__file__).resolve().parent.parent.parent
@@ -120,21 +130,12 @@ def lint_md(args=None):
             str(repo_root / ".claude"),
         ]
 
-    base_cmd = ["pymarkdownlnt", "--config", ".pymarkdown.yaml"]
-
     if fix_mode:
-        subprocess.run([*base_cmd, "fix", "-r", *args], check=False)
-        # Always scan afterward so the user sees remaining violations.
-        # pymarkdownlnt fix is silent when it finds nothing to fix (e.g.
-        # only violations whose autofix hasn't shipped yet or rules without
-        # autofix support), which makes --fix look like a no-op.
-        return subprocess.run(
-            [*base_cmd, "scan", "-r", *args], check=False
-        ).returncode
+        subprocess.run(["rumdl", "fmt", *args], check=False)
 
-    return subprocess.run(
-        [*base_cmd, "scan", "-r", *args], check=False
-    ).returncode
+    # Always check afterward so remaining violations are visible even when
+    # --fix rewrote files: `check` reports them and sets the exit code.
+    return subprocess.run(["rumdl", "check", *args], check=False).returncode
 
 
 def test(args=None):
@@ -142,8 +143,44 @@ def test(args=None):
     try:
         from pytest import main as pytest_main
     except ModuleNotFoundError as exc:
-        raise RuntimeError("pytest is not installed; run 'uv sync' to install the dev dependencies") from exc
+        raise RuntimeError(
+            "pytest is not installed; run 'uv sync' to install the dev dependencies"
+        ) from exc
 
     if args is None:
         args = sys.argv[1:] or ["tests/", "-v"]
     return pytest_main(args)
+
+
+def lint():
+    """Run ruff check and ruff format --check on repo Python code.
+
+    Targets .claude/scripts and tests by default.  Pass --fix to apply
+    safe autofixes before checking, or pass explicit paths to override
+    the defaults.
+    """
+    args = list(sys.argv[1:])
+    fix_mode = "--fix" in args
+    if fix_mode:
+        args = [a for a in args if a != "--fix"]
+
+    targets = [a for a in args if not a.startswith("-")] or [".claude/scripts", "tests"]
+
+    if fix_mode:
+        subprocess.run(["ruff", "check", "--fix", *targets], check=False)
+
+    status = 0
+    status |= subprocess.run(["ruff", "check", *targets], check=False).returncode
+    status |= subprocess.run(["ruff", "format", "--check", *targets], check=False).returncode
+    return status
+
+
+def format():
+    """Format repo Python code with ruff format.
+
+    Targets .claude/scripts and tests by default; pass paths to override.
+    """
+    args = sys.argv[1:]
+    flags = [a for a in args if a.startswith("-")]
+    targets = [a for a in args if not a.startswith("-")] or [".claude/scripts", "tests"]
+    return subprocess.run(["ruff", "format", *flags, *targets], check=False).returncode

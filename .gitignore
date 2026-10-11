@@ -16,3 +16,9 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+
+# Ruff stuff:
+.ruff_cache/
+
+# rumdl stuff:
+.rumdl_cache/

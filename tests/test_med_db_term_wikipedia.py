@@ -5,7 +5,6 @@ import sys
 
 import med_db_term_wikipedia as wikipedia
 
-
 # ---------------------------------------------------------------------------
 # build_api_url / build_article_url
 # ---------------------------------------------------------------------------
@@ -27,7 +26,9 @@ class TestBuildApiUrl:
 
 class TestBuildArticleUrl:
     def test_prefers_content_urls(self):
-        content_urls = {"desktop": {"page": "https://en.wikipedia.org/wiki/Artificial_intelligence"}}
+        content_urls = {
+            "desktop": {"page": "https://en.wikipedia.org/wiki/Artificial_intelligence"}
+        }
         url = wikipedia.build_article_url("en", "Artificial_intelligence", content_urls)
         assert url == "https://en.wikipedia.org/wiki/Artificial_intelligence"
 
@@ -78,13 +79,15 @@ class TestParseSummaryResponse:
 
 class TestFetchWikipediaSummary:
     def test_parses_injected_json(self):
-        raw = json.dumps({
-            "lang": "en",
-            "title": "Artificial_intelligence",
-            "displaytitle": "Artificial intelligence",
-            "description": "Field of computer science",
-            "extract": "Artificial intelligence (AI) is intelligence exhibited by machines.",
-        })
+        raw = json.dumps(
+            {
+                "lang": "en",
+                "title": "Artificial_intelligence",
+                "displaytitle": "Artificial intelligence",
+                "description": "Field of computer science",
+                "extract": "Artificial intelligence (AI) is intelligence exhibited by machines.",
+            }
+        )
 
         def fake_fetch(url, title):
             assert title == "Artificial intelligence"
@@ -99,7 +102,7 @@ class TestFetchWikipediaSummary:
 
         try:
             wikipedia.fetch_wikipedia_summary("en", "Nope", fake_fetch)
-            assert False, "expected LookupError"
+            raise AssertionError("expected LookupError")
         except LookupError:
             pass
 
@@ -111,11 +114,17 @@ class TestFetchWikipediaSummary:
 
 class TestMain:
     def test_json_output(self, monkeypatch, capsys):
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-wikipedia",
-            "--title", "Artificial intelligence",
-            "--format", "json",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-wikipedia",
+                "--title",
+                "Artificial intelligence",
+                "--format",
+                "json",
+            ],
+        )
         monkeypatch.setattr(
             wikipedia,
             "fetch_wikipedia_summary",
@@ -134,11 +143,17 @@ class TestMain:
         assert data["extract"] == "Artificial intelligence (AI)."
 
     def test_text_output(self, monkeypatch, capsys):
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-wikipedia",
-            "--title", "Artificial intelligence",
-            "--format", "text",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-wikipedia",
+                "--title",
+                "Artificial intelligence",
+                "--format",
+                "text",
+            ],
+        )
         monkeypatch.setattr(
             wikipedia,
             "fetch_wikipedia_summary",
@@ -157,10 +172,15 @@ class TestMain:
         assert "Artificial intelligence (AI)." in out
 
     def test_not_found_returns_one(self, monkeypatch, capsys):
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-wikipedia",
-            "--title", "No such article",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-wikipedia",
+                "--title",
+                "No such article",
+            ],
+        )
 
         def not_found(language, title, fetch_url_func=None):
             raise LookupError("no Wikipedia article for 'No such article'")
@@ -171,11 +191,17 @@ class TestMain:
         assert "no Wikipedia article" in data["error"]
 
     def test_network_error_json(self, monkeypatch, capsys):
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-wikipedia",
-            "--title", "Some title",
-            "--format", "json",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-wikipedia",
+                "--title",
+                "Some title",
+                "--format",
+                "json",
+            ],
+        )
 
         def boom(language, title, fetch_url_func=None):
             raise OSError("connection refused")

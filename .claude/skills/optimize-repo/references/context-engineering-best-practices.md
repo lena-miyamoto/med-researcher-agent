@@ -20,15 +20,15 @@ Longer files cause **uniform degradation** — Claude doesn't selectively ignore
 
 ## The Seven Instruction Methods
 
-| Method | Loads | Context Cost | Best For |
-|--------|-------|-------------|----------|
-| **CLAUDE.md** | Session start | High (always in context) | Build commands, code style, team conventions |
-| **Rules** (`.claude/rules/`) | Session start or on file match | Low–Medium (path-scoped = efficient) | Cross-cutting directory/file constraints |
-| **Skills** (`.claude/skills/`) | Name/desc at start; body on invocation | Low (body loads on demand) | Procedures, domain knowledge, workflows |
-| **Subagents** (`.claude/agents/`) | Name/desc at start; body in isolated context | Near-zero (only summary returns) | Noisy side tasks, deep search, verification |
-| **Hooks** (`settings.json`) | Lifecycle events | Zero (runs externally) | Deterministic enforcement, linting, guardrails |
-| **Output Styles** (`.claude/output-styles/`) | Every session, never compacted | Highest instruction weight | Major role changes (use built-in styles first) |
-| **Append System Prompt** (CLI flag) | Invocation only | Moderate (cached) | Per-run tone/formatting tweaks |
+| Method                                       | Loads                                        | Context Cost                         | Best For                                       |
+| -------------------------------------------- | -------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| **CLAUDE.md**                                | Session start                                | High (always in context)             | Build commands, code style, team conventions   |
+| **Rules** (`.claude/rules/`)                 | Session start or on file match               | Low–Medium (path-scoped = efficient) | Cross-cutting directory/file constraints       |
+| **Skills** (`.claude/skills/`)               | Name/desc at start; body on invocation       | Low (body loads on demand)           | Procedures, domain knowledge, workflows        |
+| **Subagents** (`.claude/agents/`)            | Name/desc at start; body in isolated context | Near-zero (only summary returns)     | Noisy side tasks, deep search, verification    |
+| **Hooks** (`settings.json`)                  | Lifecycle events                             | Zero (runs externally)               | Deterministic enforcement, linting, guardrails |
+| **Output Styles** (`.claude/output-styles/`) | Every session, never compacted               | Highest instruction weight           | Major role changes (use built-in styles first) |
+| **Append System Prompt** (CLI flag)          | Invocation only                              | Moderate (cached)                    | Per-run tone/formatting tweaks                 |
 
 ## CLAUDE.md: Size and Content Rules
 
@@ -146,26 +146,26 @@ After every correction, codify the fix into the appropriate instruction file. Ru
 
 ## Decision Framework
 
-| Trigger | Where It Belongs |
-|---------|-----------------|
-| "Every time X, always do Y" | Hook (deterministic, not model-chosen) |
-| "Never do this" | Hook + permissions/managed settings |
-| Long procedural workflow | Skill (body loads only when invoked) |
-| API/directory-specific constraint | Path-scoped rule |
-| Personal preference | User-level local file, not project CLAUDE.md |
-| Side task with intermediate noise | Subagent |
-| Tone/formatting preference | `append-system-prompt` CLI flag |
-| Major role change | Output style (keep built-in defaults) |
+| Trigger                           | Where It Belongs                             |
+| --------------------------------- | -------------------------------------------- |
+| "Every time X, always do Y"       | Hook (deterministic, not model-chosen)       |
+| "Never do this"                   | Hook + permissions/managed settings          |
+| Long procedural workflow          | Skill (body loads only when invoked)         |
+| API/directory-specific constraint | Path-scoped rule                             |
+| Personal preference               | User-level local file, not project CLAUDE.md |
+| Side task with intermediate noise | Subagent                                     |
+| Tone/formatting preference        | `append-system-prompt` CLI flag              |
+| Major role change                 | Output style (keep built-in defaults)        |
 
 ## The Three-Layer Separation
 
 Keep these three concerns in separate mechanisms — do **not** combine them into one file:
 
-| Concern | Where It Lives |
-|---------|---------------|
-| "What we use / what we prefer" | CLAUDE.md |
-| "Always do X, block Y" | Hooks and `settings.json` permissions |
-| "How to do Z" (procedures) | Skills |
+| Concern                        | Where It Lives                        |
+| ------------------------------ | ------------------------------------- |
+| "What we use / what we prefer" | CLAUDE.md                             |
+| "Always do X, block Y"         | Hooks and `settings.json` permissions |
+| "How to do Z" (procedures)     | Skills                                |
 
 ## Verification: Close the Loop
 

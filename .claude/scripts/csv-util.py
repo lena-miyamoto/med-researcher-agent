@@ -67,16 +67,14 @@ def resolve_newline(path, choice):
 
 def read_rows(path, delimiter):
     """Read *path* as CSV, returning a list of row lists (including header)."""
-    with open(path, "r", encoding="utf-8", newline="") as handle:
+    with open(path, encoding="utf-8", newline="") as handle:
         return list(csv.reader(handle, delimiter=delimiter))
 
 
 def render_csv(rows, delimiter, newline):
     """Render *rows* to CSV text using QUOTE_MINIMAL, with no trailing newline."""
     buf = io.StringIO(newline="")
-    writer = csv.writer(
-        buf, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL, lineterminator=newline
-    )
+    writer = csv.writer(buf, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL, lineterminator=newline)
     writer.writerows(rows)
     text = buf.getvalue()
     if text.endswith(newline):
@@ -133,9 +131,7 @@ def resolve_column(header, spec):
         return idx
     if spec in header:
         return header.index(spec)
-    raise ValueError(
-        f"column {spec!r} not found in header (available: {', '.join(header)})"
-    )
+    raise ValueError(f"column {spec!r} not found in header (available: {', '.join(header)})")
 
 
 def split_columns(values):
@@ -201,7 +197,9 @@ def cmd_stats(args):
     delimiter = parse_delimiter(args.delimiter)
     header, data = load_table(args.file, delimiter)
     placeholder = sum(1 for r in data if is_empty_row(r))
-    empty = {name: sum(1 for r in data if cell(r, i).strip() == "") for i, name in enumerate(header)}
+    empty = {
+        name: sum(1 for r in data if cell(r, i).strip() == "") for i, name in enumerate(header)
+    }
     result = {
         "file": str(args.file),
         "columns": len(header),
@@ -229,16 +227,34 @@ def run_check(header, data, required_indices, required_labels):
     n_cols = len(header)
     for idx, row in enumerate(data, start=2):
         if is_empty_row(row):
-            issues.append({"line": idx, "category": "placeholder", "message": "placeholder row (all fields empty)"})
+            issues.append(
+                {
+                    "line": idx,
+                    "category": "placeholder",
+                    "message": "placeholder row (all fields empty)",
+                }
+            )
             n_errors += 1
             continue
         if len(row) != n_cols:
-            issues.append({"line": idx, "category": "field-count", "message": f"wrong field count: {len(row)} (expected {n_cols})"})
+            issues.append(
+                {
+                    "line": idx,
+                    "category": "field-count",
+                    "message": f"wrong field count: {len(row)} (expected {n_cols})",
+                }
+            )
             n_errors += 1
             continue
-        for req_idx, label in zip(required_indices, required_labels):
+        for req_idx, label in zip(required_indices, required_labels, strict=True):
             if cell(row, req_idx).strip() == "":
-                issues.append({"line": idx, "category": "required", "message": f"required column {label!r} is blank"})
+                issues.append(
+                    {
+                        "line": idx,
+                        "category": "required",
+                        "message": f"required column {label!r} is blank",
+                    }
+                )
                 n_errors += 1
     return issues, n_errors
 
@@ -250,7 +266,13 @@ def cmd_check(args):
     required_indices = [resolve_column(header, r) for r in required]
     issues, n_errors = run_check(header, data, required_indices, required)
     if args.format == "json":
-        print(json.dumps({"file": str(args.file), "errors": n_errors, "issues": issues}, indent=2, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"file": str(args.file), "errors": n_errors, "issues": issues},
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
     else:
         print(f"file: {args.file}")
         if n_errors == 0:
@@ -271,7 +293,7 @@ def cmd_cut(args):
     indices = [resolve_column(header, c) for c in cols]
     out_header = [header[i] for i in indices]
     out_data = [[cell(r, i) for i in indices] for r in data]
-    write_result(args, args.file, [out_header] + out_data, delimiter)
+    write_result(args, args.file, [out_header, *out_data], delimiter)
     return 0
 
 
@@ -286,7 +308,7 @@ def cmd_head(args):
     else:
         out_header = [header[i] for i in indices]
         out_data = [[cell(r, i) for i in indices] for r in data[: args.rows]]
-    write_result(args, args.file, [out_header] + out_data, delimiter)
+    write_result(args, args.file, [out_header, *out_data], delimiter)
     return 0
 
 
@@ -306,7 +328,7 @@ def cmd_drop_empty(args):
 
     kept = [r for r in data if keep(r)]
     dropped = len(data) - len(kept)
-    write_result(args, args.file, [header] + kept, delimiter)
+    write_result(args, args.file, [header, *kept], delimiter)
     print(f"dropped {dropped} row(s)", file=sys.stderr)
     return 0
 
@@ -325,11 +347,14 @@ def cmd_dedupe(args):
 
     else:
         if args.norm:
-            print("warning: --norm has no effect without --key (deduping on raw full rows)", file=sys.stderr)
+            print(
+                "warning: --norm has no effect without --key (deduping on raw full rows)",
+                file=sys.stderr,
+            )
         key_fn = tuple
     unique = dedupe_rows(data, key_fn, keep=args.keep)
     removed = len(data) - len(unique)
-    write_result(args, args.file, [header] + unique, delimiter)
+    write_result(args, args.file, [header, *unique], delimiter)
     print(f"removed {removed} duplicate row(s)", file=sys.stderr)
     return 0
 
@@ -353,7 +378,9 @@ def cmd_fill(args):
             raise ValueError(f"mapping value for key {key!r} must be an object {{column: value}}")
         for col in cols:
             if col not in header:
-                raise ValueError(f"mapping column {col!r} not in header (available: {', '.join(header)})")
+                raise ValueError(
+                    f"mapping column {col!r} not in header (available: {', '.join(header)})"
+                )
             if allowed is not None and col not in allowed:
                 raise ValueError(f"mapping column {col!r} not in --fill-columns {sorted(allowed)}")
 
@@ -370,7 +397,7 @@ def cmd_fill(args):
                 row[index] = value
 
     unmatched = [k for k in mapping if k not in matched]
-    write_result(args, args.file, [header] + data, delimiter)
+    write_result(args, args.file, [header, *data], delimiter)
     print(f"filled {len(matched)} key(s); {len(unmatched)} unmatched", file=sys.stderr)
     for key in unmatched:
         print(f"  unmatched key: {key!r}", file=sys.stderr)
@@ -398,12 +425,18 @@ def _add_output(parser):
         default="auto",
         help="Output line ending. Default: auto (detect from input).",
     )
-    parser.add_argument("--output", "-o", default=None, help="Output path. Default: stdout. Use '-' for stdout.")
-    parser.add_argument("--in-place", action="store_true", help="Overwrite the input file atomically.")
+    parser.add_argument(
+        "--output", "-o", default=None, help="Output path. Default: stdout. Use '-' for stdout."
+    )
+    parser.add_argument(
+        "--in-place", action="store_true", help="Overwrite the input file atomically."
+    )
 
 
 def _add_format(parser):
-    parser.add_argument("--format", choices=("json", "text"), default="text", help="Output format. Default: text.")
+    parser.add_argument(
+        "--format", choices=("json", "text"), default="text", help="Output format. Default: text."
+    )
 
 
 def build_parser():
@@ -442,8 +475,16 @@ def build_parser():
     p = sub.add_parser("head", help="Preview the first N data rows.")
     _add_file_and_delimiter(p)
     _add_output(p)
-    p.add_argument("--rows", "-n", type=int, default=10, help="Number of data rows to show. Default: 10.")
-    p.add_argument("--columns", "-c", action="append", default=None, help="Optional column subset (name or 1-based index).")
+    p.add_argument(
+        "--rows", "-n", type=int, default=10, help="Number of data rows to show. Default: 10."
+    )
+    p.add_argument(
+        "--columns",
+        "-c",
+        action="append",
+        default=None,
+        help="Optional column subset (name or 1-based index).",
+    )
 
     p = sub.add_parser("drop-empty", help="Remove blank/placeholder rows.")
     _add_file_and_delimiter(p)
@@ -471,15 +512,35 @@ def build_parser():
         action="store_true",
         help="Normalise key values before comparing (lowercase; dashes/slashes/underscores become spaces).",
     )
-    p.add_argument("--keep", choices=("first", "last"), default="first", help="Which occurrence to keep. Default: first.")
+    p.add_argument(
+        "--keep",
+        choices=("first", "last"),
+        default="first",
+        help="Which occurrence to keep. Default: first.",
+    )
 
     p = sub.add_parser("fill", help="Fill columns from a JSON map.")
     _add_file_and_delimiter(p)
     _add_output(p)
-    p.add_argument("--map", required=True, help='JSON file of the form {"key": {"column": "value"}}.')
-    p.add_argument("--key-column", required=True, help="Column to match against the map keys (name or 1-based index).")
-    p.add_argument("--fill-columns", action="append", default=None, help="Restrict which columns may be written. Repeatable or comma-separated.")
-    p.add_argument("--norm", action="store_true", help="Normalise keys before matching (both map keys and row cells).")
+    p.add_argument(
+        "--map", required=True, help='JSON file of the form {"key": {"column": "value"}}.'
+    )
+    p.add_argument(
+        "--key-column",
+        required=True,
+        help="Column to match against the map keys (name or 1-based index).",
+    )
+    p.add_argument(
+        "--fill-columns",
+        action="append",
+        default=None,
+        help="Restrict which columns may be written. Repeatable or comma-separated.",
+    )
+    p.add_argument(
+        "--norm",
+        action="store_true",
+        help="Normalise keys before matching (both map keys and row cells).",
+    )
 
     return parser
 

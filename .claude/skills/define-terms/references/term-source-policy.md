@@ -18,13 +18,13 @@ technical constraint requires it.
 
 ## Source Priority
 
-| Stage | Source                                                                    | Rule                                                                                     |
-| ----- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 1     | Local archive                                                             | Search `./med-db` first via `med-db-query` and `med-db-term-lookup`.                     |
-| 2     | Diagnostic classifications                                                | ICD-11 (`med-db-lookup-icd11`) and DSM-5-TR (`med-db-lookup-dsm5`) in `med-db/guidelines/`. |
-| 3     | Authoritative terminologies and dictionaries                              | MeSH (NCBI), WHO, professional-society glossaries (psychology, dietology, sports science), standard German reference works (e.g. Pschyrembel). |
-| 4     | Peer-reviewed literature                                                  | Via `med-researcher` agent / `fetch-paper` — only when the term is not in a reference work. |
-| 5     | Wikipedia                                                                 | Absolute last resort when all reference and literature routes fail and the alternative is leaving the term undefined. |
+| Stage | Source                                       | Rule                                                                                                                                           |
+| ----- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Local archive                                | Search `./med-db` first via `med-db-query` and `med-db-term-lookup`.                                                                           |
+| 2     | Diagnostic classifications                   | ICD-11 (`med-db-lookup-icd11`) and DSM-5-TR (`med-db-lookup-dsm5`) in `med-db/guidelines/`.                                                    |
+| 3     | Authoritative terminologies and dictionaries | MeSH (NCBI), WHO, professional-society glossaries (psychology, dietology, sports science), standard German reference works (e.g. Pschyrembel). |
+| 4     | Peer-reviewed literature                     | Via `med-researcher` agent / `fetch-paper` — only when the term is not in a reference work.                                                    |
+| 5     | Wikipedia                                    | Absolute last resort when all reference and literature routes fail and the alternative is leaving the term undefined.                          |
 
 Fetch a MeSH scope note with `uv run med-db-term-mesh --term "<English term>"` — it returns the descriptor
 ID, preferred label, and scope note.

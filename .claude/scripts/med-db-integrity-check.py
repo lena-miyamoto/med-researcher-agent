@@ -42,15 +42,15 @@ def _format_human(findings):
         return "\n".join(lines)
 
     # Errors first, then warnings
-    for severity, group, label in [
+    for _severity, group, label in [
         (SEVERITY_ERROR, errors, "ERRORS"),
         (SEVERITY_WARNING, warnings, "WARNINGS"),
     ]:
         if not group:
             continue
-        lines.append(f"{'='*72}")
+        lines.append(f"{'=' * 72}")
         lines.append(f"  {label} ({len(group)})")
-        lines.append(f"{'='*72}")
+        lines.append(f"{'=' * 72}")
         lines.append("")
 
         # Group by category
@@ -60,8 +60,10 @@ def _format_human(findings):
 
         for cat in sorted(by_cat):
             cat_findings = by_cat[cat]
-            lines.append(f"  [{cat}] ({len(cat_findings)} issue{'s' if len(cat_findings) != 1 else ''})")
-            lines.append(f"  {'-'*66}")
+            lines.append(
+                f"  [{cat}] ({len(cat_findings)} issue{'s' if len(cat_findings) != 1 else ''})"
+            )
+            lines.append(f"  {'-' * 66}")
             for i, f in enumerate(cat_findings, 1):
                 lines.append(f"  #{i} {f['location']}")
                 lines.append(f"     Problem : {f['description']}")
@@ -70,9 +72,9 @@ def _format_human(findings):
         lines.append("")
 
     # Summary
-    lines.append(f"{'='*72}")
-    lines.append(f"  SUMMARY")
-    lines.append(f"{'='*72}")
+    lines.append(f"{'=' * 72}")
+    lines.append("  SUMMARY")
+    lines.append(f"{'=' * 72}")
     lines.append(f"  Errors  : {len(errors)}")
     lines.append(f"  Warnings: {len(warnings)}")
 

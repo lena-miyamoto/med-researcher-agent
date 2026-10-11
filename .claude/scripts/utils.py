@@ -8,12 +8,15 @@ med-db-integrity-check.py.
 import html as _html
 import json
 import re
+import subprocess
 import sys as _sys
+import textwrap as _textwrap
 import time
 import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import Counter as _Counter
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -70,6 +73,57 @@ def atomic_write(path, content):
     tmp.replace(path)
 
 
+def _trash_or_unlink(file_path):
+    """Move *file_path* to the desktop trash, falling back to permanent delete.
+
+    Uses ``gio trash`` when available (GNOME/GLib) so deleted files can be
+    restored.  Falls back to :func:`os.unlink` when ``gio`` is not on PATH.
+    """
+    import os
+
+    path_str = str(file_path)
+
+    # gio trash fails silently if the file doesn't exist, so guard first.
+    if not os.path.lexists(path_str):
+        return
+
+    try:
+        subprocess.run(
+            ["gio", "trash", "-f", path_str],
+            capture_output=True,
+            timeout=10,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError, OSError):
+        os.unlink(path_str)
+
+
+def trash_or_rmtree(directory):
+    """Move *directory* to the desktop trash, falling back to permanent delete.
+
+    Uses ``gio trash`` when available (GNOME/GLib) so removed archive entries
+    can be restored.  Falls back to :func:`shutil.rmtree` when ``gio`` is not
+    on PATH.
+    """
+    import shutil
+
+    path_str = str(directory)
+
+    # gio trash fails silently if the directory doesn't exist, so guard first.
+    if not Path(directory).exists():
+        return
+
+    try:
+        subprocess.run(
+            ["gio", "trash", "-f", path_str],
+            capture_output=True,
+            timeout=60,
+            check=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError, OSError):
+        shutil.rmtree(path_str)
+
+
 # ---------------------------------------------------------------------------
 # API fetch helpers (raise RuntimeError on failure — callers decide how to
 # handle it)
@@ -104,12 +158,12 @@ def _request_with_retry(request, label, timeout, retries, retry_delay):
                 raise
             if attempt == retries:
                 raise
-            time.sleep(_retry_after_seconds(exc) or retry_delay * (2 ** attempt))
-        except (urllib.error.URLError, OSError) as exc:
+            time.sleep(_retry_after_seconds(exc) or retry_delay * (2**attempt))
+        except (urllib.error.URLError, OSError):
             if attempt == retries:
                 raise
             if retry_delay > 0:
-                time.sleep(retry_delay * (2 ** attempt))
+                time.sleep(retry_delay * (2**attempt))
 
 
 def _fetch_url(url, label, timeout=60, retries=2, retry_delay=0.25):
@@ -236,7 +290,9 @@ def default_paper_entry(meta_path):
 # ---------------------------------------------------------------------------
 
 
-def resolve_doi_to_id(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None, crossref_fetch_func=None):
+def resolve_doi_to_id(
+    doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None, crossref_fetch_func=None
+):
     """Resolve a DOI to an identifier via PubMed (preferred), Europe PMC, or Crossref.
 
     Returns a ``(source, identifier)`` tuple where *source* is ``"pubmed"``,
@@ -356,7 +412,26 @@ def build_frontmatter(fields):
         val = str(value).strip()
         if not val:
             continue
-        special = (":", "#", "{", "}", "[", "]", ",", "&", "*", "?", "|", "<", ">", "=", "!", "%", "@", "`")
+        special = (
+            ":",
+            "#",
+            "{",
+            "}",
+            "[",
+            "]",
+            ",",
+            "&",
+            "*",
+            "?",
+            "|",
+            "<",
+            ">",
+            "=",
+            "!",
+            "%",
+            "@",
+            "`",
+        )
         if any(ch in val for ch in special):
             val = val.replace('"', '\\"')
             lines.append(f'{key}: "{val}"')
@@ -422,8 +497,6 @@ def parse_frontmatter(text):
 # ``verify_and_report_integrity(root)`` — it returns 0 on success and prints
 # actionable error details on failure so an agent can fix issues immediately.
 
-from collections import Counter as _Counter
-
 # --- finding model -----------------------------------------------------------
 
 SEVERITY_ERROR = "error"
@@ -474,7 +547,7 @@ def check_required_dirs(root, findings):
                     CATEGORY_STRUCTURAL,
                     str(p),
                     f"Required top-level directory is missing: {name}/",
-                    f"Run any archival command (e.g. 'uv run med-db --pmid 12345678') to bootstrap the directory tree.",
+                    "Run any archival command (e.g. 'uv run med-db --pmid 12345678') to bootstrap the directory tree.",
                 )
             )
 
@@ -543,8 +616,8 @@ def check_index_valid(root, findings):
                 SEVERITY_ERROR,
                 CATEGORY_INDEX,
                 "index.json",
-                f"index.json is missing required top-level key: \"{key}\"",
-                f"Add a \"{key}\": [] entry to index.json.",
+                f'index.json is missing required top-level key: "{key}"',
+                f'Add a "{key}": [] entry to index.json.',
             )
         )
     for key in sorted(extra_keys):
@@ -553,7 +626,7 @@ def check_index_valid(root, findings):
                 SEVERITY_WARNING,
                 CATEGORY_INDEX,
                 "index.json",
-                f"index.json contains unrecognised top-level key: \"{key}\"",
+                f'index.json contains unrecognised top-level key: "{key}"',
                 "Remove the key if it is stale; otherwise update the validator to recognise it.",
             )
         )
@@ -571,7 +644,7 @@ def check_index_valid(root, findings):
                     SEVERITY_ERROR,
                     CATEGORY_INDEX,
                     f"index.json → {key}",
-                    f"Duplicate path appears {count}× in \"{key}\" index: {p}",
+                    f'Duplicate path appears {count}× in "{key}" index: {p}',
                     "Remove the duplicate entries, keeping only one copy.",
                 )
             )
@@ -597,12 +670,12 @@ def check_index_crossref(root, data, findings):
         if (root / "fulltext").is_dir()
     )
     actual_guidelines = sorted(
-        set(
+        {
             str(p.parent.relative_to(root))
             for pattern in ("source.md", "source.*.md")
             for p in (root / "guidelines").rglob(pattern)
             if (root / "guidelines").is_dir()
-        )
+        }
     )
     actual_web = sorted(
         str(p.relative_to(root))
@@ -650,7 +723,7 @@ def check_index_crossref(root, data, findings):
                     category,
                     item,
                     f"Exists on disk but is not listed in index.json → {label}s.",
-                    f"Add an entry to the \"{label}s\" array in index.json for this file/directory.",
+                    f'Add an entry to the "{label}s" array in index.json for this file/directory.',
                 )
             )
 
@@ -673,7 +746,7 @@ def check_paper_integrity(root, findings):
                     CATEGORY_METADATA,
                     rel_dir,
                     "Paper directory is missing abstract.txt.",
-                    f"Fetch the abstract: uv run med-db --pmid <PMID> (or restore from backup).",
+                    "Fetch the abstract: uv run med-db --pmid <PMID> (or restore from backup).",
                 )
             )
 
@@ -783,7 +856,7 @@ def check_paper_integrity(root, findings):
                 SEVERITY_WARNING,
                 CATEGORY_METADATA,
                 rel_dir,
-                f"Unrecognised paper folder naming pattern: \"{folder_name}\".",
+                f'Unrecognised paper folder naming pattern: "{folder_name}".',
                 "Rename to match pmid-<N>-<title-slug>, epmc-<source>-<id>-<title-slug>, or crossref-<doi-slug>-<title-slug>.",
             )
         )
@@ -860,7 +933,7 @@ def check_search_json(root, findings):
                         SEVERITY_ERROR,
                         CATEGORY_SEARCH,
                         rel,
-                        "PubMed esearch result is missing \"idlist\".",
+                        'PubMed esearch result is missing "idlist".',
                         "Re-run the PubMed search.",
                     )
                 )
@@ -870,7 +943,7 @@ def check_search_json(root, findings):
                         SEVERITY_WARNING,
                         CATEGORY_SEARCH,
                         rel,
-                        "PubMed esearch result is missing \"querytranslation\".",
+                        'PubMed esearch result is missing "querytranslation".',
                         "The search may be truncated or malformed — re-run if results look incomplete.",
                     )
                 )
@@ -886,7 +959,7 @@ def check_search_json(root, findings):
                         SEVERITY_WARNING,
                         CATEGORY_SEARCH,
                         rel,
-                        "Europe PMC search is missing \"queryString\" in request.",
+                        'Europe PMC search is missing "queryString" in request.',
                         "The search file may be incomplete — re-run if needed.",
                     )
                 )
@@ -896,7 +969,7 @@ def check_search_json(root, findings):
                         SEVERITY_WARNING,
                         CATEGORY_SEARCH,
                         rel,
-                        "Europe PMC search has no \"result\" in resultList (possibly zero hits).",
+                        'Europe PMC search has no "result" in resultList (possibly zero hits).',
                         "Verify the search query was correct; otherwise this is expected for zero-hit queries.",
                     )
                 )
@@ -1086,7 +1159,7 @@ def check_dictionary_files(root, findings):
                     SEVERITY_ERROR,
                     CATEGORY_DICTIONARY,
                     f"{rel_dir}/metadata.json",
-                    "metadata.json is missing a non-empty \"term\" field.",
+                    'metadata.json is missing a non-empty "term" field.',
                     "Re-archive with uv run med-db-term --term '<Term>'.",
                 )
             )
@@ -1096,7 +1169,7 @@ def check_dictionary_files(root, findings):
                     SEVERITY_ERROR,
                     CATEGORY_DICTIONARY,
                     f"{rel_dir}/metadata.json",
-                    "metadata.json is missing a non-empty \"definition\" field.",
+                    'metadata.json is missing a non-empty "definition" field.',
                     "Re-archive with uv run med-db-term --definition '<Definition>'.",
                 )
             )
@@ -1160,7 +1233,7 @@ def check_legacy_dirs(root, findings):
                     SEVERITY_WARNING,
                     CATEGORY_STRUCTURAL,
                     str(legacy),
-                    f"Legacy flat directory \"{name}/\" still exists after migration.",
+                    f'Legacy flat directory "{name}/" still exists after migration.',
                     f"Verify all content has been migrated to papers/, then remove: rm -rf {legacy}",
                 )
             )
@@ -1194,7 +1267,8 @@ def run_integrity_check(root):
     check_required_dirs(root, findings)
 
     fatal_structural = [
-        f for f in findings
+        f
+        for f in findings
         if f["severity"] == SEVERITY_ERROR and f["category"] == CATEGORY_STRUCTURAL
     ]
     if fatal_structural:
@@ -1275,4 +1349,129 @@ def run_cli(main_func):
         raise SystemExit(main_func())
     except KeyboardInterrupt:
         print("cancelled", file=_sys.stderr)
-        raise SystemExit(130)
+        raise SystemExit(130) from None
+
+
+# =============================================================================
+# Source-MD line-length checking and normalisation
+# =============================================================================
+#
+# These functions are used by lint-md --check-source-md and --fix-source-md
+# to wrap long lines in archived med-db source files.  They were moved here
+# from entrypoints.py to keep the entrypoint module thin.
+
+SOURCE_LINE_LENGTH = 120
+
+
+def _archive_md_files(paths):
+    """Collect markdown files from a list of paths (files or directories)."""
+    markdown_files = []
+    for path_arg in paths:
+        path = Path(path_arg)
+        if path.is_dir():
+            markdown_files.extend(sorted(path.rglob("*.md")))
+        elif path.is_file() and path.suffix == ".md":
+            markdown_files.append(path)
+        else:
+            print(f"not a markdown file or directory: {path}", file=_sys.stderr)
+    return markdown_files
+
+
+def _frontmatter_line_numbers(lines):
+    """Return a set of 0-based line indices that belong to YAML frontmatter."""
+    if not lines or lines[0].rstrip("\n") != "---":
+        return set()
+    for index, line in enumerate(lines[1:], start=1):
+        if line.rstrip("\n") == "---":
+            return set(range(index + 1))
+    return set()
+
+
+def _wrap_source_line(line, width=SOURCE_LINE_LENGTH):
+    """Wrap a single source line to *width*, preserving indentation."""
+    newline = "\n" if line.endswith("\n") else ""
+    text = line[:-1] if newline else line
+    if len(text) <= width or not text.strip():
+        return [line]
+    indent = text[: len(text) - len(text.lstrip())]
+    wrapped = _textwrap.wrap(
+        text,
+        width=width,
+        expand_tabs=False,
+        replace_whitespace=False,
+        drop_whitespace=True,
+        break_long_words=False,
+        break_on_hyphens=False,
+        subsequent_indent=indent,
+    )
+    if not wrapped:
+        return [line]
+    return [f"{wrapped_line}\n" for wrapped_line in wrapped[:-1]] + [f"{wrapped[-1]}{newline}"]
+
+
+def _source_line_violations(path, width=SOURCE_LINE_LENGTH):
+    """Return list of ``(line_number, length)`` tuples for lines exceeding *width*."""
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    frontmatter_lines = _frontmatter_line_numbers(lines)
+    violations = []
+    for line_number, line in enumerate(lines, start=1):
+        if line_number - 1 in frontmatter_lines:
+            continue
+        length = len(line.rstrip("\n"))
+        if length > width:
+            violations.append((line_number, length))
+    return violations
+
+
+def _normalize_source_md(path, width=SOURCE_LINE_LENGTH):
+    """Normalize source markdown line lengths in-place.  Returns True if changed."""
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    frontmatter_lines = _frontmatter_line_numbers(lines)
+    normalized_lines = []
+    for line_number, line in enumerate(lines):
+        if line_number in frontmatter_lines:
+            normalized_lines.append(line)
+        else:
+            normalized_lines.extend(_wrap_source_line(line, width))
+    normalized_text = "".join(normalized_lines)
+    original_text = "".join(lines)
+    if normalized_text == original_text:
+        return False
+    path.write_text(normalized_text, encoding="utf-8")
+    return True
+
+
+def lint_source_md(args):
+    """Handle --check-source-md and --fix-source-md flags.
+
+    Returns the CLI exit code, or -1 when *args* does not start with a
+    recognised source-MD flag (caller should fall back to rumdl).
+    """
+    if not args or args[0] not in {"--check-source-md", "--fix-source-md"}:
+        return -1
+
+    should_fix = args[0] == "--fix-source-md"
+    source_args = args[1:]
+    if not source_args:
+        print(
+            f"usage: lint-md {args[0]} <archive-md-or-directory> [...]",
+            file=_sys.stderr,
+        )
+        return 2
+
+    markdown_files = _archive_md_files(source_args)
+    if not markdown_files:
+        return 2
+
+    if should_fix:
+        changed = [_normalize_source_md(path) for path in markdown_files]
+        changed_count = sum(1 for was_changed in changed if was_changed)
+        print(f"normalized {changed_count} of {len(markdown_files)} archive markdown file(s)")
+
+    violation_count = 0
+    for path in markdown_files:
+        for line_number, length in _source_line_violations(path):
+            violation_count += 1
+            print(f"{path}:{line_number}: line length {length} > {SOURCE_LINE_LENGTH}")
+
+    return 1 if violation_count else 0

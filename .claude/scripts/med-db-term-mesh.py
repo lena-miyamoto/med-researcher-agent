@@ -75,9 +75,7 @@ def _fetch_url_text(url, term):
     A missing record (HTTP 404) is raised as ``LookupError``; other HTTP
     and network errors propagate.
     """
-    return utils.fetch_text(
-        url, f"MeSH {term}", not_found_message=f"no MeSH record for '{term}'"
-    )
+    return utils.fetch_text(url, f"MeSH {term}", not_found_message=f"no MeSH record for '{term}'")
 
 
 def _lookup_descriptor(term, fetch_url):
@@ -159,7 +157,13 @@ def main():
     args = parse_args()
     try:
         result = fetch_mesh_scope_note(args.term)
-    except (LookupError, urllib.error.HTTPError, urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
+    except (
+        LookupError,
+        urllib.error.HTTPError,
+        urllib.error.URLError,
+        OSError,
+        json.JSONDecodeError,
+    ) as exc:
         if args.format == "json":
             print(json.dumps({"term": args.term, "error": str(exc)}, indent=2, ensure_ascii=False))
         else:
@@ -168,10 +172,13 @@ def main():
 
     if result is None:
         if args.format == "json":
-            print(json.dumps(
-                {"term": args.term, "error": f"no MeSH descriptor for '{args.term}'"},
-                indent=2, ensure_ascii=False,
-            ))
+            print(
+                json.dumps(
+                    {"term": args.term, "error": f"no MeSH descriptor for '{args.term}'"},
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
         else:
             print(f"error: no MeSH descriptor for '{args.term}'", file=sys.stderr)
         return 1

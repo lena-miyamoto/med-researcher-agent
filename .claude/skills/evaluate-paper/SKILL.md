@@ -34,7 +34,7 @@ reading.
 - **Retracted → score 0. Stop. No further analysis.** Report is the retraction record: status, retraction date
   and reason if findable, source (PubMed / Crossref). Verify with at least two sources.
 - Outstanding Expression of Concern → continue; cap score at 20; state it in the report.
-- Journal legitimacy (separate from retraction): check indexing (MEDLINE, Scopus) and DOAJ (https://doaj.org)
+- Journal legitimacy (separate from retraction): check indexing (MEDLINE, Scopus) and DOAJ (<https://doaj.org>)
   before scoring. Predatory or unverifiable journal → cap at 15. OpenAlex
   (`https://api.openalex.org/works/doi:<DOI>`) reports OA status, venue, and identifiers without an API key or
   email; use it when DOAJ returns 403.
@@ -43,16 +43,16 @@ reading.
 
 Design sets base weight and score ceiling. Read the methods enough to classify — 1-2 sentences.
 
-| Design | Base | Ceiling |
-|---|---|---|
-| SR/MA of RCTs | 30 | 95 |
-| RCT | 28 | 95 |
-| Prospective cohort, confounder-adjusted | 20 | 75 |
-| Non-randomized intervention (ITS, before-after) | 15 | 70 |
-| Case-control | 15 | 65 |
-| Cross-sectional | 10 | 55 |
-| Case series | 5 | 30 |
-| Expert opinion / narrative review | 3 | 20 |
+| Design                                          | Base | Ceiling |
+| ----------------------------------------------- | ---- | ------- |
+| SR/MA of RCTs                                   | 30   | 95      |
+| RCT                                             | 28   | 95      |
+| Prospective cohort, confounder-adjusted         | 20   | 75      |
+| Non-randomized intervention (ITS, before-after) | 15   | 70      |
+| Case-control                                    | 15   | 65      |
+| Cross-sectional                                 | 10   | 55      |
+| Case series                                     | 5    | 30      |
+| Expert opinion / narrative review               | 3    | 20      |
 
 - **Study type dominates sample size.** A meta-analysis of three small trials outranks a single n>1000 trial; an
   unadjusted n=2000 cohort never beats a well-run RCT.
@@ -67,28 +67,28 @@ Design sets base weight and score ceiling. Read the methods enough to classify �
 Scan abstract, methods, results tables, COI/funding statement. Most bad papers fail here; go deep only where a
 flag needs confirmation. Deduct per flag:
 
-| Red flag | − | Spot it |
-|---|---|---|
-| No control group (intervention claim) | 15 | pre-post only + causal wording |
-| No/improper randomization or concealment (RCT) | 15 | methods; baseline imbalance |
-| Selective outcome reporting | 15 | registry (ClinicalTrials.gov / PROSPERO / OSF) vs paper: swapped or dropped primary |
-| p-hacking signals | 12 | p-values clustering at 0.03-0.049; many flexible analyses |
-| No blinding where feasible, subjective outcome | 10 | unblinded, patient-reported outcome (objective outcome: −3) |
-| Spin | 10 | abstract claims benefit; primary outcome non-significant |
-| Post-hoc subgroup sold as primary claim | 10 | "post hoc" in limitations; no interaction test |
-| Registered trial, no results posted | 10 | registry record vs FDAAA |
-| Not peer-reviewed / unindexed | 10 | no MEDLINE/Scopus indexing |
-| No a priori sample-size or power justification | 8 | methods lack a sample-size sentence |
-| Multiple comparisons uncorrected | 8 | count endpoints vs stated corrections |
-| HARKing | 8 | no prereg; hypothesis matches results too neatly |
-| Surrogate endpoint sold as clinical outcome | 8 | biomarker/lab change, no mortality/morbidity/QoL |
-| Baseline imbalance unadjusted | 8 | Table 1 vs adjustment list |
-| Missing data mishandled | 8 | >20% attrition, complete-case only, no sensitivity analysis |
-| No ITT in RCT | 8 | per-protocol-only analysis |
-| Undisclosed / industry COI with favorable results | 8 | COI statement, funding line, registry sponsor |
-| Effect sizes / CIs missing (p only) | 6 | results tables |
-| Relative risk without absolute risk or NNT | 6 | no baseline risk given |
-| Unreported attrition / no flow diagram | 5 | no CONSORT flow |
+| Red flag                                          | −   | Spot it                                                                             |
+| ------------------------------------------------- | --- | ----------------------------------------------------------------------------------- |
+| No control group (intervention claim)             | 15  | pre-post only + causal wording                                                      |
+| No/improper randomization or concealment (RCT)    | 15  | methods; baseline imbalance                                                         |
+| Selective outcome reporting                       | 15  | registry (ClinicalTrials.gov / PROSPERO / OSF) vs paper: swapped or dropped primary |
+| p-hacking signals                                 | 12  | p-values clustering at 0.03-0.049; many flexible analyses                           |
+| No blinding where feasible, subjective outcome    | 10  | unblinded, patient-reported outcome (objective outcome: −3)                         |
+| Spin                                              | 10  | abstract claims benefit; primary outcome non-significant                            |
+| Post-hoc subgroup sold as primary claim           | 10  | "post hoc" in limitations; no interaction test                                      |
+| Registered trial, no results posted               | 10  | registry record vs FDAAA                                                            |
+| Not peer-reviewed / unindexed                     | 10  | no MEDLINE/Scopus indexing                                                          |
+| No a priori sample-size or power justification    | 8   | methods lack a sample-size sentence                                                 |
+| Multiple comparisons uncorrected                  | 8   | count endpoints vs stated corrections                                               |
+| HARKing                                           | 8   | no prereg; hypothesis matches results too neatly                                    |
+| Surrogate endpoint sold as clinical outcome       | 8   | biomarker/lab change, no mortality/morbidity/QoL                                    |
+| Baseline imbalance unadjusted                     | 8   | Table 1 vs adjustment list                                                          |
+| Missing data mishandled                           | 8   | >20% attrition, complete-case only, no sensitivity analysis                         |
+| No ITT in RCT                                     | 8   | per-protocol-only analysis                                                          |
+| Undisclosed / industry COI with favorable results | 8   | COI statement, funding line, registry sponsor                                       |
+| Effect sizes / CIs missing (p only)               | 6   | results tables                                                                      |
+| Relative risk without absolute risk or NNT        | 6   | no baseline risk given                                                              |
+| Unreported attrition / no flow diagram            | 5   | no CONSORT flow                                                                     |
 
 ### 5. Quality checklist per design — deep pass only where a flag appeared
 
@@ -107,13 +107,13 @@ statistical rigor) follow the med-researcher agent's Mandatory Quality Assessmen
 
 Deduct for statistical misuses found here:
 
-| Misuse | − |
-|---|---|
-| Post-hoc power as justification (it is a 1:1 function of p — worthless) | 5 |
-| Post-hoc outlier exclusion ("non-compliers" removed after seeing data) | 5 |
-| Unit-of-analysis errors (paired/repeated measures as independent) | 5 |
-| Median-vs-mean games; mean±SD on skewed data | 4 |
-| CI barely excluding null sold as strong evidence | 4 |
+| Misuse                                                                  | −   |
+| ----------------------------------------------------------------------- | --- |
+| Post-hoc power as justification (it is a 1:1 function of p — worthless) | 5   |
+| Post-hoc outlier exclusion ("non-compliers" removed after seeing data)  | 5   |
+| Unit-of-analysis errors (paired/repeated measures as independent)       | 5   |
+| Median-vs-mean games; mean±SD on skewed data                            | 4   |
+| CI barely excluding null sold as strong evidence                        | 4   |
 
 ### 6. Score
 
@@ -125,13 +125,13 @@ independent replication exists +2; estimand-consistent methods (ICH E9(R1)) +1.
 
 Caps: retracted = 0 (stop). Expression of Concern ≤ 20. Predatory/unindexed journal ≤ 15.
 
-| Band | Meaning |
-|---|---|
+| Band   | Meaning                                                                              |
+| ------ | ------------------------------------------------------------------------------------ |
 | 90-100 | landmark — 100 needs ceiling 95 plus the full +5 bonus; in practice near-unreachable |
-| 70-89 | strong — minor issues; credible for practice |
-| 50-69 | moderate — real limitations; effects likely overestimated |
-| 30-49 | weak — major flaws; hypothesis-generating only |
-| <30 | severely flawed — ignore or cite as a negative example |
+| 70-89  | strong — minor issues; credible for practice                                         |
+| 50-69  | moderate — real limitations; effects likely overestimated                            |
+| 30-49  | weak — major flaws; hypothesis-generating only                                       |
+| <30    | severely flawed — ignore or cite as a negative example                               |
 
 ### 7. Report
 

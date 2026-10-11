@@ -5,10 +5,8 @@ import io
 import json
 import sys
 
-import pytest
-
 import csv_util as cu
-
+import pytest
 
 HEADER = ["Deutscher Begriff", "Englischer Begriff", "Definition"]
 
@@ -26,7 +24,7 @@ def write_csv(path, rows, newline="\r\n"):
 
 
 def read_csv(path):
-    with open(path, "r", encoding="utf-8", newline="") as handle:
+    with open(path, encoding="utf-8", newline="") as handle:
         return list(csv.reader(handle))
 
 
@@ -40,7 +38,10 @@ class TestNorm:
         assert cu.norm("  Hypertonie  ") == "hypertonie"
 
     def test_maps_dashes_and_slashes_to_spaces(self):
-        assert cu.norm("Aufmerksamkeitsdefizit–Hyperaktivitätsstörung") == "aufmerksamkeitsdefizit hyperaktivitätsstörung"
+        assert (
+            cu.norm("Aufmerksamkeitsdefizit–Hyperaktivitätsstörung")
+            == "aufmerksamkeitsdefizit hyperaktivitätsstörung"
+        )
         assert cu.norm("Myokardinfarkt / Herzinfarkt") == "myokardinfarkt herzinfarkt"
 
     def test_collapses_periods(self):
@@ -112,7 +113,10 @@ class TestRenderCsv:
         text = cu.render_csv(rows, ",", "\r\n")
         assert not text.endswith("\r\n")
         assert cu.render_csv(rows, ",", "\r\n") == "\r\n".join(
-            ["Deutscher Begriff,Englischer Begriff,Definition", "Hypertonie,hypertension,Bluthochdruck"]
+            [
+                "Deutscher Begriff,Englischer Begriff,Definition",
+                "Hypertonie,hypertension,Bluthochdruck",
+            ]
         )
 
     def test_quotes_embedded_newline(self):
@@ -144,7 +148,7 @@ class TestDedupeRows:
 def run_main(argv):
     """Set sys.argv and run csv_util.main(), returning the exit code."""
     saved = sys.argv
-    sys.argv = ["csv-util"] + argv
+    sys.argv = ["csv-util", *argv]
     try:
         return cu.main()
     finally:
@@ -197,7 +201,10 @@ class TestCutCLI:
         p = tmp_path / "g.csv"
         out = tmp_path / "out.csv"
         write_csv(p, [HEADER, ["Hypertonie", "hypertension", "Bluthochdruck"]])
-        assert run_main(["cut", str(p), "--columns", "Deutscher Begriff,Definition", "-o", str(out)]) == 0
+        assert (
+            run_main(["cut", str(p), "--columns", "Deutscher Begriff,Definition", "-o", str(out)])
+            == 0
+        )
         rows = read_csv(out)
         assert rows[0] == ["Deutscher Begriff", "Definition"]
         assert rows[1] == ["Hypertonie", "Bluthochdruck"]
@@ -223,7 +230,9 @@ class TestDropEmptyCLI:
     def test_removes_placeholder_rows(self, tmp_path, capsys):
         p = tmp_path / "g.csv"
         out = tmp_path / "out.csv"
-        write_csv(p, [HEADER, ["", "", ""], ["Hypertonie", "hypertension", "Bluthochdruck"], ["", "", ""]])
+        write_csv(
+            p, [HEADER, ["", "", ""], ["Hypertonie", "hypertension", "Bluthochdruck"], ["", "", ""]]
+        )
         assert run_main(["drop-empty", str(p), "-o", str(out)]) == 0
         assert "dropped 2" in capsys.readouterr().err
         assert read_csv(out) == [HEADER, ["Hypertonie", "hypertension", "Bluthochdruck"]]
@@ -241,7 +250,10 @@ class TestDedupeCLI:
         p = tmp_path / "g.csv"
         out = tmp_path / "out.csv"
         write_csv(p, [HEADER, ["Hypertonie", "h", "x"], ["hypertonie", "h2", "x"]])
-        assert run_main(["dedupe", str(p), "--key", "Deutscher Begriff", "--norm", "-o", str(out)]) == 0
+        assert (
+            run_main(["dedupe", str(p), "--key", "Deutscher Begriff", "--norm", "-o", str(out)])
+            == 0
+        )
         assert "removed 1" in capsys.readouterr().err
         assert read_csv(out) == [HEADER, ["Hypertonie", "h", "x"]]
 
@@ -258,8 +270,25 @@ class TestFillCLI:
         out = tmp_path / "out.csv"
         mapping = tmp_path / "map.json"
         write_csv(p, [HEADER, ["Hypertonie", "hypertension", ""]])
-        mapping.write_text(json.dumps({"Hypertonie": {"Definition": "Chronisch erhöhter Blutdruck"}}), encoding="utf-8")
-        assert run_main(["fill", str(p), "--map", str(mapping), "--key-column", "Deutscher Begriff", "-o", str(out)]) == 0
+        mapping.write_text(
+            json.dumps({"Hypertonie": {"Definition": "Chronisch erhöhter Blutdruck"}}),
+            encoding="utf-8",
+        )
+        assert (
+            run_main(
+                [
+                    "fill",
+                    str(p),
+                    "--map",
+                    str(mapping),
+                    "--key-column",
+                    "Deutscher Begriff",
+                    "-o",
+                    str(out),
+                ]
+            )
+            == 0
+        )
         assert "filled 1" in capsys.readouterr().err
         rows = read_csv(out)
         assert rows[1][2] == "Chronisch erhöhter Blutdruck"
@@ -269,18 +298,54 @@ class TestFillCLI:
         out = tmp_path / "out.csv"
         mapping = tmp_path / "map.json"
         write_csv(p, [HEADER, ["Hypertonie", "hypertension"]])
-        mapping.write_text(json.dumps({"Hypertonie": {"Definition": "Chronisch erhöhter Blutdruck"}}), encoding="utf-8")
-        assert run_main(["fill", str(p), "--map", str(mapping), "--key-column", "Deutscher Begriff", "-o", str(out)]) == 0
+        mapping.write_text(
+            json.dumps({"Hypertonie": {"Definition": "Chronisch erhöhter Blutdruck"}}),
+            encoding="utf-8",
+        )
+        assert (
+            run_main(
+                [
+                    "fill",
+                    str(p),
+                    "--map",
+                    str(mapping),
+                    "--key-column",
+                    "Deutscher Begriff",
+                    "-o",
+                    str(out),
+                ]
+            )
+            == 0
+        )
         assert "filled 1" in capsys.readouterr().err
-        assert read_csv(out) == [HEADER, ["Hypertonie", "hypertension", "Chronisch erhöhter Blutdruck"]]
+        assert read_csv(out) == [
+            HEADER,
+            ["Hypertonie", "hypertension", "Chronisch erhöhter Blutdruck"],
+        ]
 
     def test_reports_unmatched_keys(self, tmp_path, capsys):
         p = tmp_path / "g.csv"
         out = tmp_path / "out.csv"
         mapping = tmp_path / "map.json"
         write_csv(p, [HEADER, ["Hypertonie", "hypertension", ""]])
-        mapping.write_text(json.dumps({"NoSuchTerm": {"Definition": "Unbekannt"}}), encoding="utf-8")
-        assert run_main(["fill", str(p), "--map", str(mapping), "--key-column", "Deutscher Begriff", "-o", str(out)]) == 0
+        mapping.write_text(
+            json.dumps({"NoSuchTerm": {"Definition": "Unbekannt"}}), encoding="utf-8"
+        )
+        assert (
+            run_main(
+                [
+                    "fill",
+                    str(p),
+                    "--map",
+                    str(mapping),
+                    "--key-column",
+                    "Deutscher Begriff",
+                    "-o",
+                    str(out),
+                ]
+            )
+            == 0
+        )
         assert "unmatched key" in capsys.readouterr().err
 
 
@@ -294,5 +359,8 @@ class TestInPlace:
     def test_in_place_and_output_conflict(self, tmp_path, capsys):
         p = tmp_path / "g.csv"
         write_csv(p, [HEADER, ["Hypertonie", "hypertension", "Bluthochdruck"]])
-        assert run_main(["cut", str(p), "--columns", "Definition", "--in-place", "-o", "other.csv"]) == 1
+        assert (
+            run_main(["cut", str(p), "--columns", "Definition", "--in-place", "-o", "other.csv"])
+            == 1
+        )
         assert "mutually exclusive" in capsys.readouterr().err

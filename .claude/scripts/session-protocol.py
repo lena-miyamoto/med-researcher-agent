@@ -397,9 +397,7 @@ def select_session_file(projects_directory, session_file_override, end_skill):
     if fallback_matches:
         return max(fallback_matches, key=lambda path: path.stat().st_mtime)
 
-    raise ValueError(
-        "no session transcript found; pass --session-file explicitly"
-    )
+    raise ValueError("no session transcript found; pass --session-file explicitly")
 
 
 def history_directory(sessions_directory, kind_config):
@@ -501,9 +499,7 @@ def _run(args):
         output = Path(args.output)
     else:
         output = (
-            sessions_directory
-            / "protocols"
-            / f"{args.date}_S{args.session_number}_{args.slug}.md"
+            sessions_directory / "protocols" / f"{args.date}_S{args.session_number}_{args.slug}.md"
         )
 
     rendered = render_protocol(

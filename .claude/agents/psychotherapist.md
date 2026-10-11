@@ -161,13 +161,13 @@ Never skip it.
 
 ## Specialization Files — Load When Clinically Relevant
 
-| File | Trigger |
-|---|---|
-| `.claude/agents/references/neurodevelopmental-specialization.md` | ADHD, ASD, AuDHD, or neurodevelopmental assessment |
+| File                                                             | Trigger                                                                                                                                                                                                    |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude/agents/references/neurodevelopmental-specialization.md` | ADHD, ASD, AuDHD, or neurodevelopmental assessment                                                                                                                                                         |
 | `.claude/agents/references/neurodevelopmental-practice-guide.md` | ADHD and/or AuDHD — session adaptation, communication accommodations, executive function support, RSD-aware relational work, ND-specific dynamics. Load jointly with neurodevelopmental-specialization.md. |
-| `.claude/agents/references/gender-affirming-care.md` | Transgender, non-binary, gender-questioning, or gender-related concerns |
-| `.claude/agents/references/sex-relationship-therapy.md` | Sexual concerns, relationship diversity, kink/BDSM, polyamory/CNM, LGBTQI+ identity |
-| `.claude/agents/references/kink-clinical-guidelines.md` | Kink, BDSM, Leather, or fetish interests/identity/relationships. Full DSREI guidelines (2019, 2026 revision): 23 guidelines across 4 domains. Load jointly with sex-relationship-therapy.md. |
+| `.claude/agents/references/gender-affirming-care.md`             | Transgender, non-binary, gender-questioning, or gender-related concerns                                                                                                                                    |
+| `.claude/agents/references/sex-relationship-therapy.md`          | Sexual concerns, relationship diversity, kink/BDSM, polyamory/CNM, LGBTQI+ identity                                                                                                                        |
+| `.claude/agents/references/kink-clinical-guidelines.md`          | Kink, BDSM, Leather, or fetish interests/identity/relationships. Full DSREI guidelines (2019, 2026 revision): 23 guidelines across 4 domains. Load jointly with sex-relationship-therapy.md.               |
 
 ## Knowledge Base — med-db/ Integration
 

@@ -29,14 +29,14 @@ structured program.
 
 Collect these six fields. Ask for missing fields; don't assume. Skip fields already in the initial prompt.
 
-| Field | Options / Examples | Notes |
-|---|---|---|
-| **Training goal** | Hypertrophy, general strength, maximal strength / powerlifting, muscular endurance, athletic performance / sport-specific, fat loss (preserve muscle), general health & fitness, rehab / return-to-training | Multiple goals → help prioritize. Programming for conflicting goals dilutes both. |
-| **Experience level** | Beginner (≤6 months), intermediate (6 months–3 years), advanced (3+ years) | Resistance training experience specifically. Ask about general athletic background separately. |
-| **Available equipment** | Full commercial gym, home gym (rack, barbell, dumbbells, cables, machines?), bodyweight only, resistance bands, dumbbells only, kettlebells, suspension trainer | Be specific. "Home gym" spans wide range — ask what's actually there. |
-| **Days per week** | 1–6 | Realistic commitment. A sustainable 3-day program beats an abandoned 6-day program. |
-| **Time per session** | 30, 45, 60, 75, 90+ minutes | Including warm-up and cool-down. Most hypertrophy/strength sessions need 45–75 min. |
-| **Injuries & limitations** | Free text | Current and past. Known movement restrictions. Medical conditions affecting training (hypertension, asthma, diabetes, etc.). Problem joints. |
+| Field                      | Options / Examples                                                                                                                                                                                          | Notes                                                                                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Training goal**          | Hypertrophy, general strength, maximal strength / powerlifting, muscular endurance, athletic performance / sport-specific, fat loss (preserve muscle), general health & fitness, rehab / return-to-training | Multiple goals → help prioritize. Programming for conflicting goals dilutes both.                                                            |
+| **Experience level**       | Beginner (≤6 months), intermediate (6 months–3 years), advanced (3+ years)                                                                                                                                  | Resistance training experience specifically. Ask about general athletic background separately.                                               |
+| **Available equipment**    | Full commercial gym, home gym (rack, barbell, dumbbells, cables, machines?), bodyweight only, resistance bands, dumbbells only, kettlebells, suspension trainer                                             | Be specific. "Home gym" spans wide range — ask what's actually there.                                                                        |
+| **Days per week**          | 1–6                                                                                                                                                                                                         | Realistic commitment. A sustainable 3-day program beats an abandoned 6-day program.                                                          |
+| **Time per session**       | 30, 45, 60, 75, 90+ minutes                                                                                                                                                                                 | Including warm-up and cool-down. Most hypertrophy/strength sessions need 45–75 min.                                                          |
+| **Injuries & limitations** | Free text                                                                                                                                                                                                   | Current and past. Known movement restrictions. Medical conditions affecting training (hypertension, asthma, diabetes, etc.). Problem joints. |
 
 Flag unclear fields as assumptions in the plan output; let the client correct.
 
@@ -44,12 +44,12 @@ Flag unclear fields as assumptions in the plan output; let the client correct.
 
 Check for combinations making the goal infeasible or suboptimal. Flag and ask:
 
-| Contradiction | Message |
-|---|---|
-| Strength/powerlifting + 1 day/week | Significant strength gains unlikely on one session/week. Can design a maintenance + work-capacity full-body session, but progress needs 2–3 sessions minimum. Offer best-possible 1-day plan or ask about more days. |
-| Hypertrophy + 30 min sessions | Hypertrophy needs volume per muscle group — hard in 30 min including warm-up. Can use paired sets and minimal rest, but requires high efficiency. Offer to proceed or stretch to 45 min. |
-| High-volume program + bodyweight only | Bodyweight builds muscle and strength, but lower-body progressive overload is challenging without external load. Use unilateral work, tempo changes, high rep ranges. Confirm approach is acceptable. |
-| Advanced lifter + bodyweight only | Likely adapted to bodyweight loading. Can program maintenance, mobility, and skill work, but significant strength/size gains without external load are unlikely. Ask about equipment access or design around constraints. |
+| Contradiction                         | Message                                                                                                                                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Strength/powerlifting + 1 day/week    | Significant strength gains unlikely on one session/week. Can design a maintenance + work-capacity full-body session, but progress needs 2–3 sessions minimum. Offer best-possible 1-day plan or ask about more days.      |
+| Hypertrophy + 30 min sessions         | Hypertrophy needs volume per muscle group — hard in 30 min including warm-up. Can use paired sets and minimal rest, but requires high efficiency. Offer to proceed or stretch to 45 min.                                  |
+| High-volume program + bodyweight only | Bodyweight builds muscle and strength, but lower-body progressive overload is challenging without external load. Use unilateral work, tempo changes, high rep ranges. Confirm approach is acceptable.                     |
+| Advanced lifter + bodyweight only     | Likely adapted to bodyweight loading. Can program maintenance, mobility, and skill work, but significant strength/size gains without external load are unlikely. Ask about equipment access or design around constraints. |
 
 Don't refuse suboptimal inputs — make the trade-off transparent and let the client decide.
 

@@ -12,18 +12,21 @@ import argparse
 import csv
 import json
 import sys
-from pathlib import Path
 
 import utils
 from utils import MED_DB
+
 ICD11_BASE = MED_DB / "guidelines" / "icd-11"
 
 
 def _find_tabulation_file(release, language):
     """Return path to the extracted SimpleTabulation TSV for the given language."""
     candidate = (
-        ICD11_BASE / release / "extracted" / language /
-        f"SimpleTabulation-ICD-11-MMS-{language}.txt"
+        ICD11_BASE
+        / release
+        / "extracted"
+        / language
+        / f"SimpleTabulation-ICD-11-MMS-{language}.txt"
     )
     if candidate.exists():
         return candidate
@@ -114,8 +117,7 @@ def load_tabulation(release="2026-01", language="en"):
     path = _find_tabulation_file(release, language)
     if path is None:
         sys.stderr.write(
-            f"ICD-11 data not found for {release}/{language}. "
-            f"Run the download first.\n"
+            f"ICD-11 data not found for {release}/{language}. Run the download first.\n"
         )
         sys.exit(1)
 
@@ -166,8 +168,8 @@ def load_tabulation(release="2026-01", language="en"):
 
 def _is_match(text: str, query: str) -> bool:
     """Case-insensitive substring match after normalizing dashes/quotes."""
-    t = text.lower().replace('"', '').replace("'", "")
-    q = query.lower().replace('"', '').replace("'", "")
+    t = text.lower().replace('"', "").replace("'", "")
+    q = query.lower().replace('"', "").replace("'", "")
     return q in t
 
 
@@ -284,14 +286,20 @@ def load_icd10_to_icd11_mapping(release="2026-01"):
             if len(row) < max(col.values(), default=0) + 1:
                 continue
 
-            mappings.append({
-                "icd10_code": row[col["icd10_code"]].strip() if "icd10_code" in col else "",
-                "icd10_title": row[col["icd10_title"]].strip() if "icd10_title" in col else "",
-                "icd10_chapter": row[col["icd10_chapter"]].strip() if "icd10_chapter" in col else "",
-                "icd11_code": row[col["icd11_code"]].strip() if "icd11_code" in col else "",
-                "icd11_title": row[col["icd11_title"]].strip() if "icd11_title" in col else "",
-                "icd11_chapter": row[col["icd11_chapter"]].strip() if "icd11_chapter" in col else "",
-            })
+            mappings.append(
+                {
+                    "icd10_code": row[col["icd10_code"]].strip() if "icd10_code" in col else "",
+                    "icd10_title": row[col["icd10_title"]].strip() if "icd10_title" in col else "",
+                    "icd10_chapter": row[col["icd10_chapter"]].strip()
+                    if "icd10_chapter" in col
+                    else "",
+                    "icd11_code": row[col["icd11_code"]].strip() if "icd11_code" in col else "",
+                    "icd11_title": row[col["icd11_title"]].strip() if "icd11_title" in col else "",
+                    "icd11_chapter": row[col["icd11_chapter"]].strip()
+                    if "icd11_chapter" in col
+                    else "",
+                }
+            )
     return mappings
 
 
@@ -439,9 +447,7 @@ def parse_args():
 
     args = parser.parse_args()
     if not args.code and not args.keyword and not args.icd10_code and not args.icd11_to_icd10:
-        parser.error(
-            "provide at least one of --code, --keyword, --icd10-code, or --icd11-to-icd10"
-        )
+        parser.error("provide at least one of --code, --keyword, --icd10-code, or --icd11-to-icd10")
     if args.title_only and not args.code:
         parser.error("--title-only requires --code")
     return args
@@ -455,17 +461,19 @@ def main():
     if args.icd10_code:
         mappings = load_icd10_to_icd11_mapping(args.release)
         match = _resolve_icd10_code(mappings, args.icd10_code)
-        output["icd10_to_icd11"] = match if match else {
-            "error": f"no mapping found for ICD-10 code {args.icd10_code}"
-        }
+        output["icd10_to_icd11"] = (
+            match if match else {"error": f"no mapping found for ICD-10 code {args.icd10_code}"}
+        )
 
     # ICD-11 → ICD-10 mapping
     if args.icd11_to_icd10:
         mappings = load_icd10_to_icd11_mapping(args.release)
         matches = _resolve_icd11_code(mappings, args.icd11_to_icd10)
-        output["icd11_to_icd10"] = matches if matches else {
-            "error": f"no mapping found for ICD-11 code {args.icd11_to_icd10}"
-        }
+        output["icd11_to_icd10"] = (
+            matches
+            if matches
+            else {"error": f"no mapping found for ICD-11 code {args.icd11_to_icd10}"}
+        )
 
     # Code or keyword search — load tabulation once
     if args.code or args.keyword:
@@ -525,22 +533,30 @@ def main():
                 lines.append(f"Error: {code_lookup['error']}")
                 lines.append("")
             elif code_lookup.get("partial_match"):
-                lines.append(f"Code '{code_lookup['query']}' matches {code_lookup['count']} entries:")
+                lines.append(
+                    f"Code '{code_lookup['query']}' matches {code_lookup['count']} entries:"
+                )
                 lines.append("")
                 for entry in code_lookup["results"]:
                     code_str = entry["code"] if entry["code"] else f"[{entry.get('block_id', '')}]"
                     lines.append(f"  {code_str:<12} {entry['title']}")
-                    lines.append(f"              ({entry['class_kind']}, ch.{entry.get('chapter_no', '?')})")
+                    lines.append(
+                        f"              ({entry['class_kind']}, ch.{entry.get('chapter_no', '?')})"
+                    )
                 lines.append("")
             else:
                 ancestors = code_lookup.pop("ancestors", None)
                 children = code_lookup.pop("children", None)
-                lines.append(_format_entry_text(code_lookup, ancestors=ancestors, children=children))
+                lines.append(
+                    _format_entry_text(code_lookup, ancestors=ancestors, children=children)
+                )
                 lines.append("")
 
         if "keyword_search" in output:
             keyword_search = output["keyword_search"]
-            lines.append(f'Keyword: "{keyword_search["query"]}" — {keyword_search["count"]} results')
+            lines.append(
+                f'Keyword: "{keyword_search["query"]}" — {keyword_search["count"]} results'
+            )
             if keyword_search.get("class_kind_filter"):
                 lines.append(f"Filter: class_kind={keyword_search['class_kind_filter']}")
             lines.append("")
@@ -557,12 +573,8 @@ def main():
             if "error" in mapping:
                 lines.append(f"ICD-10 → ICD-11: {mapping['error']}")
             else:
-                lines.append(
-                    f"ICD-10 {mapping['icd10_code']}: {mapping['icd10_title']}"
-                )
-                lines.append(
-                    f"  → ICD-11 {mapping['icd11_code']}: {mapping['icd11_title']}"
-                )
+                lines.append(f"ICD-10 {mapping['icd10_code']}: {mapping['icd10_title']}")
+                lines.append(f"  → ICD-11 {mapping['icd11_code']}: {mapping['icd11_title']}")
             lines.append("")
 
         if "icd11_to_icd10" in output:
@@ -570,13 +582,9 @@ def main():
             if isinstance(matches, dict) and "error" in matches:
                 lines.append(f"ICD-11 → ICD-10: {matches['error']}")
             else:
-                lines.append(
-                    f"ICD-11 {args.icd11_to_icd10} maps to {len(matches)} ICD-10 code(s):"
-                )
+                lines.append(f"ICD-11 {args.icd11_to_icd10} maps to {len(matches)} ICD-10 code(s):")
                 for mapping in matches:
-                    lines.append(
-                        f"  → ICD-10 {mapping['icd10_code']}: {mapping['icd10_title']}"
-                    )
+                    lines.append(f"  → ICD-10 {mapping['icd10_code']}: {mapping['icd10_title']}")
             lines.append("")
 
         print("\n".join(lines).strip())

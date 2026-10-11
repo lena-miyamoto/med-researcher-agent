@@ -6,7 +6,6 @@ import urllib.error
 
 import med_db_term_mesh as mesh
 
-
 # ---------------------------------------------------------------------------
 # URL builders / URI helpers
 # ---------------------------------------------------------------------------
@@ -84,15 +83,22 @@ class TestFetchMeshScopeNote:
     def test_full_flow(self):
         def fake_fetch(url, term):
             if "/lookup/descriptor" in url:
-                return json.dumps([
-                    {"resource": "http://id.nlm.nih.gov/mesh/D056344", "label": "Executive Function"}
-                ])
+                return json.dumps(
+                    [
+                        {
+                            "resource": "http://id.nlm.nih.gov/mesh/D056344",
+                            "label": "Executive Function",
+                        }
+                    ]
+                )
             if url.endswith("D056344.json"):
-                return json.dumps({
-                    "identifier": "D056344",
-                    "label": {"@value": "Executive Function"},
-                    "preferredConcept": "http://id.nlm.nih.gov/mesh/M0526990",
-                })
+                return json.dumps(
+                    {
+                        "identifier": "D056344",
+                        "label": {"@value": "Executive Function"},
+                        "preferredConcept": "http://id.nlm.nih.gov/mesh/M0526990",
+                    }
+                )
             if url.endswith("M0526990.json"):
                 return json.dumps({"scopeNote": {"@value": "A set of cognitive functions."}})
             raise AssertionError(f"unexpected url: {url}")
@@ -113,9 +119,9 @@ class TestFetchMeshScopeNote:
     def test_descriptor_without_scope_note(self):
         def fake_fetch(url, term):
             if "/lookup/descriptor" in url:
-                return json.dumps([
-                    {"resource": "http://id.nlm.nih.gov/mesh/D000000", "label": "Term"}
-                ])
+                return json.dumps(
+                    [{"resource": "http://id.nlm.nih.gov/mesh/D000000", "label": "Term"}]
+                )
             if url.endswith("D000000.json"):
                 return json.dumps({"preferredConcept": "http://id.nlm.nih.gov/mesh/M0000000"})
             if url.endswith("M0000000.json"):
@@ -143,20 +149,40 @@ class TestMain:
         }
 
     def test_json_output(self, monkeypatch, capsys):
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-mesh", "--term", "Executive Function", "--format", "json",
-        ])
-        monkeypatch.setattr(mesh, "fetch_mesh_scope_note", lambda term, fetch_url_func=None: self._result())
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-mesh",
+                "--term",
+                "Executive Function",
+                "--format",
+                "json",
+            ],
+        )
+        monkeypatch.setattr(
+            mesh, "fetch_mesh_scope_note", lambda term, fetch_url_func=None: self._result()
+        )
         assert mesh.main() == 0
         data = json.loads(capsys.readouterr().out)
         assert data["descriptor_id"] == "D056344"
         assert data["scope_note"] == "A set of cognitive functions."
 
     def test_text_output(self, monkeypatch, capsys):
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-mesh", "--term", "Executive Function", "--format", "text",
-        ])
-        monkeypatch.setattr(mesh, "fetch_mesh_scope_note", lambda term, fetch_url_func=None: self._result())
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-mesh",
+                "--term",
+                "Executive Function",
+                "--format",
+                "text",
+            ],
+        )
+        monkeypatch.setattr(
+            mesh, "fetch_mesh_scope_note", lambda term, fetch_url_func=None: self._result()
+        )
         assert mesh.main() == 0
         out = capsys.readouterr().out
         assert "descriptor:      D056344" in out

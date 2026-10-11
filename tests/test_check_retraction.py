@@ -3,70 +3,78 @@
 import json
 import sys
 
-import pytest
-
 import check_retraction as cr
-
+import pytest
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
 # ---------------------------------------------------------------------------
 
-CROSSREF_RETRACTED = json.dumps({
-    "message": {
-        "DOI": "10.1177/17588359231172420",
-        "update-to": [
-            {
-                "updated": {"date-parts": [[2023, 4, 22]]},
-                "DOI": "10.1177/1758835920922055",
-                "type": "retraction",
-                "source": "publisher",
-                "label": "Retraction",
-            },
-        ],
-    },
-})
+CROSSREF_RETRACTED = json.dumps(
+    {
+        "message": {
+            "DOI": "10.1177/17588359231172420",
+            "update-to": [
+                {
+                    "updated": {"date-parts": [[2023, 4, 22]]},
+                    "DOI": "10.1177/1758835920922055",
+                    "type": "retraction",
+                    "source": "publisher",
+                    "label": "Retraction",
+                },
+            ],
+        },
+    }
+)
 
-CROSSREF_CLEAN = json.dumps({
-    "message": {"DOI": "10.1234/clean", "update-to": None},
-})
+CROSSREF_CLEAN = json.dumps(
+    {
+        "message": {"DOI": "10.1234/clean", "update-to": None},
+    }
+)
 
-CROSSREF_CONCERN = json.dumps({
-    "message": {
-        "DOI": "10.1234/concern",
-        "update-to": [
-            {
-                "updated": {"date-parts": [[2022, 1, 5]]},
-                "DOI": "10.1234/concern-notice",
-                "type": "correction",
-                "label": "Expression of Concern",
-            },
-        ],
-    },
-})
+CROSSREF_CONCERN = json.dumps(
+    {
+        "message": {
+            "DOI": "10.1234/concern",
+            "update-to": [
+                {
+                    "updated": {"date-parts": [[2022, 1, 5]]},
+                    "DOI": "10.1234/concern-notice",
+                    "type": "correction",
+                    "label": "Expression of Concern",
+                },
+            ],
+        },
+    }
+)
 
 PUBMED_ESEARCH_FOUND = json.dumps({"esearchresult": {"idlist": ["12345"], "count": "1"}})
 PUBMED_ESEARCH_EMPTY = json.dumps({"esearchresult": {"idlist": [], "count": "0"}})
 
-PUBMED_ESUMMARY_RETRACTED = json.dumps({
-    "result": {
-        "uids": ["12345"],
-        "12345": {
-            "pubtype": ["Journal Article", "Retracted Publication"],
-            "articleids": [{"idtype": "doi", "value": "10.1234/retracted"}],
+PUBMED_ESUMMARY_RETRACTED = json.dumps(
+    {
+        "result": {
+            "uids": ["12345"],
+            "12345": {
+                "pubtype": ["Journal Article", "Retracted Publication"],
+                "articleids": [{"idtype": "doi", "value": "10.1234/retracted"}],
+            },
         },
-    },
-})
+    }
+)
 
-PUBMED_ESUMMARY_CLEAN = json.dumps({
-    "result": {
-        "uids": ["12345"],
-        "12345": {
-            "pubtype": ["Journal Article"],
-            "articleids": [{"idtype": "doi", "value": "10.1234/clean"}],
+PUBMED_ESUMMARY_CLEAN = json.dumps(
+    {
+        "result": {
+            "uids": ["12345"],
+            "12345": {
+                "pubtype": ["Journal Article"],
+                "articleids": [{"idtype": "doi", "value": "10.1234/clean"}],
+            },
         },
-    },
-})
+    }
+)
 
 EPMC_EMPTY = json.dumps({"resultList": {"result": []}})
 
@@ -86,6 +94,7 @@ def fake_epmc_fetch(module, params):
 # ---------------------------------------------------------------------------
 # check_crossref
 # ---------------------------------------------------------------------------
+
 
 class TestCheckCrossref:
     def test_retracted(self):
@@ -129,6 +138,7 @@ class TestCheckCrossref:
 # ---------------------------------------------------------------------------
 # check_pubmed
 # ---------------------------------------------------------------------------
+
 
 class TestCheckPubmed:
     def test_retracted_pubtype(self):
@@ -174,6 +184,7 @@ class TestCheckPubmed:
 # ---------------------------------------------------------------------------
 # check_retraction (orchestration)
 # ---------------------------------------------------------------------------
+
 
 class TestCheckRetraction:
     def test_doi_retracted_via_crossref(self):
@@ -272,6 +283,7 @@ class TestCheckRetraction:
 # _compute_status
 # ---------------------------------------------------------------------------
 
+
 class TestComputeStatus:
     def test_retracted_wins_over_concern(self):
         result = {
@@ -282,12 +294,16 @@ class TestComputeStatus:
 
     def test_not_retracted_requires_a_signal(self):
         assert cr._compute_status({"crossref": None, "pubmed": None}) == "unknown"
-        assert cr._compute_status({"crossref": {"retracted": False}, "pubmed": None}) == "not-retracted"
+        assert (
+            cr._compute_status({"crossref": {"retracted": False}, "pubmed": None})
+            == "not-retracted"
+        )
 
 
 # ---------------------------------------------------------------------------
 # CLI / main
 # ---------------------------------------------------------------------------
+
 
 class TestMain:
     def test_requires_identifier(self, capsys):
@@ -306,7 +322,11 @@ class TestMain:
             raise AssertionError
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["check-retraction", "--doi", "10.1177/17588359231172420", "--format", "text"])
+            mp.setattr(
+                sys,
+                "argv",
+                ["check-retraction", "--doi", "10.1177/17588359231172420", "--format", "text"],
+            )
             mp.setattr(cr.utils, "_fetch_url", fake_crossref)
             mp.setattr(cr, "fetch_pubmed", fake_pubmed)
             mp.setattr(cr, "fetch_europe_pmc", fake_epmc_fetch)

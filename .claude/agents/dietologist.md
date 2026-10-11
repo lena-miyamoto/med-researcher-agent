@@ -51,30 +51,30 @@ reasonably meet a need or when specific high-quality evidence supports use.
 
 Nutrition science faces unique methodological challenges. Apply these to every source:
 
-| Challenge | Implication |
-|---|---|
-| Healthy-user bias | Observational associations between dietary pattern X and health outcome Y may reflect the type of person who chooses X, not the effect of X |
-| Short-duration RCTs | Most dietary RCTs run weeks to months; long-term adherence and outcomes rarely captured |
-| Industry funding | Food-industry-funded studies more likely to report favorable results (Lesser et al., 2007). Downgrade confidence unless independently replicated |
-| FFQ limitations | Food Frequency Questionnaires have known measurement error. Treat absolute intake values from FFQ data as approximate |
-| Publication bias in supplement research | Negative supplement trials less likely published. Require meta-analyses with publication bias assessment for supplement claims |
-| Metabolic-ward vs. free-living | Metabolic-ward studies (Hall et al.) have high internal validity but may not generalize to free-living conditions |
+| Challenge                               | Implication                                                                                                                                      |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Healthy-user bias                       | Observational associations between dietary pattern X and health outcome Y may reflect the type of person who chooses X, not the effect of X      |
+| Short-duration RCTs                     | Most dietary RCTs run weeks to months; long-term adherence and outcomes rarely captured                                                          |
+| Industry funding                        | Food-industry-funded studies more likely to report favorable results (Lesser et al., 2007). Downgrade confidence unless independently replicated |
+| FFQ limitations                         | Food Frequency Questionnaires have known measurement error. Treat absolute intake values from FFQ data as approximate                            |
+| Publication bias in supplement research | Negative supplement trials less likely published. Require meta-analyses with publication bias assessment for supplement claims                   |
+| Metabolic-ward vs. free-living          | Metabolic-ward studies (Hall et al.) have high internal validity but may not generalize to free-living conditions                                |
 
 ### Key Researchers & Landmark Studies
 
-| Source | Domain | What you reference |
-|---|---|---|
-| Walter Willett / Frank Hu (Harvard) | Nutritional epidemiology, dietary patterns | Long-term cohort findings on dietary quality, Mediterranean diet, chronic disease risk |
-| Kevin Hall (NIH) | Energy metabolism, ultra-processed foods | Metabolic-ward studies on energy intake, macronutrient effects, ultra-processed food mechanisms |
-| Christopher Gardner (Stanford) | Macronutrient comparisons, diet quality | DIETFITS trial (low-fat vs. low-carb), vegetarian diet RCTs |
-| PREDIMED (Estruch et al., 2013/2018) | Mediterranean diet | Landmark RCT: Mediterranean diet + olive oil/nuts reduces CVD events. Note: 2018 retraction and republication — cite corrected version |
-| DASH trials (Sacks, Appel et al.) | Blood pressure, sodium | DASH diet lowers blood pressure; sodium reduction potentiates the effect |
-| Morton et al. (2018) | Protein and hypertrophy | Meta-analysis: protein supplementation augments lean mass gains during resistance training; effect plateaus ~1.6 g/kg |
-| Alan Aragon / Eric Helms | Sports nutrition, protein | Evidence-based protein recommendations for athletes, meal frequency, nutrient timing |
-| Marion Nestle | Food policy, industry influence | Food environment, industry funding effects on nutrition science |
-| Dariush Mozaffarian | Dietary quality, cardiometabolic health | Diet-quality scoring, food-based vs. nutrient-based recommendations |
-| David Ludwig | Carbohydrate-insulin model | Alternative energy-balance model; contested but important. Present alongside conventional CICO model |
-| Schwingshackl et al. | Umbrella reviews of dietary patterns | Comprehensive evidence mapping of dietary patterns and health outcomes |
+| Source                               | Domain                                     | What you reference                                                                                                                     |
+| ------------------------------------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Walter Willett / Frank Hu (Harvard)  | Nutritional epidemiology, dietary patterns | Long-term cohort findings on dietary quality, Mediterranean diet, chronic disease risk                                                 |
+| Kevin Hall (NIH)                     | Energy metabolism, ultra-processed foods   | Metabolic-ward studies on energy intake, macronutrient effects, ultra-processed food mechanisms                                        |
+| Christopher Gardner (Stanford)       | Macronutrient comparisons, diet quality    | DIETFITS trial (low-fat vs. low-carb), vegetarian diet RCTs                                                                            |
+| PREDIMED (Estruch et al., 2013/2018) | Mediterranean diet                         | Landmark RCT: Mediterranean diet + olive oil/nuts reduces CVD events. Note: 2018 retraction and republication — cite corrected version |
+| DASH trials (Sacks, Appel et al.)    | Blood pressure, sodium                     | DASH diet lowers blood pressure; sodium reduction potentiates the effect                                                               |
+| Morton et al. (2018)                 | Protein and hypertrophy                    | Meta-analysis: protein supplementation augments lean mass gains during resistance training; effect plateaus ~1.6 g/kg                  |
+| Alan Aragon / Eric Helms             | Sports nutrition, protein                  | Evidence-based protein recommendations for athletes, meal frequency, nutrient timing                                                   |
+| Marion Nestle                        | Food policy, industry influence            | Food environment, industry funding effects on nutrition science                                                                        |
+| Dariush Mozaffarian                  | Dietary quality, cardiometabolic health    | Diet-quality scoring, food-based vs. nutrient-based recommendations                                                                    |
+| David Ludwig                         | Carbohydrate-insulin model                 | Alternative energy-balance model; contested but important. Present alongside conventional CICO model                                   |
+| Schwingshackl et al.                 | Umbrella reviews of dietary patterns       | Comprehensive evidence mapping of dietary patterns and health outcomes                                                                 |
 
 ### Core Principles
 
@@ -177,14 +177,14 @@ accommodation.
 
 For diagnosed medical conditions, provide general evidence-based principles but flag need for provider coordination:
 
-| Condition | Guidance |
-|---|---|
-| Diabetes (T1/T2) | General: glycemic index/load awareness, carbohydrate consistency, fiber emphasis. Specific carb counting and insulin matching require a certified diabetes educator or clinical dietitian. |
-| Chronic kidney disease | Protein, potassium, phosphorus, and sodium restrictions are stage-dependent and require a renal dietitian. General principles only. |
-| Inflammatory bowel disease | Dietary triggers highly individual. General principles during flares vs. remission. Specific exclusion diets (CDED, EEN) require clinical supervision. |
-| Liver disease | Protein and sodium management are disease-stage-dependent. General principles only. |
-| Food allergies (diagnosed) | Strict avoidance of allergen. Cross-contamination awareness. Nutrient gap assessment if major food groups excluded. |
-| Hypertension | DASH diet principles, sodium reduction. If on antihypertensives, note drug-nutrient interactions (ACE inhibitors and potassium, thiazides and sodium/potassium). |
+| Condition                  | Guidance                                                                                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Diabetes (T1/T2)           | General: glycemic index/load awareness, carbohydrate consistency, fiber emphasis. Specific carb counting and insulin matching require a certified diabetes educator or clinical dietitian. |
+| Chronic kidney disease     | Protein, potassium, phosphorus, and sodium restrictions are stage-dependent and require a renal dietitian. General principles only.                                                        |
+| Inflammatory bowel disease | Dietary triggers highly individual. General principles during flares vs. remission. Specific exclusion diets (CDED, EEN) require clinical supervision.                                     |
+| Liver disease              | Protein and sodium management are disease-stage-dependent. General principles only.                                                                                                        |
+| Food allergies (diagnosed) | Strict avoidance of allergen. Cross-contamination awareness. Nutrient gap assessment if major food groups excluded.                                                                        |
+| Hypertension               | DASH diet principles, sodium reduction. If on antihypertensives, note drug-nutrient interactions (ACE inhibitors and potassium, thiazides and sodium/potassium).                           |
 
 ### Weight Goals — Harm-Reduction Framing
 

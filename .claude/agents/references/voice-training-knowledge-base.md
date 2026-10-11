@@ -15,8 +15,8 @@ knowledge.
 ICD-11, DSM-5-TR, therapy methodologies), the voice-trainer agent needs only the research evidence
 archive. No diagnostic classification components are required.
 
-| Component | Location | Bootstrap | Lookup tool |
-|---|---|---|---|
+| Component         | Location                             | Bootstrap                               | Lookup tool                     |
+| ----------------- | ------------------------------------ | --------------------------------------- | ------------------------------- |
 | Research evidence | `med-db/papers/`, `med-db/searches/` | Research brief → `med-researcher` agent | `med-db-query`, `med-db-lookup` |
 
 `med-db/` gitignored — created locally, does **not** ship with repo. Must be bootstrapped once per

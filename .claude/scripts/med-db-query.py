@@ -14,7 +14,6 @@ from pathlib import Path
 
 import utils
 
-
 # Re-export canonical slugify for convenience
 slugify = utils.slugify
 
@@ -54,7 +53,11 @@ def _paper_metadata(paper_dir):
         title = record.get("title", "Unknown title")
         authors = [a.get("name", "") for a in record.get("authors", [])]
         doi = next(
-            (aid.get("value", "") for aid in record.get("articleids", []) if aid.get("idtype") == "doi"),
+            (
+                aid.get("value", "")
+                for aid in record.get("articleids", [])
+                if aid.get("idtype") == "doi"
+            ),
             None,
         )
         journal = record.get("source", "")
@@ -110,17 +113,11 @@ def list_topics(med_db):
             if not child.is_dir():
                 continue
             topic = child.name
-            entry = topics.setdefault(
-                topic, {"topic": topic, "paper_count": 0, "search_count": 0}
-            )
+            entry = topics.setdefault(topic, {"topic": topic, "paper_count": 0, "search_count": 0})
             if key == "paper_count":
-                entry["paper_count"] = sum(
-                    1 for p in child.rglob("metadata.json") if p.is_file()
-                )
+                entry["paper_count"] = sum(1 for p in child.rglob("metadata.json") if p.is_file())
             else:
-                entry["search_count"] = sum(
-                    1 for p in child.rglob("*.json") if p.is_file()
-                )
+                entry["search_count"] = sum(1 for p in child.rglob("*.json") if p.is_file())
 
     return sorted(topics.values(), key=lambda t: t["topic"])
 
@@ -153,12 +150,14 @@ def list_topic_papers(med_db, topic):
         else:
             ident, url = utils.default_paper_entry(meta_file)
             title = "Unknown title"
-        papers.append({
-            "folder": str(paper_dir.relative_to(med_db)),
-            "identifier": ident,
-            "url": url,
-            "title": title,
-        })
+        papers.append(
+            {
+                "folder": str(paper_dir.relative_to(med_db)),
+                "identifier": ident,
+                "url": url,
+                "title": title,
+            }
+        )
     return papers
 
 
@@ -259,7 +258,11 @@ def search_keyword(med_db, keyword, topic=None):
             idx = title.index(keyword_lower)
             start = max(0, idx - 30)
             end = min(len(title), idx + len(keyword_lower) + 30)
-            match_snippet = ("..." if start > 0 else "") + str(info.get("title", ""))[start:end] + ("..." if end < len(title) else "")
+            match_snippet = (
+                ("..." if start > 0 else "")
+                + str(info.get("title", ""))[start:end]
+                + ("..." if end < len(title) else "")
+            )
 
         abstract_path = paper_dir / "abstract.txt"
         abstract = ""
@@ -276,18 +279,24 @@ def search_keyword(med_db, keyword, topic=None):
                 idx = abstract_lower.index(keyword_lower)
                 start = max(0, idx - 40)
                 end = min(len(abstract), idx + len(keyword_lower) + 40)
-                match_snippet = ("..." if start > 0 else "") + abstract[start:end] + ("..." if end < len(abstract) else "")
+                match_snippet = (
+                    ("..." if start > 0 else "")
+                    + abstract[start:end]
+                    + ("..." if end < len(abstract) else "")
+                )
 
         if match_field:
             ident, url = utils.default_paper_entry(meta_path)
-            matches.append({
-                "folder": str(paper_dir.relative_to(med_db)),
-                "identifier": ident,
-                "url": url,
-                "title": info.get("title", "Unknown title"),
-                "match_field": "+".join(match_field),
-                "match_snippet": match_snippet,
-            })
+            matches.append(
+                {
+                    "folder": str(paper_dir.relative_to(med_db)),
+                    "identifier": ident,
+                    "url": url,
+                    "title": info.get("title", "Unknown title"),
+                    "match_field": "+".join(match_field),
+                    "match_snippet": match_snippet,
+                }
+            )
 
     return matches
 
@@ -336,14 +345,16 @@ def recent_papers(med_db, count=10):
     for paper in data.get("papers", []):
         path_str = paper.get("path", "")
         topic = path_str.split("/")[1] if "/" in path_str else "unknown"
-        entries.append({
-            "path": path_str,
-            "identifier": paper.get("identifier", "unknown"),
-            "url": paper.get("url", ""),
-            "title": _paper_title_from_path(med_db, path_str),
-            "topic": topic,
-            "accessed": paper.get("accessed", ""),
-        })
+        entries.append(
+            {
+                "path": path_str,
+                "identifier": paper.get("identifier", "unknown"),
+                "url": paper.get("url", ""),
+                "title": _paper_title_from_path(med_db, path_str),
+                "topic": topic,
+                "accessed": paper.get("accessed", ""),
+            }
+        )
 
     entries.sort(key=lambda e: e["accessed"], reverse=True)
     return entries[:count]
@@ -414,15 +425,23 @@ def search_searches(med_db, keyword, topic=None):
             idx = query_text.lower().index(keyword_lower)
             start = max(0, idx - 30)
             end = min(len(query_text), idx + len(keyword_lower) + 30)
-            snippet = ("..." if start > 0 else "") + query_text[start:end] + ("..." if end < len(query_text) else "")
+            snippet = (
+                ("..." if start > 0 else "")
+                + query_text[start:end]
+                + ("..." if end < len(query_text) else "")
+            )
 
-            source = "PubMed" if pubmed_result and "querytranslation" in pubmed_result else "Europe PMC"
-            matches.append({
-                "path": str(search_path.relative_to(med_db)),
-                "source": source,
-                "query": query_text,
-                "match_snippet": snippet,
-            })
+            source = (
+                "PubMed" if pubmed_result and "querytranslation" in pubmed_result else "Europe PMC"
+            )
+            matches.append(
+                {
+                    "path": str(search_path.relative_to(med_db)),
+                    "source": source,
+                    "query": query_text,
+                    "match_snippet": snippet,
+                }
+            )
 
     return matches
 
@@ -509,7 +528,9 @@ def _format_text(result, command):
             return f"No matches for '{result.get('keyword', '')}'."
         summary = result.get("summary", False)
         if summary:
-            lines = [f"Keyword '{result.get('keyword', '')}': {result.get('match_count', len(matches))} match(es)"]
+            lines = [
+                f"Keyword '{result.get('keyword', '')}': {result.get('match_count', len(matches))} match(es)"
+            ]
             for m in matches:
                 lines.append(f"  {m['identifier']}: {m['title'][:120]}")
             return "\n".join(lines)
@@ -566,15 +587,27 @@ def parse_args():
     )
 
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--list-topics", action="store_true", help="List all topics with paper and search counts.")
+    group.add_argument(
+        "--list-topics", action="store_true", help="List all topics with paper and search counts."
+    )
     group.add_argument("--topic", type=str, help="List all papers under a topic.")
     group.add_argument("--check-pmid", type=str, help="Check if a PMID is already archived.")
-    group.add_argument("--check-epmc", type=str, help="Check if a Europe PMC record (SOURCE:ID) is archived.")
-    group.add_argument("--pmids-from-search", type=str, help="Extract PMID list from a search JSON file.")
+    group.add_argument(
+        "--check-epmc", type=str, help="Check if a Europe PMC record (SOURCE:ID) is archived."
+    )
+    group.add_argument(
+        "--pmids-from-search", type=str, help="Extract PMID list from a search JSON file."
+    )
     group.add_argument("--read-metadata", type=str, help="Read metadata from a paper directory.")
-    group.add_argument("--search-keyword", type=str, help="Search papers by keyword (case-insensitive).")
+    group.add_argument(
+        "--search-keyword", type=str, help="Search papers by keyword (case-insensitive)."
+    )
     group.add_argument("--recent", type=int, help="List N most recently added papers.")
-    group.add_argument("--search-searches", type=str, help="Search archived search queries by keyword (case-insensitive).")
+    group.add_argument(
+        "--search-searches",
+        type=str,
+        help="Search archived search queries by keyword (case-insensitive).",
+    )
     parser.add_argument(
         "--search-topic",
         type=str,
@@ -618,8 +651,12 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if args.identifiers_only and not any([args.topic, args.search_keyword, args.recent, args.pmids_from_search, args.search_searches]):
-        parser.error("--identifiers-only requires --topic, --search-keyword, --recent, --pmids-from-search, or --search-searches")
+    if args.identifiers_only and not any(
+        [args.topic, args.search_keyword, args.recent, args.pmids_from_search, args.search_searches]
+    ):
+        parser.error(
+            "--identifiers-only requires --topic, --search-keyword, --recent, --pmids-from-search, or --search-searches"
+        )
     if args.title_only and not args.read_metadata:
         parser.error("--title-only requires --read-metadata")
     if args.abstract_only and not args.read_metadata:
@@ -657,7 +694,10 @@ def main():
         try:
             source, record_id = args.check_epmc.split(":", 1)
         except ValueError:
-            print(json.dumps({"error": "invalid --check-epmc format; expected SOURCE:ID"}), file=sys.stderr)
+            print(
+                json.dumps({"error": "invalid --check-epmc format; expected SOURCE:ID"}),
+                file=sys.stderr,
+            )
             return 1
         result = check_epmc_archived(med_db, source, record_id)
     elif args.pmids_from_search:
@@ -695,7 +735,13 @@ def main():
             "matches": matches,
         }
 
-    if args.identifiers_only or args.title_only or args.abstract_only or args.names_only or args.locations_only:
+    if (
+        args.identifiers_only
+        or args.title_only
+        or args.abstract_only
+        or args.names_only
+        or args.locations_only
+    ):
         if args.identifiers_only:
             identifier_list = []
             if command == "topic-papers":

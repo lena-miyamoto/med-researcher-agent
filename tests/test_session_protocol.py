@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 import session_protocol as sp
 import utils
 
@@ -104,7 +103,7 @@ def make_transcript(
 
 def run_main(argv):
     saved = sys.argv
-    sys.argv = ["session-protocol"] + argv
+    sys.argv = ["session-protocol", *argv]
     try:
         return sp.main()
     finally:
@@ -192,13 +191,19 @@ class TestIsSessionEndEntry:
         assert sp.is_session_end_entry(session_end_entry("Bye.")) is True
 
     def test_marker_inside_prose(self):
-        assert sp.is_session_end_entry(assistant_entry(text_block("I wrote SESSION_ENDED here"))) is False
+        assert (
+            sp.is_session_end_entry(assistant_entry(text_block("I wrote SESSION_ENDED here")))
+            is False
+        )
 
     def test_user_entry_with_marker(self):
         assert sp.is_session_end_entry(user_entry(text_block(SESSION_ENDED))) is False
 
     def test_thinking_only_is_false(self):
-        assert sp.is_session_end_entry(assistant_entry(thinking_block("output SESSION_ENDED"))) is False
+        assert (
+            sp.is_session_end_entry(assistant_entry(thinking_block("output SESSION_ENDED")))
+            is False
+        )
 
 
 class TestHasEndSkillCall:
@@ -241,23 +246,39 @@ class TestIsHandoffEntry:
 
 class TestIsNoiseUserEntry:
     def test_command_message(self):
-        assert sp.is_noise_user_entry(user_entry(text_block("<command-message>start</command-message>"))) is True
+        assert (
+            sp.is_noise_user_entry(
+                user_entry(text_block("<command-message>start</command-message>"))
+            )
+            is True
+        )
 
     def test_local_command(self):
-        assert sp.is_noise_user_entry(user_entry(text_block("<local-command-caveat>Caveat: ..."))) is True
+        assert (
+            sp.is_noise_user_entry(user_entry(text_block("<local-command-caveat>Caveat: ...")))
+            is True
+        )
 
     def test_system_reminder(self):
-        assert sp.is_noise_user_entry(user_entry(text_block("<system-reminder>...</system-reminder>"))) is True
+        assert (
+            sp.is_noise_user_entry(user_entry(text_block("<system-reminder>...</system-reminder>")))
+            is True
+        )
 
     def test_compaction_prefix(self):
-        entry = user_entry(text_block("This session is being continued from a previous conversation..."))
+        entry = user_entry(
+            text_block("This session is being continued from a previous conversation...")
+        )
         assert sp.is_noise_user_entry(entry) is True
 
     def test_empty_text(self):
         assert sp.is_noise_user_entry(user_entry()) is True
 
     def test_client_speech(self):
-        assert sp.is_noise_user_entry(user_entry(text_block("Gestern gab es eine Diskussion."))) is False
+        assert (
+            sp.is_noise_user_entry(user_entry(text_block("Gestern gab es eine Diskussion.")))
+            is False
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -338,7 +359,9 @@ class TestExtractTurns:
             handoff_entry(),
             assistant_entry(text_block("Hi.")),
             user_entry(text_block("<system-reminder>...</system-reminder>")),
-            user_entry(text_block("This session is being continued from a previous conversation...")),
+            user_entry(
+                text_block("This session is being continued from a previous conversation...")
+            ),
             user_entry(text_block("Real client words.")),
             assistant_entry(thinking_block("thinking only")),
             session_end_entry("Bye."),
@@ -399,7 +422,10 @@ class TestParseJsonlLines:
     def test_corrupt_last_line_skipped(self, tmp_path):
         path = tmp_path / "s.jsonl"
         path.write_text(
-            json.dumps(handoff_entry()) + "\n" + json.dumps(session_end_entry("bye")) + "\n{partial",
+            json.dumps(handoff_entry())
+            + "\n"
+            + json.dumps(session_end_entry("bye"))
+            + "\n{partial",
             encoding="utf-8",
         )
         assert len(sp.parse_jsonl_lines(path)) == 2
@@ -407,7 +433,10 @@ class TestParseJsonlLines:
     def test_corrupt_middle_line_raises(self, tmp_path):
         path = tmp_path / "s.jsonl"
         path.write_text(
-            json.dumps(handoff_entry()) + "\n{corrupt\n" + json.dumps(session_end_entry("bye")) + "\n",
+            json.dumps(handoff_entry())
+            + "\n{corrupt\n"
+            + json.dumps(session_end_entry("bye"))
+            + "\n",
             encoding="utf-8",
         )
         with pytest.raises(ValueError):
@@ -442,13 +471,17 @@ class TestRenderProtocol:
 
     def test_en_therapist_label(self):
         turns = [("therapist", "Hello.")]
-        result = sp.render_protocol(turns, "Lena", "en", 1, "2026-01-01", "Therapeutin", "Therapist")
+        result = sp.render_protocol(
+            turns, "Lena", "en", 1, "2026-01-01", "Therapeutin", "Therapist"
+        )
         assert "**Therapist:**" in result
         assert "**Therapeutin:**" not in result
 
     def test_language_case_insensitive(self):
         turns = [("therapist", "Hallo.")]
-        result = sp.render_protocol(turns, "Lena", "DE", 1, "2026-01-01", "Therapeutin", "Therapist")
+        result = sp.render_protocol(
+            turns, "Lena", "DE", 1, "2026-01-01", "Therapeutin", "Therapist"
+        )
         assert "**Therapeutin:**" in result
 
     def test_voice_de_label(self):
@@ -534,7 +567,9 @@ class TestSelectSessionFile:
             handoff_agent="voice-trainer",
             end_skill="end-voice-training",
         )
-        assert sp.select_session_file(projects, None, "end-voice-training") == primary / "voice.jsonl"
+        assert (
+            sp.select_session_file(projects, None, "end-voice-training") == primary / "voice.jsonl"
+        )
 
     def test_no_match_raises(self, tmp_path):
         projects = tmp_path / "projects"
@@ -561,11 +596,16 @@ class TestCLI:
 
     def _args(self, projects, sessions, **extra):
         args = [
-            "--slug", "lena",
-            "--session-number", "22",
-            "--date", "2026-08-29",
-            "--projects-directory", str(projects),
-            "--sessions-directory", str(sessions),
+            "--slug",
+            "lena",
+            "--session-number",
+            "22",
+            "--date",
+            "2026-08-29",
+            "--projects-directory",
+            str(projects),
+            "--sessions-directory",
+            str(sessions),
         ]
         for key, value in extra.items():
             args += [key, value]
@@ -594,7 +634,12 @@ class TestCLI:
 
     def test_en_labels(self, tmp_path):
         projects, sessions = self._setup(tmp_path, language="en")
-        assert run_main(self._args(projects, sessions, **{"--date": "2026-01-01", "--session-number": "1"})) == 0
+        assert (
+            run_main(
+                self._args(projects, sessions, **{"--date": "2026-01-01", "--session-number": "1"})
+            )
+            == 0
+        )
         content = (sessions / "protocols" / "2026-01-01_S1_lena.md").read_text(encoding="utf-8")
         assert "**Therapist:**" in content
 
@@ -663,7 +708,9 @@ class TestCLI:
         assert "error:" in capsys.readouterr().err
 
     def test_error_invalid_session_kind(self, tmp_path, capsys):
-        assert run_main(self._args(tmp_path / "p", tmp_path / "s", **{"--session-kind": "bogus"})) == 1
+        assert (
+            run_main(self._args(tmp_path / "p", tmp_path / "s", **{"--session-kind": "bogus"})) == 1
+        )
         assert "error:" in capsys.readouterr().err
 
     def test_error_no_combo_found(self, tmp_path, capsys):

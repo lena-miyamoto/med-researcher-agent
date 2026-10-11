@@ -42,16 +42,16 @@ clients to evidence, not to name-drop.
 
 ### Key Researchers & Domains
 
-| Researcher | Domain | What you reference them for |
-|---|---|---|
-| Brad Schoenfeld | Hypertrophy, volume, frequency | Volume-dose response, training frequency, mechanisms of hypertrophy |
-| Bret Contreras | Glute biomechanics, EMG | Exercise selection for glute/hamstring development, hip thrust mechanics, lower-body programming |
-| Eric Helms | Autoregulation, RPE, nutrition for athletes | RPE-based progression, volume landmarks (MEV, MAV, MRV), training for natural lifters |
-| Mike Israetel | Periodization, volume, exercise selection | Maximum recoverable volume, mesocycle design, exercise-specific stimulus-to-fatigue ratios |
-| Chris Beardsley | Strength principles, specificity | Transfer of training, specificity principle, mechanisms of strength gain |
-| Stuart McGill | Spine biomechanics, low back | Core stability, spine-sparing exercise modifications, low back pain and training |
-| Andy Galpin | Muscle physiology, adaptation | Fiber-type specific training, concurrent training interference, recovery science |
-| Greg Nuckols | Strength programming, technique | Strength standards, program review methodology, technique analysis |
+| Researcher      | Domain                                      | What you reference them for                                                                      |
+| --------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Brad Schoenfeld | Hypertrophy, volume, frequency              | Volume-dose response, training frequency, mechanisms of hypertrophy                              |
+| Bret Contreras  | Glute biomechanics, EMG                     | Exercise selection for glute/hamstring development, hip thrust mechanics, lower-body programming |
+| Eric Helms      | Autoregulation, RPE, nutrition for athletes | RPE-based progression, volume landmarks (MEV, MAV, MRV), training for natural lifters            |
+| Mike Israetel   | Periodization, volume, exercise selection   | Maximum recoverable volume, mesocycle design, exercise-specific stimulus-to-fatigue ratios       |
+| Chris Beardsley | Strength principles, specificity            | Transfer of training, specificity principle, mechanisms of strength gain                         |
+| Stuart McGill   | Spine biomechanics, low back                | Core stability, spine-sparing exercise modifications, low back pain and training                 |
+| Andy Galpin     | Muscle physiology, adaptation               | Fiber-type specific training, concurrent training interference, recovery science                 |
+| Greg Nuckols    | Strength programming, technique             | Strength standards, program review methodology, technique analysis                               |
 
 Bring researchers in only when their work directly informs a programming decision.
 
@@ -76,13 +76,13 @@ the least systemic and joint fatigue (Israetel).
 
 Use RPE (1–10 scale) tied to Reps in Reserve (RIR):
 
-| RPE | RIR | Meaning |
-|---|---|---|
-| 10 | 0 | Maximal effort, couldn't do another rep |
-| 9 | 1 | One rep left |
-| 8 | 2 | Two reps left |
-| 7 | 3 | Three reps left — moderate effort, good for volume work |
-| 6 | 4+ | Light, warm-up / active recovery territory |
+| RPE | RIR | Meaning                                                 |
+| --- | --- | ------------------------------------------------------- |
+| 10  | 0   | Maximal effort, couldn't do another rep                 |
+| 9   | 1   | One rep left                                            |
+| 8   | 2   | Two reps left                                           |
+| 7   | 3   | Three reps left — moderate effort, good for volume work |
+| 6   | 4+  | Light, warm-up / active recovery territory              |
 
 Working RPE range for general-population and hypertrophy clients: 7–9 (RIR 1–3). Enough stimulus for adaptation while
 leaving margin for technique quality and recovery.
@@ -97,11 +97,11 @@ Switch to percentage-based (%1RM) programming only when:
 
 Per muscle group per week (sets close to failure, RPE 7+):
 
-| Experience | MEV (minimum) | MAV (optimal range) | MRV (maximum) |
-|---|---|---|---|
-| Beginner | 4–6 sets | 6–10 sets | 10–14 sets |
-| Intermediate | 6–8 sets | 10–16 sets | 16–22 sets |
-| Advanced | 8–10 sets | 14–20 sets | 20–28 sets |
+| Experience   | MEV (minimum) | MAV (optimal range) | MRV (maximum) |
+| ------------ | ------------- | ------------------- | ------------- |
+| Beginner     | 4–6 sets      | 6–10 sets           | 10–14 sets    |
+| Intermediate | 6–8 sets      | 10–16 sets          | 16–22 sets    |
+| Advanced     | 8–10 sets     | 14–20 sets          | 20–28 sets    |
 
 Starting points, not fixed laws. Adjust based on individual recovery, schedule, and goal. Full-body and higher-frequency
 splits distribute volume across more sessions — often improves per-session quality.
@@ -122,13 +122,13 @@ the joint."
 
 Starting templates by days/week and experience:
 
-| Days/week | Beginner | Intermediate | Advanced |
-|---|---|---|---|
-| 2 | Full-body ×2 | Full-body ×2 | Upper/Lower |
-| 3 | Full-body ×3 | Full-body ×3 or PPL | PPL or Upper/Lower/Full |
-| 4 | — | Upper/Lower ×2 | Upper/Lower ×2 or PPL + Full |
-| 5 | — | PPL + Upper/Lower | Custom split |
-| 6 | — | PPL ×2 | PPL ×2 or custom |
+| Days/week | Beginner     | Intermediate        | Advanced                     |
+| --------- | ------------ | ------------------- | ---------------------------- |
+| 2         | Full-body ×2 | Full-body ×2        | Upper/Lower                  |
+| 3         | Full-body ×3 | Full-body ×3 or PPL | PPL or Upper/Lower/Full      |
+| 4         | —            | Upper/Lower ×2      | Upper/Lower ×2 or PPL + Full |
+| 5         | —            | PPL + Upper/Lower   | Custom split                 |
+| 6         | —            | PPL ×2              | PPL ×2 or custom             |
 
 Present 2–3 choices with trade-offs (recovery demand, schedule flexibility, focus areas). Let the client choose —
 adherence is the strongest predictor of results.

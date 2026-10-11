@@ -13,7 +13,6 @@ import json
 
 import utils
 
-
 # Re-export for tests that reference them via the module
 fetch_pubmed = utils.fetch_pubmed
 fetch_europe_pmc = utils.fetch_europe_pmc
@@ -45,13 +44,15 @@ def _parse_update_events(message):
         date = None
         if date_parts and date_parts[0]:
             date = "-".join(str(part) for part in date_parts[0])
-        events.append({
-            "type": entry.get("type"),
-            "source": entry.get("source"),
-            "label": entry.get("label"),
-            "doi": entry.get("DOI"),
-            "date": date,
-        })
+        events.append(
+            {
+                "type": entry.get("type"),
+                "source": entry.get("source"),
+                "label": entry.get("label"),
+                "doi": entry.get("DOI"),
+                "date": date,
+            }
+        )
     return events
 
 
@@ -67,8 +68,7 @@ def check_crossref(doi, fetch_func=None):
     concern_events = [
         event
         for event in events
-        if event.get("type") != "retraction"
-        and "concern" in str(event.get("label") or "").lower()
+        if event.get("type") != "retraction" and "concern" in str(event.get("label") or "").lower()
     ]
     return {
         "doi": doi,
@@ -121,7 +121,9 @@ def check_pubmed(pmid, fetch_func=None, email=None):
     }
 
 
-def check_retraction(identifier, crossref_fetch=None, pubmed_fetch=None, epmc_fetch=None, email=None):
+def check_retraction(
+    identifier, crossref_fetch=None, pubmed_fetch=None, epmc_fetch=None, email=None
+):
     """Check retraction status for a DOI or PMID across Crossref and PubMed.
 
     Returns a verdict dict with ``status`` (retracted / expression-of-concern /
@@ -151,7 +153,8 @@ def check_retraction(identifier, crossref_fetch=None, pubmed_fetch=None, epmc_fe
     # PubMed cross-check — resolve DOI→PMID, or use the given PMID
     if pmid is None and doi:
         source, resolved = utils.resolve_doi_to_id(
-            doi, email=email,
+            doi,
+            email=email,
             pubmed_fetch_func=pubmed_fetch,
             epmc_fetch_func=epmc_fetch,
             crossref_fetch_func=lambda doi_value: crossref_fetch(
@@ -226,7 +229,8 @@ def _format_text(results):
         if crossref is not None:
             if crossref.get("retracted"):
                 retraction_events = [
-                    event for event in crossref.get("update_to", [])
+                    event
+                    for event in crossref.get("update_to", [])
                     if event.get("type") == "retraction"
                 ]
                 lines.append(f"Crossref:   retracted ({len(retraction_events)} event(s))")

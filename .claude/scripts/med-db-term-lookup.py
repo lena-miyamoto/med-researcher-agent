@@ -9,7 +9,6 @@ No network calls — everything is local.
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 import utils
@@ -163,7 +162,13 @@ def main():
     if args.keyword:
         results = search_by_keyword(entries, args.keyword, limit=args.limit)
         if args.format == "json":
-            print(json.dumps({"query": args.keyword, "count": len(results), "results": results}, indent=2, ensure_ascii=False))
+            print(
+                json.dumps(
+                    {"query": args.keyword, "count": len(results), "results": results},
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
         else:
             print(_format_text_list(results))
         return 0
@@ -171,7 +176,11 @@ def main():
     if args.list:
         results = sorted(entries, key=lambda entry: str(entry.get("term", "")).lower())
         if args.format == "json":
-            print(json.dumps({"count": len(results), "results": results}, indent=2, ensure_ascii=False))
+            print(
+                json.dumps(
+                    {"count": len(results), "results": results}, indent=2, ensure_ascii=False
+                )
+            )
         else:
             print(_format_text_list(results))
         return 0

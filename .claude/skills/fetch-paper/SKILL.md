@@ -31,14 +31,14 @@ archive access rules follow the `med-db` skill.
 
 Detect the input type (the script auto-detects the same way):
 
-| Input shape | Type |
-| --- | --- |
-| `10.1234/...` (DOI pattern) | DOI |
-| All digits | PMID |
-| `2203.15556` or `arXiv:2203.15556v2` | arXiv ID |
-| `SOURCE:ID` (e.g. `MED:35350465`) | Europe PMC record |
-| URL (host-classified: doi.org, arxiv.org, europepmc.org, pubmed, pmc, `.pdf`) | URL |
-| Anything else | Title search (+ optional year) |
+| Input shape                                                                   | Type                           |
+| ----------------------------------------------------------------------------- | ------------------------------ |
+| `10.1234/...` (DOI pattern)                                                   | DOI                            |
+| All digits                                                                    | PMID                           |
+| `2203.15556` or `arXiv:2203.15556v2`                                          | arXiv ID                       |
+| `SOURCE:ID` (e.g. `MED:35350465`)                                             | Europe PMC record              |
+| URL (host-classified: doi.org, arxiv.org, europepmc.org, pubmed, pmc, `.pdf`) | URL                            |
+| Anything else                                                                 | Title search (+ optional year) |
 
 Ambiguous strings (e.g. a title that looks like `ABC: subtitle`) → force title search with `--title`.
 Title matches can hit translations, reprints, or similarly titled papers — always confirm the

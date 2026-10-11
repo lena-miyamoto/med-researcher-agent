@@ -18,12 +18,12 @@ before therapeutic work.
 
 ### Component Overview
 
-| Component | Location | Bootstrap | Lookup tool |
-|---|---|---|---|
-| Research evidence | `med-db/papers/`, `med-db/searches/` | Research brief → `med-researcher` agent | `med-db-query`, `med-db-lookup` |
-| ICD-11 classification | `med-db/guidelines/icd-11/` | `med-db` skill | `med-db-lookup-icd11` |
-| DSM-5-TR classification | `med-db/guidelines/dsm-5-tr/` | `med-db` skill | `med-db-lookup-dsm5` |
-| Therapy methodologies | `med-db/guidelines/therapy-methodologies/` | `med-db` skill | Read `source.md` directly |
+| Component               | Location                                   | Bootstrap                               | Lookup tool                     |
+| ----------------------- | ------------------------------------------ | --------------------------------------- | ------------------------------- |
+| Research evidence       | `med-db/papers/`, `med-db/searches/`       | Research brief → `med-researcher` agent | `med-db-query`, `med-db-lookup` |
+| ICD-11 classification   | `med-db/guidelines/icd-11/`                | `med-db` skill                          | `med-db-lookup-icd11`           |
+| DSM-5-TR classification | `med-db/guidelines/dsm-5-tr/`              | `med-db` skill                          | `med-db-lookup-dsm5`            |
+| Therapy methodologies   | `med-db/guidelines/therapy-methodologies/` | `med-db` skill                          | Read `source.md` directly       |
 
 `med-db/` gitignored — created locally, does **not** ship with repo. All components must be
 bootstrapped once per system before therapeutic work.
@@ -49,11 +49,11 @@ Run missing bootstrap commands. All pass → proceed with therapeutic work.
 Neurodevelopmental specialization backed by three canonical research briefs in `.claude/agents/references/`
 (version-controlled). Single source of truth for evidence base:
 
-| Brief | Topics covered | med-db topics |
-|---|---|---|
-| `research-brief-neurodevelopmental-comorbidities.md` | ADHD, ASD, AuDHD, common comorbidities | `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap` |
-| `research-brief-gender-affirming-care.md` | WPATH SOC 8, minority stress, TNB mental health, non-binary care, socio-political context, neurodivergence overlap | `gender-affirming-care`, `trans-nb-mental-health` |
-| `research-brief-sex-relationship-therapy.md` | Sex therapy, kink/BDSM-affirming practice, CNM/polyamory, LGBTQI+ affirmative therapy, relationship diversity, neurodivergence intersection | `sex-therapy`, `relationship-diversity` |
+| Brief                                                | Topics covered                                                                                                                              | med-db topics                                                       |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `research-brief-neurodevelopmental-comorbidities.md` | ADHD, ASD, AuDHD, common comorbidities                                                                                                      | `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap` |
+| `research-brief-gender-affirming-care.md`            | WPATH SOC 8, minority stress, TNB mental health, non-binary care, socio-political context, neurodivergence overlap                          | `gender-affirming-care`, `trans-nb-mental-health`                   |
+| `research-brief-sex-relationship-therapy.md`         | Sex therapy, kink/BDSM-affirming practice, CNM/polyamory, LGBTQI+ affirmative therapy, relationship diversity, neurodivergence intersection | `sex-therapy`, `relationship-diversity`                             |
 
 Each brief: core PMIDs with archival commands, DOI-only references with resolution fallbacks, PubMed search
 queries, topic organization, validation steps. med-researcher agent reads brief, populates `med-db/`
@@ -126,12 +126,12 @@ Structured access: `methodologies.json` in same directory.
 
 The 11 methodologies:
 
-| Category | Methodologies |
-|---|---|
-| Foundational Frameworks | Liberation Psychology (Martín-Baró), Critical Psychology (Holzkamp, Parker) |
-| Integrative Modalities | Narrative Therapy (White & Epston), Systemic Therapy |
-| Broader Critical Canon | Postcolonial/Decolonial Psychology, Feminist/Queer Psychology, Trauma-Informed Care, Disability Justice/Neurodiversity Paradigm, Mad Studies |
-| Clinical Modalities | CBT (Beck), ACT (Hayes) |
+| Category                | Methodologies                                                                                                                                |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Foundational Frameworks | Liberation Psychology (Martín-Baró), Critical Psychology (Holzkamp, Parker)                                                                  |
+| Integrative Modalities  | Narrative Therapy (White & Epston), Systemic Therapy                                                                                         |
+| Broader Critical Canon  | Postcolonial/Decolonial Psychology, Feminist/Queer Psychology, Trauma-Informed Care, Disability Justice/Neurodiversity Paradigm, Mad Studies |
+| Clinical Modalities     | CBT (Beck), ACT (Hayes)                                                                                                                      |
 
 Each entry: key figures, historical context, core concepts, therapeutic stance, key techniques,
 evidence base, critique/limitations, relationship to other methodologies.

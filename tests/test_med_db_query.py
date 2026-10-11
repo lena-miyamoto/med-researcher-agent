@@ -1,17 +1,17 @@
 """Tests for med-db-query.py — local archive query operations."""
 
+import contextlib
 import json
 import sys
-
-import pytest
 from pathlib import Path
 
 import med_db_query as mq
-
+import pytest
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_search_json(path, source, pmids=None, query="test query"):
     """Create a realistic search JSON file."""
@@ -30,15 +30,21 @@ def _make_search_json(path, source, pmids=None, query="test query"):
             "request": {"queryString": query},
             "resultList": {
                 "result": [
-                    {"source": "MED", "id": str(pmid), "pmid": str(pmid)}
-                    for pmid in (pmids or [])
+                    {"source": "MED", "id": str(pmid), "pmid": str(pmid)} for pmid in (pmids or [])
                 ]
             },
         }
     Path(path).write_text(json.dumps(data), encoding="utf-8")
 
 
-def _make_paper(tmp_path, rel_dir, pmid="12345678", source="pubmed", title="Test Title", abstract="Test abstract content."):
+def _make_paper(
+    tmp_path,
+    rel_dir,
+    pmid="12345678",
+    source="pubmed",
+    title="Test Title",
+    abstract="Test abstract content.",
+):
     """Create a paper directory with metadata.json and abstract.txt."""
     paper_dir = tmp_path / rel_dir
     paper_dir.mkdir(parents=True)
@@ -62,16 +68,18 @@ def _make_paper(tmp_path, rel_dir, pmid="12345678", source="pubmed", title="Test
     else:
         meta = {
             "resultList": {
-                "result": [{
-                    "source": "MED",
-                    "id": pmid,
-                    "pmid": pmid,
-                    "title": title,
-                    "authorString": "Smith J, Jones K",
-                    "journalTitle": "Test Journal",
-                    "firstPublicationDate": "2024-03-01",
-                    "doi": "10.1000/test",
-                }],
+                "result": [
+                    {
+                        "source": "MED",
+                        "id": pmid,
+                        "pmid": pmid,
+                        "title": title,
+                        "authorString": "Smith J, Jones K",
+                        "journalTitle": "Test Journal",
+                        "firstPublicationDate": "2024-03-01",
+                        "doi": "10.1000/test",
+                    }
+                ],
             }
         }
 
@@ -83,6 +91,7 @@ def _make_paper(tmp_path, rel_dir, pmid="12345678", source="pubmed", title="Test
 # ---------------------------------------------------------------------------
 # list_topics
 # ---------------------------------------------------------------------------
+
 
 class TestListTopics:
     def test_empty_archive(self, tmp_path):
@@ -120,6 +129,7 @@ class TestListTopics:
 # list_topic_papers
 # ---------------------------------------------------------------------------
 
+
 class TestListTopicPapers:
     def test_lists_papers(self, tmp_path):
         _make_paper(tmp_path, "papers/adhd/pmid-11111-test-a", pmid="11111", title="Paper A")
@@ -149,6 +159,7 @@ class TestListTopicPapers:
 # ---------------------------------------------------------------------------
 # check_pmid_archived
 # ---------------------------------------------------------------------------
+
 
 class TestCheckPmidArchived:
     def test_found(self, tmp_path):
@@ -181,9 +192,12 @@ class TestCheckPmidArchived:
 # check_epmc_archived
 # ---------------------------------------------------------------------------
 
+
 class TestCheckEpmcArchived:
     def test_found(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/epmc-med-35350465-effect", pmid="35350465", source="europe-pmc")
+        _make_paper(
+            tmp_path, "papers/adhd/epmc-med-35350465-effect", pmid="35350465", source="europe-pmc"
+        )
         result = mq.check_epmc_archived(tmp_path, "MED", "35350465")
         assert result["archived"] is True
         assert len(result["locations"]) == 1
@@ -194,7 +208,9 @@ class TestCheckEpmcArchived:
         assert result["archived"] is False
 
     def test_case_insensitive_source(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/epmc-med-35350465-effect", pmid="35350465", source="europe-pmc")
+        _make_paper(
+            tmp_path, "papers/adhd/epmc-med-35350465-effect", pmid="35350465", source="europe-pmc"
+        )
         result = mq.check_epmc_archived(tmp_path, "med", "35350465")
         assert result["archived"] is True
 
@@ -202,6 +218,7 @@ class TestCheckEpmcArchived:
 # ---------------------------------------------------------------------------
 # extract_pmids_from_search
 # ---------------------------------------------------------------------------
+
 
 class TestExtractPmidsFromSearch:
     def test_pubmed_esearch(self, tmp_path):
@@ -228,6 +245,7 @@ class TestExtractPmidsFromSearch:
 # read_paper_metadata
 # ---------------------------------------------------------------------------
 
+
 class TestReadPaperMetadata:
     def test_pubmed_metadata(self, tmp_path):
         d = _make_paper(tmp_path, "papers/adhd/pmid-12345678-effect", title="Effect of X on Y")
@@ -241,7 +259,9 @@ class TestReadPaperMetadata:
         assert info["publication_date"] == "2024 Mar"
 
     def test_epmc_metadata(self, tmp_path):
-        d = _make_paper(tmp_path, "papers/adhd/epmc-med-35350465-effect", pmid="35350465", source="europe-pmc")
+        d = _make_paper(
+            tmp_path, "papers/adhd/epmc-med-35350465-effect", pmid="35350465", source="europe-pmc"
+        )
         info = mq.read_paper_metadata(str(d))
         assert info["source"] == "europe-pmc"
         assert info["pmid"] == "35350465"
@@ -271,34 +291,58 @@ class TestReadPaperMetadata:
 # search_keyword
 # ---------------------------------------------------------------------------
 
+
 class TestSearchKeyword:
     def test_match_in_title(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/pmid-11111-effect", title="Effect of Lisdexamfetamine on Attention")
+        _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-11111-effect",
+            title="Effect of Lisdexamfetamine on Attention",
+        )
         matches = mq.search_keyword(tmp_path, "lisdexamfetamine")
         assert len(matches) == 1
         assert matches[0]["match_field"] == "title"
         assert "Lisdexamfetamine" in matches[0]["match_snippet"]
 
     def test_match_in_abstract(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/pmid-11111-effect", title="Some Paper", abstract="We studied lisdexamfetamine in patients with ADHD.")
+        _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-11111-effect",
+            title="Some Paper",
+            abstract="We studied lisdexamfetamine in patients with ADHD.",
+        )
         matches = mq.search_keyword(tmp_path, "lisdexamfetamine")
         assert len(matches) == 1
         assert matches[0]["match_field"] == "abstract"
         assert "ADHD" in matches[0]["match_snippet"]
 
     def test_match_in_both(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/pmid-11111-effect", title="Lisdexamfetamine Study", abstract="lisdexamfetamine improved outcomes.")
+        _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-11111-effect",
+            title="Lisdexamfetamine Study",
+            abstract="lisdexamfetamine improved outcomes.",
+        )
         matches = mq.search_keyword(tmp_path, "lisdexamfetamine")
         assert len(matches) == 1
         assert matches[0]["match_field"] == "title+abstract"
 
     def test_no_match(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/pmid-11111-effect", title="Effect of Methylphenidate on Attention", abstract="methylphenidate results.")
+        _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-11111-effect",
+            title="Effect of Methylphenidate on Attention",
+            abstract="methylphenidate results.",
+        )
         matches = mq.search_keyword(tmp_path, "lisdexamfetamine")
         assert len(matches) == 0
 
     def test_case_insensitive(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/pmid-11111-effect", title="Effect of LISDEXAMFETAMINE on Attention")
+        _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-11111-effect",
+            title="Effect of LISDEXAMFETAMINE on Attention",
+        )
         matches = mq.search_keyword(tmp_path, "lisdexamfetamine")
         assert len(matches) == 1
 
@@ -312,16 +356,23 @@ class TestSearchKeyword:
     def test_handles_missing_abstract(self, tmp_path):
         d = tmp_path / "papers" / "adhd" / "pmid-11111-test"
         d.mkdir(parents=True)
-        (d / "metadata.json").write_text(json.dumps({
-            "result": {
-                "uids": ["11111"],
-                "11111": {
-                    "title": "Lisdexamfetamine Effect",
-                    "source": "J Test", "pubdate": "2024", "authors": [],
-                    "articleids": [{"idtype": "pubmed", "value": "11111"}],
-                },
-            }
-        }), encoding="utf-8")
+        (d / "metadata.json").write_text(
+            json.dumps(
+                {
+                    "result": {
+                        "uids": ["11111"],
+                        "11111": {
+                            "title": "Lisdexamfetamine Effect",
+                            "source": "J Test",
+                            "pubdate": "2024",
+                            "authors": [],
+                            "articleids": [{"idtype": "pubmed", "value": "11111"}],
+                        },
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
         matches = mq.search_keyword(tmp_path, "lisdexamfetamine")
         assert len(matches) == 1
         assert matches[0]["match_field"] == "title"
@@ -338,6 +389,7 @@ class TestSearchKeyword:
 # CLI / main
 # ---------------------------------------------------------------------------
 
+
 class TestMain:
     def test_list_topics_json(self, tmp_path, capsys):
         (tmp_path / "papers" / "adhd").mkdir(parents=True)
@@ -345,10 +397,8 @@ class TestMain:
 
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--list-topics"])
-            try:
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert len(out["topics"]) == 1
@@ -358,11 +408,11 @@ class TestMain:
         _make_paper(tmp_path, "papers/adhd/pmid-99999999-effect")
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--check-pmid", "99999999"])
-            try:
+            mp.setattr(
+                sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--check-pmid", "99999999"]
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert out["archived"] is True
@@ -372,11 +422,11 @@ class TestMain:
         (tmp_path / "papers").mkdir()
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--check-pmid", "99999999"])
-            try:
+            mp.setattr(
+                sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--check-pmid", "99999999"]
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert out["archived"] is False
@@ -385,11 +435,19 @@ class TestMain:
         _make_search_json(tmp_path / "search.json", "pubmed", ["11111", "22222", "33333"])
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--pmids-from-search", str(tmp_path / "search.json")])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--pmids-from-search",
+                    str(tmp_path / "search.json"),
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert out["pmid_count"] == 3
@@ -399,11 +457,21 @@ class TestMain:
         _make_paper(tmp_path, "papers/adhd/pmid-99999999-effect")
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--check-pmid", "99999999", "--format", "text"])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--check-pmid",
+                    "99999999",
+                    "--format",
+                    "text",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out
         assert "ARCHIVED" in out
@@ -411,7 +479,11 @@ class TestMain:
 
     def test_missing_med_db(self, tmp_path, capsys):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path / "nonexistent"), "--list-topics"])
+            mp.setattr(
+                sys,
+                "argv",
+                ["med-db-query", "--med-db", str(tmp_path / "nonexistent"), "--list-topics"],
+            )
             try:
                 mq.main()
             except SystemExit as exc:
@@ -424,14 +496,18 @@ class TestMain:
                 mq.main()
 
     def test_check_epmc_found(self, tmp_path, capsys):
-        _make_paper(tmp_path, "papers/adhd/epmc-med-99999999-effect", pmid="99999999", source="europe-pmc")
+        _make_paper(
+            tmp_path, "papers/adhd/epmc-med-99999999-effect", pmid="99999999", source="europe-pmc"
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--check-epmc", "MED:99999999"])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                ["med-db-query", "--med-db", str(tmp_path), "--check-epmc", "MED:99999999"],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert out["archived"] is True
@@ -439,7 +515,11 @@ class TestMain:
 
     def test_check_epmc_invalid_format(self, tmp_path, capsys):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--check-epmc", "invalidformat"])
+            mp.setattr(
+                sys,
+                "argv",
+                ["med-db-query", "--med-db", str(tmp_path), "--check-epmc", "invalidformat"],
+            )
             try:
                 mq.main()
             except SystemExit as exc:
@@ -449,14 +529,16 @@ class TestMain:
         assert "invalid" in captured.err.lower() or "error" in captured.out.lower()
 
     def test_read_metadata(self, tmp_path, capsys):
-        d = _make_paper(tmp_path, "papers/adhd/pmid-12345-effect", pmid="12345", title="Effect Title")
+        d = _make_paper(
+            tmp_path, "papers/adhd/pmid-12345-effect", pmid="12345", title="Effect Title"
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--read-metadata", str(d)])
-            try:
+            mp.setattr(
+                sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--read-metadata", str(d)]
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert out["pmid"] == "12345"
@@ -466,11 +548,13 @@ class TestMain:
         _make_paper(tmp_path, "papers/adhd/pmid-11111-effect", title="Lisdexamfetamine Study")
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--search-keyword", "lisdexamfetamine"])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                ["med-db-query", "--med-db", str(tmp_path), "--search-keyword", "lisdexamfetamine"],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert out["match_count"] == 1
@@ -481,14 +565,21 @@ class TestMain:
         _make_paper(tmp_path, "papers/endo/pmid-22222-endo", title="Lisdexamfetamine Endo")
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--search-keyword", "lisdexamfetamine", "--search-topic", "adhd",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--search-keyword",
+                    "lisdexamfetamine",
+                    "--search-topic",
+                    "adhd",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert out["match_count"] == 1
@@ -500,10 +591,8 @@ class TestMain:
 
         with pytest.MonkeyPatch.context() as mp:
             mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--topic", "adhd"])
-            try:
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = json.loads(capsys.readouterr().out)
         assert len(out["papers"]) == 2
@@ -516,7 +605,9 @@ class TestMain:
 
 class TestReadPaperAbstract:
     def test_existing_abstract(self, tmp_path):
-        _make_paper(tmp_path, "papers/adhd/pmid-12345-title", pmid="12345", abstract="Full abstract here.")
+        _make_paper(
+            tmp_path, "papers/adhd/pmid-12345-title", pmid="12345", abstract="Full abstract here."
+        )
         result = mq.read_paper_abstract(tmp_path / "papers" / "adhd" / "pmid-12345-title")
         assert result == "Full abstract here."
 
@@ -539,12 +630,23 @@ class TestRecentPapers:
         _make_paper(tmp_path, "papers/adhd/pmid-11111-a", pmid="11111", title="Older")
         _make_paper(tmp_path, "papers/adhd/pmid-22222-b", pmid="22222", title="Newer")
         index = {
-            "searches": [], "fulltext": [], "guidelines": [], "web": [],
+            "searches": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
             "papers": [
-                {"path": "papers/adhd/pmid-11111-a", "identifier": "PMID:11111",
-                 "url": "https://pubmed.ncbi.nlm.nih.gov/11111/", "accessed": "2025-01-01"},
-                {"path": "papers/adhd/pmid-22222-b", "identifier": "PMID:22222",
-                 "url": "https://pubmed.ncbi.nlm.nih.gov/22222/", "accessed": "2026-06-15"},
+                {
+                    "path": "papers/adhd/pmid-11111-a",
+                    "identifier": "PMID:11111",
+                    "url": "https://pubmed.ncbi.nlm.nih.gov/11111/",
+                    "accessed": "2025-01-01",
+                },
+                {
+                    "path": "papers/adhd/pmid-22222-b",
+                    "identifier": "PMID:22222",
+                    "url": "https://pubmed.ncbi.nlm.nih.gov/22222/",
+                    "accessed": "2026-06-15",
+                },
             ],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
@@ -558,14 +660,29 @@ class TestRecentPapers:
         _make_paper(tmp_path, "papers/adhd/pmid-22222-b", pmid="22222")
         _make_paper(tmp_path, "papers/adhd/pmid-33333-c", pmid="33333")
         index = {
-            "searches": [], "fulltext": [], "guidelines": [], "web": [],
+            "searches": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
             "papers": [
-                {"path": "papers/adhd/pmid-11111-a", "identifier": "PMID:11111",
-                 "url": "", "accessed": "2025-01-01"},
-                {"path": "papers/adhd/pmid-22222-b", "identifier": "PMID:22222",
-                 "url": "", "accessed": "2025-02-01"},
-                {"path": "papers/adhd/pmid-33333-c", "identifier": "PMID:33333",
-                 "url": "", "accessed": "2025-03-01"},
+                {
+                    "path": "papers/adhd/pmid-11111-a",
+                    "identifier": "PMID:11111",
+                    "url": "",
+                    "accessed": "2025-01-01",
+                },
+                {
+                    "path": "papers/adhd/pmid-22222-b",
+                    "identifier": "PMID:22222",
+                    "url": "",
+                    "accessed": "2025-02-01",
+                },
+                {
+                    "path": "papers/adhd/pmid-33333-c",
+                    "identifier": "PMID:33333",
+                    "url": "",
+                    "accessed": "2025-03-01",
+                },
             ],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
@@ -580,30 +697,50 @@ class TestRecentPapers:
 
 class TestSearchSearches:
     def test_pubmed_match(self, tmp_path):
-        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
-                          source="pubmed", pmids=["1"], query="lisdexamfetamine ADHD")
+        _make_search_json(
+            tmp_path / "searches" / "adhd" / "pubmed-a.json",
+            source="pubmed",
+            pmids=["1"],
+            query="lisdexamfetamine ADHD",
+        )
         result = mq.search_searches(tmp_path, "lisdexamfetamine")
         assert len(result) == 1
         assert "pubmed" in result[0]["source"].lower()
 
     def test_europe_pmc_match(self, tmp_path):
-        _make_search_json(tmp_path / "searches" / "depression" / "epmc-a.json",
-                          source="epmc", pmids=["2"], query="sexual dysfunction SSRI")
+        _make_search_json(
+            tmp_path / "searches" / "depression" / "epmc-a.json",
+            source="epmc",
+            pmids=["2"],
+            query="sexual dysfunction SSRI",
+        )
         result = mq.search_searches(tmp_path, "sexual dysfunction")
         assert len(result) == 1
         assert "europe" in result[0]["source"].lower()
 
     def test_no_match(self, tmp_path):
-        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
-                          source="pubmed", pmids=["1"], query="ADHD stimulants")
+        _make_search_json(
+            tmp_path / "searches" / "adhd" / "pubmed-a.json",
+            source="pubmed",
+            pmids=["1"],
+            query="ADHD stimulants",
+        )
         result = mq.search_searches(tmp_path, "zzz_nonexistent_zzz")
         assert result == []
 
     def test_scoped_to_topic(self, tmp_path):
-        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
-                          source="pubmed", pmids=["1"], query="ADHD stimulants")
-        _make_search_json(tmp_path / "searches" / "depression" / "epmc-b.json",
-                          source="epmc", pmids=["2"], query="depression SSRI")
+        _make_search_json(
+            tmp_path / "searches" / "adhd" / "pubmed-a.json",
+            source="pubmed",
+            pmids=["1"],
+            query="ADHD stimulants",
+        )
+        _make_search_json(
+            tmp_path / "searches" / "depression" / "epmc-b.json",
+            source="epmc",
+            pmids=["2"],
+            query="depression SSRI",
+        )
         result = mq.search_searches(tmp_path, "ADHD", topic="adhd")
         assert len(result) == 1
         result_all = mq.search_searches(tmp_path, "SSRI")
@@ -618,14 +755,20 @@ class TestIdentifiersOnly:
         _make_paper(tmp_path, "papers/adhd/pmid-22222-b", pmid="22222", title="Paper B")
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--topic", "adhd", "--identifiers-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--topic",
+                    "adhd",
+                    "--identifiers-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert len(out) == 2
@@ -633,17 +776,25 @@ class TestIdentifiersOnly:
         assert "22222" in out[1]
 
     def test_with_search_keyword(self, tmp_path, capsys):
-        _make_paper(tmp_path, "papers/adhd/pmid-33333-match", pmid="33333", title="Methylphenidate efficacy")
+        _make_paper(
+            tmp_path, "papers/adhd/pmid-33333-match", pmid="33333", title="Methylphenidate efficacy"
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--search-keyword", "methylphenidate", "--identifiers-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--search-keyword",
+                    "methylphenidate",
+                    "--identifiers-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert len(out) == 1
@@ -671,14 +822,20 @@ class TestIdentifiersOnly:
         (tmp_path / "index.json").write_text(json.dumps(index))
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--recent", "5", "--identifiers-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--recent",
+                    "5",
+                    "--identifiers-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert len(out) == 1
@@ -686,10 +843,16 @@ class TestIdentifiersOnly:
 
     def test_error_without_compatible_command(self, capsys):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", "/tmp/nonexistent",
-                "--identifiers-only",
-            ])
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    "/tmp/nonexistent",
+                    "--identifiers-only",
+                ],
+            )
             with pytest.raises(SystemExit):
                 mq.main()
         captured = capsys.readouterr()
@@ -699,14 +862,20 @@ class TestIdentifiersOnly:
         _make_paper(tmp_path, "papers/adhd/pmid-11111-a", pmid="11111", title="Paper A")
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--topic", "adhd", "--identifiers-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--topic",
+                    "adhd",
+                    "--identifiers-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out
         assert "{" not in out
@@ -717,52 +886,86 @@ class TestTitleOnlyAndAbstractOnly:
     """Test --title-only and --abstract-only flags."""
 
     def test_title_only(self, tmp_path, capsys):
-        d = _make_paper(tmp_path, "papers/adhd/pmid-12345-test", pmid="12345", title="Effect of X on Y",
-                        abstract="This is the abstract text.")
+        d = _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-12345-test",
+            pmid="12345",
+            title="Effect of X on Y",
+            abstract="This is the abstract text.",
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--read-metadata", str(d), "--title-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--read-metadata",
+                    str(d),
+                    "--title-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip()
         assert out == "Effect of X on Y"
 
     def test_abstract_only(self, tmp_path, capsys):
-        d = _make_paper(tmp_path, "papers/adhd/pmid-12345-test", pmid="12345", title="Effect of X on Y",
-                        abstract="This is the abstract text.")
+        d = _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-12345-test",
+            pmid="12345",
+            title="Effect of X on Y",
+            abstract="This is the abstract text.",
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--read-metadata", str(d), "--abstract-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--read-metadata",
+                    str(d),
+                    "--abstract-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip()
         assert out == "This is the abstract text."
 
     def test_both_title_and_abstract(self, tmp_path, capsys):
-        d = _make_paper(tmp_path, "papers/adhd/pmid-12345-test", pmid="12345", title="Effect Title",
-                        abstract="Abstract content here.")
+        d = _make_paper(
+            tmp_path,
+            "papers/adhd/pmid-12345-test",
+            pmid="12345",
+            title="Effect Title",
+            abstract="Abstract content here.",
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--read-metadata", str(d), "--title-only", "--abstract-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--read-metadata",
+                    str(d),
+                    "--title-only",
+                    "--abstract-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out
         lines = out.strip().split("\n")
@@ -772,9 +975,16 @@ class TestTitleOnlyAndAbstractOnly:
 
     def test_title_only_error_without_read_metadata(self, capsys):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", "/tmp/test", "--title-only",
-            ])
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    "/tmp/test",
+                    "--title-only",
+                ],
+            )
             with pytest.raises(SystemExit):
                 mq.main()
         captured = capsys.readouterr()
@@ -782,9 +992,16 @@ class TestTitleOnlyAndAbstractOnly:
 
     def test_abstract_only_error_without_read_metadata(self, capsys):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", "/tmp/test", "--abstract-only",
-            ])
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    "/tmp/test",
+                    "--abstract-only",
+                ],
+            )
             with pytest.raises(SystemExit):
                 mq.main()
         captured = capsys.readouterr()
@@ -800,14 +1017,19 @@ class TestNamesOnly:
         (tmp_path / "papers" / "anxiety").mkdir(parents=True)
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--list-topics", "--names-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--list-topics",
+                    "--names-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert len(out) == 3
@@ -817,23 +1039,35 @@ class TestNamesOnly:
         (tmp_path / "papers").mkdir()
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--list-topics", "--names-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--list-topics",
+                    "--names-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip()
         assert out == ""
 
     def test_names_only_error_without_list_topics(self, capsys):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", "/tmp/test", "--names-only",
-            ])
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    "/tmp/test",
+                    "--names-only",
+                ],
+            )
             with pytest.raises(SystemExit):
                 mq.main()
         captured = capsys.readouterr()
@@ -847,14 +1081,20 @@ class TestLocationsOnly:
         _make_paper(tmp_path, "papers/adhd/pmid-99999999-effect")
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--check-pmid", "99999999", "--locations-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--check-pmid",
+                    "99999999",
+                    "--locations-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert len(out) == 1
@@ -864,30 +1104,44 @@ class TestLocationsOnly:
         (tmp_path / "papers").mkdir()
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--check-pmid", "99999999", "--locations-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--check-pmid",
+                    "99999999",
+                    "--locations-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip()
         assert out == ""
 
     def test_check_epmc_locations_only(self, tmp_path, capsys):
-        _make_paper(tmp_path, "papers/adhd/epmc-med-99999999-effect", pmid="99999999", source="europe-pmc")
+        _make_paper(
+            tmp_path, "papers/adhd/epmc-med-99999999-effect", pmid="99999999", source="europe-pmc"
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--check-epmc", "MED:99999999", "--locations-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--check-epmc",
+                    "MED:99999999",
+                    "--locations-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert len(out) == 1
@@ -895,10 +1149,16 @@ class TestLocationsOnly:
 
     def test_locations_only_error_without_check(self, capsys):
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", "/tmp/test",
-                "--locations-only",
-            ])
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    "/tmp/test",
+                    "--locations-only",
+                ],
+            )
             with pytest.raises(SystemExit):
                 mq.main()
         captured = capsys.readouterr()
@@ -912,35 +1172,54 @@ class TestIdentifiersOnlyExtended:
         _make_search_json(tmp_path / "search.json", "pubmed", ["11111", "22222", "33333"])
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--pmids-from-search", str(tmp_path / "search.json"),
-                "--identifiers-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--pmids-from-search",
+                    str(tmp_path / "search.json"),
+                    "--identifiers-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert out == ["11111", "22222", "33333"]
 
     def test_search_searches(self, tmp_path, capsys):
         (tmp_path / "searches" / "adhd").mkdir(parents=True)
-        _make_search_json(tmp_path / "searches" / "adhd" / "pubmed-a.json",
-                          source="pubmed", pmids=["1"], query="ADHD stimulants")
-        _make_search_json(tmp_path / "searches" / "adhd" / "epmc-b.json",
-                          source="epmc", pmids=["2"], query="ADHD non-stimulants")
+        _make_search_json(
+            tmp_path / "searches" / "adhd" / "pubmed-a.json",
+            source="pubmed",
+            pmids=["1"],
+            query="ADHD stimulants",
+        )
+        _make_search_json(
+            tmp_path / "searches" / "adhd" / "epmc-b.json",
+            source="epmc",
+            pmids=["2"],
+            query="ADHD non-stimulants",
+        )
 
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(sys, "argv", [
-                "med-db-query", "--med-db", str(tmp_path),
-                "--search-searches", "ADHD", "--identifiers-only",
-            ])
-            try:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--search-searches",
+                    "ADHD",
+                    "--identifiers-only",
+                ],
+            )
+            with contextlib.suppress(SystemExit):
                 mq.main()
-            except SystemExit:
-                pass
 
         out = capsys.readouterr().out.strip().split("\n")
         assert len(out) == 2

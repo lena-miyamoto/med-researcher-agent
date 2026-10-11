@@ -12,10 +12,9 @@ can be tested without network calls.
 import argparse
 import json
 import re
-import sys
 import time
-import utils
 
+import utils
 
 # Re-export for tests that reference them via the module
 slugify = utils.slugify
@@ -89,17 +88,19 @@ def lookup_pmids(pmids, email=None, fetch_func=None, delay=0):
         except RuntimeError:
             abstract = "Abstract unavailable."
 
-        results.append({
-            "source": "pubmed",
-            "pmid": pmid,
-            "doi": doi,
-            "title": record.get("title", "Unknown title"),
-            "abstract": abstract,
-            "authors": authors,
-            "journal": record.get("source", ""),
-            "publication_date": record.get("pubdate", ""),
-            "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
-        })
+        results.append(
+            {
+                "source": "pubmed",
+                "pmid": pmid,
+                "doi": doi,
+                "title": record.get("title", "Unknown title"),
+                "abstract": abstract,
+                "authors": authors,
+                "journal": record.get("source", ""),
+                "publication_date": record.get("pubdate", ""),
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+            }
+        )
 
         if delay > 0 and i < len(pmids) - 1:
             time.sleep(delay)
@@ -129,12 +130,16 @@ def _extract_abstract_medline(raw):
         match = re.search(r"\bAbstract\s*(?:\n\s*-+\s*)?\n+(.+)", raw, re.DOTALL | re.IGNORECASE)
         if match:
             abstract = match.group(1).strip()
-            cutoff = re.search(r"\n\s*(?:Publication types|MeSH terms|Substances|Grant support)\s*\n", abstract, re.IGNORECASE)
+            cutoff = re.search(
+                r"\n\s*(?:Publication types|MeSH terms|Substances|Grant support)\s*\n",
+                abstract,
+                re.IGNORECASE,
+            )
             if cutoff:
-                abstract = abstract[:cutoff.start()].strip()
+                abstract = abstract[: cutoff.start()].strip()
             cutoff = re.search(r"\n\s*Copyright\b", abstract, re.IGNORECASE)
             if cutoff:
-                abstract = abstract[:cutoff.start()].strip()
+                abstract = abstract[: cutoff.start()].strip()
     return abstract or "Abstract unavailable."
 
 
@@ -158,7 +163,13 @@ def lookup_epmc_records(record_specs, fetch_func=None, delay=0):
         try:
             source_name, record_id = spec.split(":", 1)
         except ValueError:
-            results.append({"source": "europe-pmc", "epmc_id": spec, "error": "invalid format; expected SOURCE:ID"})
+            results.append(
+                {
+                    "source": "europe-pmc",
+                    "epmc_id": spec,
+                    "error": "invalid format; expected SOURCE:ID",
+                }
+            )
             continue
 
         source_name = source_name.upper()
@@ -173,35 +184,41 @@ def lookup_epmc_records(record_specs, fetch_func=None, delay=0):
             data = json.loads(raw)
             hits = data.get("resultList", {}).get("result", [])
             if not hits:
-                results.append({
-                    "source": "europe-pmc",
-                    "epmc_id": f"{source_name}:{record_id}",
-                    "error": "not found",
-                })
+                results.append(
+                    {
+                        "source": "europe-pmc",
+                        "epmc_id": f"{source_name}:{record_id}",
+                        "error": "not found",
+                    }
+                )
                 continue
 
             record = hits[0]
             abstract_html = record.get("abstractText") or ""
             abstract = _strip_html(abstract_html) if abstract_html else "Abstract unavailable."
 
-            results.append({
-                "source": "europe-pmc",
-                "epmc_id": f"{source_name}:{record_id}",
-                "pmid": record.get("pmid"),
-                "doi": record.get("doi"),
-                "title": record.get("title", "Unknown title"),
-                "abstract": abstract,
-                "authors": str(record.get("authorString", "")).split(", "),
-                "journal": record.get("journalTitle", ""),
-                "publication_date": record.get("firstPublicationDate", ""),
-                "url": utils.europe_pmc_article_url(source_name, record_id),
-            })
+            results.append(
+                {
+                    "source": "europe-pmc",
+                    "epmc_id": f"{source_name}:{record_id}",
+                    "pmid": record.get("pmid"),
+                    "doi": record.get("doi"),
+                    "title": record.get("title", "Unknown title"),
+                    "abstract": abstract,
+                    "authors": str(record.get("authorString", "")).split(", "),
+                    "journal": record.get("journalTitle", ""),
+                    "publication_date": record.get("firstPublicationDate", ""),
+                    "url": utils.europe_pmc_article_url(source_name, record_id),
+                }
+            )
         except RuntimeError as exc:
-            results.append({
-                "source": "europe-pmc",
-                "epmc_id": f"{source_name}:{record_id}",
-                "error": str(exc),
-            })
+            results.append(
+                {
+                    "source": "europe-pmc",
+                    "epmc_id": f"{source_name}:{record_id}",
+                    "error": str(exc),
+                }
+            )
 
         if delay > 0 and i < len(record_specs) - 1:
             time.sleep(delay)
@@ -231,7 +248,8 @@ def resolve_doi(doi, email=None, pubmed_fetch_func=None, epmc_fetch_func=None):
         epmc_fetch_func = fetch_europe_pmc
 
     source, identifier = utils.resolve_doi_to_id(
-        doi, email=email,
+        doi,
+        email=email,
         pubmed_fetch_func=pubmed_fetch_func,
         epmc_fetch_func=epmc_fetch_func,
         # This tool has no Crossref metadata path, so return an empty record to
@@ -261,7 +279,9 @@ def _format_text(results):
     for index, result in enumerate(results, 1):
         if "error" in result:
             lines.append(f"--- Result {index} ({result.get('source', 'unknown')}) ---")
-            lines.append(f"ID:    {result.get('pmid') or result.get('epmc_id') or result.get('doi', 'N/A')}")
+            lines.append(
+                f"ID:    {result.get('pmid') or result.get('epmc_id') or result.get('doi', 'N/A')}"
+            )
             lines.append(f"ERROR: {result['error']}")
             lines.append("")
             continue
@@ -275,12 +295,14 @@ def _format_text(results):
         authors = result.get("authors", [])
         if authors:
             lines.append(f"Authors: {', '.join(authors[:8])}{'...' if len(authors) > 8 else ''}")
-        lines.append(f"Journal: {result.get('journal', 'N/A')} ({result.get('publication_date', 'N/A')})")
+        lines.append(
+            f"Journal: {result.get('journal', 'N/A')} ({result.get('publication_date', 'N/A')})"
+        )
         lines.append(f"URL:     {result.get('url', 'N/A')}")
         lines.append("")
         abstract = result.get("abstract", "")
         if abstract:
-            lines.append(f"Abstract:")
+            lines.append("Abstract:")
             lines.extend(utils.wrap_text(abstract))
         lines.append("")
 
@@ -352,7 +374,9 @@ def main():
         if record:
             results.append(record)
         else:
-            results.append({"source": "unknown", "doi": doi, "error": "DOI not found in PubMed or Europe PMC"})
+            results.append(
+                {"source": "unknown", "doi": doi, "error": "DOI not found in PubMed or Europe PMC"}
+            )
         if i < len(args.doi) - 1 and args.delay > 0:
             time.sleep(args.delay)
 

@@ -19,7 +19,8 @@ from pathlib import Path
 from urllib.request import urlretrieve
 
 import utils
-from utils import REPO_ROOT, MED_DB
+from utils import MED_DB
+
 ICD11_BASE = MED_DB / "guidelines" / "icd-11"
 
 WHO_CDN = "https://icdcdn.who.int/static/releasefiles"
@@ -31,22 +32,22 @@ WHO_CDN = "https://icdcdn.who.int/static/releasefiles"
 #   LANG_INDEPENDENT — no language dimension at all.
 RELEASE_FILES = [
     # (remote_path_template, local_name_template, description)
-    ("SimpleTabulation-ICD-11-MMS-{lang}.zip",
-     "SimpleTabulation-{lang}.zip",
-     "SimpleTabulation"),
+    ("SimpleTabulation-ICD-11-MMS-{lang}.zip", "SimpleTabulation-{lang}.zip", "SimpleTabulation"),
 ]
 
 ENGLISH_ONLY_FILES = [
     # (remote_filename, local_name, description)
-    ("print-ICD-11-MMS-en.zip",
-     "print-en.zip",
-     "Print PDF"),
-    ("MortalityTabulationList_en.zip",
-     "MortalityTabulationList_en.zip",
-     "Mortality tabulation list"),
-    ("MorbidityTabulationList_en.zip",
-     "MorbidityTabulationList_en.zip",
-     "Morbidity tabulation list"),
+    ("print-ICD-11-MMS-en.zip", "print-en.zip", "Print PDF"),
+    (
+        "MortalityTabulationList_en.zip",
+        "MortalityTabulationList_en.zip",
+        "Mortality tabulation list",
+    ),
+    (
+        "MorbidityTabulationList_en.zip",
+        "MorbidityTabulationList_en.zip",
+        "Morbidity tabulation list",
+    ),
 ]
 
 LANG_INDEPENDENT = [
@@ -194,7 +195,7 @@ def verify_quick(release, language):
     mod = importlib.util.module_from_spec(spec)
     try:
         spec.loader.exec_module(mod)
-        entries, version = mod.load_tabulation(release, language)
+        entries, _version = mod.load_tabulation(release, language)
         if entries:
             return len(entries), None
         return 0, "loaded 0 entries — file may be empty"
@@ -218,7 +219,7 @@ def parse_args():
         action="append",
         default=[],
         help="Language code to download (may be passed multiple times). "
-             "Default: en, de for 2026-01; en for earlier releases.",
+        "Default: en, de for 2026-01; en for earlier releases.",
     )
     parser.add_argument(
         "--force",
@@ -230,8 +231,7 @@ def parse_args():
         "--verify",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="Run a quick smoke test after downloading (default on). "
-             "Use --no-verify to skip.",
+        help="Run a quick smoke test after downloading (default on). Use --no-verify to skip.",
     )
 
     args = parser.parse_args()
@@ -254,9 +254,7 @@ def main():
     print(f"Target: {ICD11_BASE / args.release}")
     print()
 
-    downloaded, skipped, errors = download_release(
-        args.release, args.language, force=args.force
-    )
+    downloaded, skipped, errors = download_release(args.release, args.language, force=args.force)
 
     print()
     print(f"Done: {downloaded} downloaded, {skipped} skipped, {len(errors)} errors")
@@ -283,8 +281,10 @@ def main():
     source_md = ICD11_BASE / "source.md"
     if not source_md.exists():
         print()
-        print("  source.md not found — it should be created separately "
-              "(it ships with the repo under med-db/guidelines/icd-11/source.md)")
+        print(
+            "  source.md not found — it should be created separately "
+            "(it ships with the repo under med-db/guidelines/icd-11/source.md)"
+        )
 
     if utils.verify_and_report_integrity(MED_DB) != 0:
         return 1

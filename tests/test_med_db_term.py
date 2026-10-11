@@ -6,7 +6,6 @@ import sys
 import med_db_term as term
 import med_db_term_lookup as lookup
 
-
 # ---------------------------------------------------------------------------
 # source_type_label / resolve_source_url
 # ---------------------------------------------------------------------------
@@ -22,7 +21,10 @@ class TestSourceTypeLabel:
 
 class TestResolveSourceUrl:
     def test_prefers_explicit_url(self):
-        assert term.resolve_source_url("https://ref.example", "https://url.example") == "https://url.example"
+        assert (
+            term.resolve_source_url("https://ref.example", "https://url.example")
+            == "https://url.example"
+        )
 
     def test_falls_back_to_url_ref(self):
         assert term.resolve_source_url("https://ref.example", "") == "https://ref.example"
@@ -42,8 +44,13 @@ class TestResolveSourceUrl:
 class TestBuildSourceMd:
     def test_frontmatter_and_body(self):
         md = term.build_source_md(
-            "Hypertonie", "hypertension", "Chronisch erhöhter Blutdruck.",
-            "who", "https://example.org/x", "https://example.org/x", "2026-08-16",
+            "Hypertonie",
+            "hypertension",
+            "Chronisch erhöhter Blutdruck.",
+            "who",
+            "https://example.org/x",
+            "https://example.org/x",
+            "2026-08-16",
             "non-authoritative community usage",
         )
         assert md.startswith("---\n")
@@ -58,8 +65,14 @@ class TestBuildSourceMd:
 class TestBuildMetadata:
     def test_fields(self):
         meta = term.build_metadata(
-            "Hypertonie", "hypertension", "Definition", "who", "https://example.org/x",
-            "https://example.org/x", "2026-08-16", "non-authoritative community usage",
+            "Hypertonie",
+            "hypertension",
+            "Definition",
+            "who",
+            "https://example.org/x",
+            "https://example.org/x",
+            "2026-08-16",
+            "non-authoritative community usage",
         )
         assert meta["term"] == "Hypertonie"
         assert meta["english"] == "hypertension"
@@ -78,8 +91,15 @@ class TestArchiveTerm:
     def test_writes_files_and_slugifies(self, tmp_path):
         med_db = tmp_path / "med-db"
         term_dir = term.archive_term(
-            med_db, "Hypertonie", "hypertension", "Chronisch erhöhter Blutdruck.",
-            "who", "https://example.org/x", "https://example.org/x", "2026-08-16", "",
+            med_db,
+            "Hypertonie",
+            "hypertension",
+            "Chronisch erhöhter Blutdruck.",
+            "who",
+            "https://example.org/x",
+            "https://example.org/x",
+            "2026-08-16",
+            "",
         )
         assert term_dir == med_db / "dictionary" / "hypertonie"
         source = term_dir / "source.md"
@@ -109,8 +129,14 @@ class TestArchiveTerm:
     def test_writes_extraction_notes(self, tmp_path):
         med_db = tmp_path / "med-db"
         term_dir = term.archive_term(
-            med_db, "Mental Load", "mental load", "Definition.",
-            "web", "https://example.org/x", "https://example.org/x", "2026-08-16",
+            med_db,
+            "Mental Load",
+            "mental load",
+            "Definition.",
+            "web",
+            "https://example.org/x",
+            "https://example.org/x",
+            "2026-08-16",
             "non-authoritative community usage",
         )
         source_text = (term_dir / "source.md").read_text(encoding="utf-8")
@@ -122,12 +148,24 @@ class TestArchiveTerm:
 # ---------------------------------------------------------------------------
 
 
-def _archive(tmp_path, term_name="Hypertonie", english="hypertension",
-             definition="Chronisch erhöhter Blutdruck.", source_ref="https://example.org/x"):
+def _archive(
+    tmp_path,
+    term_name="Hypertonie",
+    english="hypertension",
+    definition="Chronisch erhöhter Blutdruck.",
+    source_ref="https://example.org/x",
+):
     med_db = tmp_path / "med-db"
     term.archive_term(
-        med_db, term_name, english, definition, "who", source_ref,
-        source_ref, "2026-08-16", "",
+        med_db,
+        term_name,
+        english,
+        definition,
+        "who",
+        source_ref,
+        source_ref,
+        "2026-08-16",
+        "",
     )
     return med_db
 
@@ -184,16 +222,27 @@ class TestSearchByKeyword:
 class TestMainArchive:
     def test_archives_and_passes_integrity(self, tmp_path, monkeypatch, capsys):
         med_db = tmp_path / "med-db"
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term",
-            "--term", "Hypertonie",
-            "--english", "hypertension",
-            "--definition", "Chronisch erhöhter Blutdruck.",
-            "--source-type", "who",
-            "--source-ref", "https://example.org/hypertonie",
-            "--med-db", str(med_db),
-            "--format", "json",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term",
+                "--term",
+                "Hypertonie",
+                "--english",
+                "hypertension",
+                "--definition",
+                "Chronisch erhöhter Blutdruck.",
+                "--source-type",
+                "who",
+                "--source-ref",
+                "https://example.org/hypertonie",
+                "--med-db",
+                str(med_db),
+                "--format",
+                "json",
+            ],
+        )
         code = term.main()
         assert code == 0
         assert (med_db / "dictionary" / "hypertonie" / "metadata.json").is_file()
@@ -204,10 +253,14 @@ class TestMainArchive:
         med_db = tmp_path / "med-db"
         argv = [
             "med-db-term",
-            "--term", "Hypertonie",
-            "--definition", "Definition",
-            "--source-type", "other",
-            "--med-db", str(med_db),
+            "--term",
+            "Hypertonie",
+            "--definition",
+            "Definition",
+            "--source-type",
+            "other",
+            "--med-db",
+            str(med_db),
         ]
         monkeypatch.setattr(sys, "argv", argv)
         assert term.main() == 0
@@ -218,16 +271,27 @@ class TestMainArchive:
 
     def test_extraction_notes_flag(self, tmp_path, monkeypatch):
         med_db = tmp_path / "med-db"
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term",
-            "--term", "Mental Load",
-            "--definition", "Definition.",
-            "--source-type", "web",
-            "--extraction-notes", "non-authoritative community usage",
-            "--med-db", str(med_db),
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term",
+                "--term",
+                "Mental Load",
+                "--definition",
+                "Definition.",
+                "--source-type",
+                "web",
+                "--extraction-notes",
+                "non-authoritative community usage",
+                "--med-db",
+                str(med_db),
+            ],
+        )
         assert term.main() == 0
-        source_text = (med_db / "dictionary" / "mental-load" / "source.md").read_text(encoding="utf-8")
+        source_text = (med_db / "dictionary" / "mental-load" / "source.md").read_text(
+            encoding="utf-8"
+        )
         assert "extraction_notes: non-authoritative community usage" in source_text
 
 
@@ -239,10 +303,19 @@ class TestMainArchive:
 class TestMainLookup:
     def test_term_json(self, tmp_path, monkeypatch, capsys):
         med_db = _archive(tmp_path)
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--term", "Hypertonie",
-            "--med-db", str(med_db), "--format", "json",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--term",
+                "Hypertonie",
+                "--med-db",
+                str(med_db),
+                "--format",
+                "json",
+            ],
+        )
         assert lookup.main() == 0
         data = json.loads(capsys.readouterr().out)
         assert data["term"] == "Hypertonie"
@@ -250,37 +323,69 @@ class TestMainLookup:
 
     def test_definition_only(self, tmp_path, monkeypatch, capsys):
         med_db = _archive(tmp_path)
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--term", "Hypertonie",
-            "--definition-only", "--med-db", str(med_db),
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--term",
+                "Hypertonie",
+                "--definition-only",
+                "--med-db",
+                str(med_db),
+            ],
+        )
         assert lookup.main() == 0
         assert capsys.readouterr().out.strip() == "Chronisch erhöhter Blutdruck."
 
     def test_english_only(self, tmp_path, monkeypatch, capsys):
         med_db = _archive(tmp_path)
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--term", "Hypertonie",
-            "--english-only", "--med-db", str(med_db),
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--term",
+                "Hypertonie",
+                "--english-only",
+                "--med-db",
+                str(med_db),
+            ],
+        )
         assert lookup.main() == 0
         assert capsys.readouterr().out.strip() == "hypertension"
 
     def test_term_not_found_returns_one(self, tmp_path, monkeypatch, capsys):
         med_db = _archive(tmp_path)
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--term", "Diabetes",
-            "--med-db", str(med_db),
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--term",
+                "Diabetes",
+                "--med-db",
+                str(med_db),
+            ],
+        )
         assert lookup.main() == 1
         assert "not found" in capsys.readouterr().out
 
     def test_keyword(self, tmp_path, monkeypatch, capsys):
         med_db = _archive(tmp_path)
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--keyword", "Blutdruck",
-            "--med-db", str(med_db), "--format", "json",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--keyword",
+                "Blutdruck",
+                "--med-db",
+                str(med_db),
+                "--format",
+                "json",
+            ],
+        )
         assert lookup.main() == 0
         data = json.loads(capsys.readouterr().out)
         assert data["count"] == 1
@@ -288,10 +393,18 @@ class TestMainLookup:
 
     def test_list(self, tmp_path, monkeypatch, capsys):
         med_db = _archive(tmp_path)
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--list",
-            "--med-db", str(med_db), "--format", "json",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--list",
+                "--med-db",
+                str(med_db),
+                "--format",
+                "json",
+            ],
+        )
         assert lookup.main() == 0
         data = json.loads(capsys.readouterr().out)
         assert data["count"] == 1
@@ -299,14 +412,29 @@ class TestMainLookup:
     def test_term_json_includes_extraction_notes(self, tmp_path, monkeypatch, capsys):
         med_db = tmp_path / "med-db"
         term.archive_term(
-            med_db, "Mental Load", "mental load", "Definition.",
-            "web", "https://example.org/x", "https://example.org/x", "2026-08-16",
+            med_db,
+            "Mental Load",
+            "mental load",
+            "Definition.",
+            "web",
+            "https://example.org/x",
+            "https://example.org/x",
+            "2026-08-16",
             "non-authoritative community usage",
         )
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--term", "Mental Load",
-            "--med-db", str(med_db), "--format", "json",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--term",
+                "Mental Load",
+                "--med-db",
+                str(med_db),
+                "--format",
+                "json",
+            ],
+        )
         assert lookup.main() == 0
         data = json.loads(capsys.readouterr().out)
         assert data["extraction_notes"] == "non-authoritative community usage"
@@ -314,13 +442,28 @@ class TestMainLookup:
     def test_term_text_includes_extraction_notes(self, tmp_path, monkeypatch, capsys):
         med_db = tmp_path / "med-db"
         term.archive_term(
-            med_db, "Mental Load", "mental load", "Definition.",
-            "web", "https://example.org/x", "https://example.org/x", "2026-08-16",
+            med_db,
+            "Mental Load",
+            "mental load",
+            "Definition.",
+            "web",
+            "https://example.org/x",
+            "https://example.org/x",
+            "2026-08-16",
             "non-authoritative community usage",
         )
-        monkeypatch.setattr(sys, "argv", [
-            "med-db-term-lookup", "--term", "Mental Load",
-            "--med-db", str(med_db), "--format", "text",
-        ])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "med-db-term-lookup",
+                "--term",
+                "Mental Load",
+                "--med-db",
+                str(med_db),
+                "--format",
+                "text",
+            ],
+        )
         assert lookup.main() == 0
         assert "Notes:       non-authoritative community usage" in capsys.readouterr().out

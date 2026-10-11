@@ -1,12 +1,9 @@
 """Tests for utils.py — shared helpers used across med-db scripts."""
 
 import json
-import sys
 import urllib.error
-from pathlib import Path
 
 import pytest
-
 import utils
 
 
@@ -71,7 +68,9 @@ class TestSlugify:
         assert result == "one-two-three-four-five"
 
     def test_max_length_truncation(self):
-        result = utils.slugify("a very long title that exceeds the character limit easily", max_length=25)
+        result = utils.slugify(
+            "a very long title that exceeds the character limit easily", max_length=25
+        )
         assert len(result) <= 25
         assert result == "a-very-long-title-that-ex"
 
@@ -169,8 +168,11 @@ class TestFetchPubmed:
             calls.append(request)
             if len(calls) == 1:
                 raise urllib.error.HTTPError(
-                    request.full_url, 429, "Too Many Requests",
-                    {"Retry-After": "0"}, None,
+                    request.full_url,
+                    429,
+                    "Too Many Requests",
+                    {"Retry-After": "0"},
+                    None,
                 )
             return _FakeResponse(b'{"ok": true}')
 
@@ -196,7 +198,8 @@ class TestFetchText:
 
         with pytest.raises(LookupError, match="no MeSH record"):
             utils.fetch_text(
-                "https://example.org/x", "MeSH x",
+                "https://example.org/x",
+                "MeSH x",
                 not_found_message="no MeSH record for 'x'",
             )
 
@@ -232,10 +235,16 @@ class TestFetchText:
 
 class TestEuropePmcArticleUrl:
     def test_med_source(self):
-        assert utils.europe_pmc_article_url("MED", "35350465") == "https://europepmc.org/article/MED/35350465"
+        assert (
+            utils.europe_pmc_article_url("MED", "35350465")
+            == "https://europepmc.org/article/MED/35350465"
+        )
 
     def test_ppr_source(self):
-        assert utils.europe_pmc_article_url("PPR", "PPR12345") == "https://europepmc.org/article/PPR/PPR12345"
+        assert (
+            utils.europe_pmc_article_url("PPR", "PPR12345")
+            == "https://europepmc.org/article/PPR/PPR12345"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -262,11 +271,7 @@ class TestDefaultPaperEntry:
         assert "unavailable" in url
 
     def test_europe_pmc_record(self, tmp_path):
-        data = {
-            "resultList": {
-                "result": [{"source": "MED", "id": "35350465", "title": "Test"}]
-            }
-        }
+        data = {"resultList": {"result": [{"source": "MED", "id": "35350465", "title": "Test"}]}}
         path = tmp_path / "metadata.json"
         path.write_text(json.dumps(data))
         ident, url = utils.default_paper_entry(path)
@@ -275,14 +280,10 @@ class TestDefaultPaperEntry:
 
     def test_europe_pmc_fallback_to_pmid(self, tmp_path):
         """When 'id' is missing, fall back to 'pmid'."""
-        data = {
-            "resultList": {
-                "result": [{"source": "MED", "pmid": "12345678"}]
-            }
-        }
+        data = {"resultList": {"result": [{"source": "MED", "pmid": "12345678"}]}}
         path = tmp_path / "metadata.json"
         path.write_text(json.dumps(data))
-        ident, url = utils.default_paper_entry(path)
+        ident, _url = utils.default_paper_entry(path)
         assert ident == "MED:12345678"
 
     def test_unknown_format(self, tmp_path):
@@ -321,7 +322,7 @@ class TestDefaultPaperEntry:
         data = {"result": {"uids": ["12345"]}}
         path = tmp_path / "metadata.json"
         path.write_text(json.dumps(data))
-        ident, url = utils.default_paper_entry(str(path))
+        ident, _url = utils.default_paper_entry(str(path))
         assert ident == "PMID:12345"
 
     def test_pubmed_with_zero_uids(self, tmp_path):
@@ -329,7 +330,7 @@ class TestDefaultPaperEntry:
         data = {"result": {"uids": []}}
         path = tmp_path / "metadata.json"
         path.write_text(json.dumps(data))
-        ident, url = utils.default_paper_entry(path)
+        ident, _url = utils.default_paper_entry(path)
         assert ident == "unknown"
 
     def test_europe_pmc_empty_result_list(self, tmp_path):
@@ -337,7 +338,7 @@ class TestDefaultPaperEntry:
         data = {"resultList": {"result": []}}
         path = tmp_path / "metadata.json"
         path.write_text(json.dumps(data))
-        ident, url = utils.default_paper_entry(path)
+        ident, _url = utils.default_paper_entry(path)
         assert ident == "unknown"
 
     def test_crossref_format(self, tmp_path):
@@ -720,8 +721,13 @@ class TestCheckIndexValid:
 
     def test_extra_keys_warning(self, tmp_path):
         index = {
-            "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [], "dictionary": [], "extra_category": [],
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+            "dictionary": [],
+            "extra_category": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         findings = []
@@ -761,8 +767,11 @@ class TestCheckIndexCrossref:
         (tmp_path / "guidelines").mkdir()
         (tmp_path / "web").mkdir()
         data = {
-            "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [],
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
         }
         findings = []
         utils.check_index_crossref(tmp_path, data, findings)
@@ -791,8 +800,11 @@ class TestCheckIndexCrossref:
         (tmp_path / "web").mkdir()
         (tmp_path / "searches" / "topic" / "pubmed-search.json").write_text("{}")
         data = {
-            "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [],
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
         }
         findings = []
         utils.check_index_crossref(tmp_path, data, findings)
@@ -805,8 +817,11 @@ class TestCheckIndexCrossref:
         (tmp_path / "papers" / "pmid-123-slug").mkdir()
         (tmp_path / "papers" / "pmid-123-slug" / "metadata.json").write_text("{}")
         data = {
-            "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [],
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
         }
         findings = []
         utils.check_index_crossref(tmp_path, data, findings)
@@ -818,8 +833,11 @@ class TestCheckIndexCrossref:
             (tmp_path / name).mkdir()
         (tmp_path / "web" / "page.html").write_text("<html></html>")
         data = {
-            "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [],
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
         }
         findings = []
         utils.check_index_crossref(tmp_path, data, findings)
@@ -1126,8 +1144,12 @@ class TestRunIntegrityCheck:
         for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         index = {
-            "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [], "dictionary": [],
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+            "dictionary": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         findings = utils.run_integrity_check(tmp_path)
@@ -1139,8 +1161,12 @@ class TestVerifyAndReportIntegrity:
         for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
             (tmp_path / name).mkdir()
         index = {
-            "searches": [], "papers": [], "fulltext": [],
-            "guidelines": [], "web": [], "dictionary": [],
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+            "dictionary": [],
         }
         (tmp_path / "index.json").write_text(json.dumps(index))
         result = utils.verify_and_report_integrity(tmp_path)

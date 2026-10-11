@@ -11,20 +11,17 @@ No network calls — everything is local.
 import argparse
 import json
 import sys
-from pathlib import Path
 
 import utils
 from utils import MED_DB
+
 CLASSIFICATION_PATH = MED_DB / "guidelines" / "dsm-5-tr" / "classification.json"
 
 
 def load_classification():
     """Load the DSM-5-TR classification JSON."""
     if not CLASSIFICATION_PATH.exists():
-        sys.stderr.write(
-            "DSM-5-TR classification data not found. "
-            "Run the download/setup first.\n"
-        )
+        sys.stderr.write("DSM-5-TR classification data not found. Run the download/setup first.\n")
         sys.exit(1)
     try:
         with open(CLASSIFICATION_PATH, encoding="utf-8") as fh:
@@ -64,7 +61,9 @@ def search_by_code(data, code):
     # Prefix match for partial codes (e.g., "F32" matches all F32.x codes)
     results = []
     for category_name, disorder in _flatten_disorders(data):
-        if disorder.get("code") and disorder["code"].upper().replace(" ", "").startswith(code_upper):
+        if disorder.get("code") and disorder["code"].upper().replace(" ", "").startswith(
+            code_upper
+        ):
             results.append((category_name, disorder))
     return results
 
@@ -158,7 +157,9 @@ def _format_text_output(output, args):
         if "error" in category_list:
             lines.append(f"Error: {category_list['error']}")
         else:
-            lines.append(f'Category search: "{category_list["query"]}" — {category_list["count"]} results')
+            lines.append(
+                f'Category search: "{category_list["query"]}" — {category_list["count"]} results'
+            )
             lines.append("")
             for category in category_list["results"]:
                 lines.append(f"  {category['name']}")
@@ -229,9 +230,7 @@ def parse_args():
 
     args = parser.parse_args()
     if not args.code and not args.keyword and not args.category and not args.list_categories:
-        parser.error(
-            "provide at least one of --code, --keyword, --category, or --list-categories"
-        )
+        parser.error("provide at least one of --code, --keyword, --category, or --list-categories")
     if args.title_only and not args.code:
         parser.error("--title-only requires --code")
     return args

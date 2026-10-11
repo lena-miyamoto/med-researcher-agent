@@ -14,10 +14,10 @@ Usage:
 import argparse
 import json
 import sys
-from pathlib import Path
 
 import utils
-from utils import REPO_ROOT, MED_DB
+from utils import MED_DB
+
 CLASSIFICATION_PATH = MED_DB / "guidelines" / "dsm-5-tr" / "classification.json"
 
 
@@ -55,20 +55,35 @@ def _build_categories():
             "name": "Neurodevelopmental Disorders",
             "icd10cm_range": "F70-F98",
             "disorders": [
-                {"code": "F70", "name": "Intellectual Disability (Intellectual Developmental Disorder)",
-                 "specifiers": ["Mild", "Moderate", "Severe", "Profound"]},
+                {
+                    "code": "F70",
+                    "name": "Intellectual Disability (Intellectual Developmental Disorder)",
+                    "specifiers": ["Mild", "Moderate", "Severe", "Profound"],
+                },
                 {"code": "F88", "name": "Global Developmental Delay"},
                 {"code": "F79", "name": "Unspecified Intellectual Disability"},
                 {"code": "F80.0", "name": "Language Disorder"},
                 {"code": "F80.81", "name": "Social (Pragmatic) Communication Disorder"},
                 {"code": "F80.1", "name": "Speech Sound Disorder"},
                 {"code": "F80.81", "name": "Childhood-Onset Fluency Disorder (Stuttering)"},
-                {"code": "F84.0", "name": "Autism Spectrum Disorder",
-                 "specifiers": ["Level 1: Requiring support", "Level 2: Requiring substantial support",
-                                "Level 3: Requiring very substantial support"]},
-                {"code": "F81.0", "name": "Specific Learning Disorder",
-                 "specifiers": ["With impairment in reading", "With impairment in written expression",
-                                "With impairment in mathematics"]},
+                {
+                    "code": "F84.0",
+                    "name": "Autism Spectrum Disorder",
+                    "specifiers": [
+                        "Level 1: Requiring support",
+                        "Level 2: Requiring substantial support",
+                        "Level 3: Requiring very substantial support",
+                    ],
+                },
+                {
+                    "code": "F81.0",
+                    "name": "Specific Learning Disorder",
+                    "specifiers": [
+                        "With impairment in reading",
+                        "With impairment in written expression",
+                        "With impairment in mathematics",
+                    ],
+                },
                 {"code": "F82", "name": "Developmental Coordination Disorder"},
                 {"code": "F90.9", "name": "Stereotypic Movement Disorder"},
                 {"code": "F95.2", "name": "Tourette's Disorder"},
@@ -76,10 +91,19 @@ def _build_categories():
                 {"code": "F95.0", "name": "Provisional Tic Disorder"},
                 {"code": "F95.8", "name": "Other Specified Tic Disorder"},
                 {"code": "F95.9", "name": "Unspecified Tic Disorder"},
-                {"code": "F90.2", "name": "Attention-Deficit/Hyperactivity Disorder",
-                 "specifiers": ["Combined presentation", "Predominantly inattentive presentation",
-                                "Predominantly hyperactive/impulsive presentation"]},
-                {"code": "F90.8", "name": "Other Specified Attention-Deficit/Hyperactivity Disorder"},
+                {
+                    "code": "F90.2",
+                    "name": "Attention-Deficit/Hyperactivity Disorder",
+                    "specifiers": [
+                        "Combined presentation",
+                        "Predominantly inattentive presentation",
+                        "Predominantly hyperactive/impulsive presentation",
+                    ],
+                },
+                {
+                    "code": "F90.8",
+                    "name": "Other Specified Attention-Deficit/Hyperactivity Disorder",
+                },
                 {"code": "F90.9", "name": "Unspecified Attention-Deficit/Hyperactivity Disorder"},
             ],
         },
@@ -88,18 +112,37 @@ def _build_categories():
             "icd10cm_range": "F20-F29",
             "disorders": [
                 {"code": "F21", "name": "Schizotypal (Personality) Disorder"},
-                {"code": "F22", "name": "Delusional Disorder",
-                 "specifiers": ["Erotomanic type", "Grandiose type", "Jealous type", "Persecutory type",
-                                "Somatic type", "Mixed type", "Unspecified type"]},
+                {
+                    "code": "F22",
+                    "name": "Delusional Disorder",
+                    "specifiers": [
+                        "Erotomanic type",
+                        "Grandiose type",
+                        "Jealous type",
+                        "Persecutory type",
+                        "Somatic type",
+                        "Mixed type",
+                        "Unspecified type",
+                    ],
+                },
                 {"code": "F23", "name": "Brief Psychotic Disorder"},
                 {"code": "F20.81", "name": "Schizophreniform Disorder"},
                 {"code": "F20.9", "name": "Schizophrenia"},
                 {"code": "F25.0", "name": "Schizoaffective Disorder, Bipolar Type"},
                 {"code": "F25.1", "name": "Schizoaffective Disorder, Depressive Type"},
-                {"code": "F28", "name": "Other Specified Schizophrenia Spectrum and Other Psychotic Disorder"},
-                {"code": "F29", "name": "Unspecified Schizophrenia Spectrum and Other Psychotic Disorder"},
+                {
+                    "code": "F28",
+                    "name": "Other Specified Schizophrenia Spectrum and Other Psychotic Disorder",
+                },
+                {
+                    "code": "F29",
+                    "name": "Unspecified Schizophrenia Spectrum and Other Psychotic Disorder",
+                },
                 {"code": "F06.2", "name": "Psychotic Disorder Due to Another Medical Condition"},
-                {"code": None, "name": "Catatonia Associated With Another Mental Disorder (Catatonia Specifier)"},
+                {
+                    "code": None,
+                    "name": "Catatonia Associated With Another Mental Disorder (Catatonia Specifier)",
+                },
                 {"code": "F06.1", "name": "Catatonic Disorder Due to Another Medical Condition"},
                 {"code": "F20.2", "name": "Unspecified Catatonia"},
                 {"code": "F1x.5", "name": "Substance/Medication-Induced Psychotic Disorder"},
@@ -109,27 +152,78 @@ def _build_categories():
             "name": "Bipolar and Related Disorders",
             "icd10cm_range": "F30-F39",
             "disorders": [
-                {"code": "F31.11", "name": "Bipolar I Disorder, Current or most recent episode manic, Mild"},
-                {"code": "F31.12", "name": "Bipolar I Disorder, Current or most recent episode manic, Moderate"},
-                {"code": "F31.13", "name": "Bipolar I Disorder, Current or most recent episode manic, Severe"},
-                {"code": "F31.2", "name": "Bipolar I Disorder, Current or most recent episode manic, With psychotic features"},
-                {"code": "F31.73", "name": "Bipolar I Disorder, Current or most recent episode manic, In partial remission"},
-                {"code": "F31.74", "name": "Bipolar I Disorder, Current or most recent episode manic, In full remission"},
-                {"code": "F31.9", "name": "Bipolar I Disorder, Current or most recent episode manic, Unspecified"},
-                {"code": "F31.81", "name": "Bipolar I Disorder, Current or most recent episode hypomanic"},
-                {"code": "F31.31", "name": "Bipolar I Disorder, Current or most recent episode depressed, Mild"},
-                {"code": "F31.32", "name": "Bipolar I Disorder, Current or most recent episode depressed, Moderate"},
-                {"code": "F31.4", "name": "Bipolar I Disorder, Current or most recent episode depressed, Severe"},
-                {"code": "F31.5", "name": "Bipolar I Disorder, Current or most recent episode depressed, With psychotic features"},
-                {"code": "F31.75", "name": "Bipolar I Disorder, Current or most recent episode depressed, In partial remission"},
-                {"code": "F31.76", "name": "Bipolar I Disorder, Current or most recent episode depressed, In full remission"},
-                {"code": "F31.9", "name": "Bipolar I Disorder, Current or most recent episode depressed, Unspecified"},
+                {
+                    "code": "F31.11",
+                    "name": "Bipolar I Disorder, Current or most recent episode manic, Mild",
+                },
+                {
+                    "code": "F31.12",
+                    "name": "Bipolar I Disorder, Current or most recent episode manic, Moderate",
+                },
+                {
+                    "code": "F31.13",
+                    "name": "Bipolar I Disorder, Current or most recent episode manic, Severe",
+                },
+                {
+                    "code": "F31.2",
+                    "name": "Bipolar I Disorder, Current or most recent episode manic, With psychotic features",
+                },
+                {
+                    "code": "F31.73",
+                    "name": "Bipolar I Disorder, Current or most recent episode manic, In partial remission",
+                },
+                {
+                    "code": "F31.74",
+                    "name": "Bipolar I Disorder, Current or most recent episode manic, In full remission",
+                },
+                {
+                    "code": "F31.9",
+                    "name": "Bipolar I Disorder, Current or most recent episode manic, Unspecified",
+                },
+                {
+                    "code": "F31.81",
+                    "name": "Bipolar I Disorder, Current or most recent episode hypomanic",
+                },
+                {
+                    "code": "F31.31",
+                    "name": "Bipolar I Disorder, Current or most recent episode depressed, Mild",
+                },
+                {
+                    "code": "F31.32",
+                    "name": "Bipolar I Disorder, Current or most recent episode depressed, Moderate",
+                },
+                {
+                    "code": "F31.4",
+                    "name": "Bipolar I Disorder, Current or most recent episode depressed, Severe",
+                },
+                {
+                    "code": "F31.5",
+                    "name": "Bipolar I Disorder, Current or most recent episode depressed, With psychotic features",
+                },
+                {
+                    "code": "F31.75",
+                    "name": "Bipolar I Disorder, Current or most recent episode depressed, In partial remission",
+                },
+                {
+                    "code": "F31.76",
+                    "name": "Bipolar I Disorder, Current or most recent episode depressed, In full remission",
+                },
+                {
+                    "code": "F31.9",
+                    "name": "Bipolar I Disorder, Current or most recent episode depressed, Unspecified",
+                },
                 {"code": "F31.0", "name": "Bipolar II Disorder"},
                 {"code": "F34.0", "name": "Cyclothymic Disorder"},
                 {"code": "F31.89", "name": "Other Specified Bipolar and Related Disorder"},
                 {"code": "F31.9", "name": "Unspecified Bipolar and Related Disorder"},
-                {"code": "F06.33", "name": "Bipolar and Related Disorder Due to Another Medical Condition"},
-                {"code": "F1x.5", "name": "Substance/Medication-Induced Bipolar and Related Disorder"},
+                {
+                    "code": "F06.33",
+                    "name": "Bipolar and Related Disorder Due to Another Medical Condition",
+                },
+                {
+                    "code": "F1x.5",
+                    "name": "Substance/Medication-Induced Bipolar and Related Disorder",
+                },
             ],
         },
         {
@@ -140,17 +234,38 @@ def _build_categories():
                 {"code": "F32.0", "name": "Major Depressive Disorder, Single episode, Mild"},
                 {"code": "F32.1", "name": "Major Depressive Disorder, Single episode, Moderate"},
                 {"code": "F32.2", "name": "Major Depressive Disorder, Single episode, Severe"},
-                {"code": "F32.3", "name": "Major Depressive Disorder, Single episode, With psychotic features"},
-                {"code": "F32.4", "name": "Major Depressive Disorder, Single episode, In partial remission"},
-                {"code": "F32.5", "name": "Major Depressive Disorder, Single episode, In full remission"},
+                {
+                    "code": "F32.3",
+                    "name": "Major Depressive Disorder, Single episode, With psychotic features",
+                },
+                {
+                    "code": "F32.4",
+                    "name": "Major Depressive Disorder, Single episode, In partial remission",
+                },
+                {
+                    "code": "F32.5",
+                    "name": "Major Depressive Disorder, Single episode, In full remission",
+                },
                 {"code": "F32.9", "name": "Major Depressive Disorder, Single episode, Unspecified"},
                 {"code": "F33.0", "name": "Major Depressive Disorder, Recurrent episode, Mild"},
                 {"code": "F33.1", "name": "Major Depressive Disorder, Recurrent episode, Moderate"},
                 {"code": "F33.2", "name": "Major Depressive Disorder, Recurrent episode, Severe"},
-                {"code": "F33.3", "name": "Major Depressive Disorder, Recurrent episode, With psychotic features"},
-                {"code": "F33.41", "name": "Major Depressive Disorder, Recurrent episode, In partial remission"},
-                {"code": "F33.42", "name": "Major Depressive Disorder, Recurrent episode, In full remission"},
-                {"code": "F33.9", "name": "Major Depressive Disorder, Recurrent episode, Unspecified"},
+                {
+                    "code": "F33.3",
+                    "name": "Major Depressive Disorder, Recurrent episode, With psychotic features",
+                },
+                {
+                    "code": "F33.41",
+                    "name": "Major Depressive Disorder, Recurrent episode, In partial remission",
+                },
+                {
+                    "code": "F33.42",
+                    "name": "Major Depressive Disorder, Recurrent episode, In full remission",
+                },
+                {
+                    "code": "F33.9",
+                    "name": "Major Depressive Disorder, Recurrent episode, Unspecified",
+                },
                 {"code": "F34.1", "name": "Persistent Depressive Disorder (Dysthymia)"},
                 {"code": "N94.3", "name": "Premenstrual Dysphoric Disorder"},
                 {"code": "F32.8", "name": "Other Specified Depressive Disorder"},
@@ -185,9 +300,18 @@ def _build_categories():
                 {"code": "F42.3", "name": "Hoarding Disorder"},
                 {"code": "F63.3", "name": "Trichotillomania (Hair-Pulling Disorder)"},
                 {"code": "L98.1", "name": "Excoriation (Skin-Picking) Disorder"},
-                {"code": "F06.8", "name": "Obsessive-Compulsive and Related Disorder Due to Another Medical Condition"},
-                {"code": "F1x.5", "name": "Substance/Medication-Induced Obsessive-Compulsive and Related Disorder"},
-                {"code": "F42.8", "name": "Other Specified Obsessive-Compulsive and Related Disorder"},
+                {
+                    "code": "F06.8",
+                    "name": "Obsessive-Compulsive and Related Disorder Due to Another Medical Condition",
+                },
+                {
+                    "code": "F1x.5",
+                    "name": "Substance/Medication-Induced Obsessive-Compulsive and Related Disorder",
+                },
+                {
+                    "code": "F42.8",
+                    "name": "Other Specified Obsessive-Compulsive and Related Disorder",
+                },
                 {"code": "F42.9", "name": "Unspecified Obsessive-Compulsive and Related Disorder"},
             ],
         },
@@ -201,16 +325,25 @@ def _build_categories():
                 {"code": "F43.11", "name": "Posttraumatic Stress Disorder, Dissociative subtype"},
                 {"code": "F43.12", "name": "Posttraumatic Stress Disorder, Delayed expression"},
                 {"code": "F43.0", "name": "Acute Stress Disorder"},
-                {"code": "F43.2", "name": "Adjustment Disorders",
-                 "specifiers": ["With depressed mood", "With anxiety",
-                                "With mixed anxiety and depressed mood",
-                                "With disturbance of conduct",
-                                "With mixed disturbance of emotions and conduct",
-                                "Unspecified"]},
+                {
+                    "code": "F43.2",
+                    "name": "Adjustment Disorders",
+                    "specifiers": [
+                        "With depressed mood",
+                        "With anxiety",
+                        "With mixed anxiety and depressed mood",
+                        "With disturbance of conduct",
+                        "With mixed disturbance of emotions and conduct",
+                        "Unspecified",
+                    ],
+                },
                 {"code": "F43.8", "name": "Other Specified Trauma- and Stressor-Related Disorder"},
                 {"code": "F43.9", "name": "Unspecified Trauma- and Stressor-Related Disorder"},
-                {"code": "F43.8", "name": "Prolonged Grief Disorder",
-                 "dsm5tr_note": "New in DSM-5-TR (2022)"},
+                {
+                    "code": "F43.8",
+                    "name": "Prolonged Grief Disorder",
+                    "dsm5tr_note": "New in DSM-5-TR (2022)",
+                },
             ],
         },
         {
@@ -230,10 +363,16 @@ def _build_categories():
             "disorders": [
                 {"code": "F45.1", "name": "Somatic Symptom Disorder"},
                 {"code": "F45.21", "name": "Illness Anxiety Disorder"},
-                {"code": "F44.4", "name": "Conversion Disorder (Functional Neurological Symptom Disorder)"},
+                {
+                    "code": "F44.4",
+                    "name": "Conversion Disorder (Functional Neurological Symptom Disorder)",
+                },
                 {"code": "F54", "name": "Psychological Factors Affecting Other Medical Conditions"},
-                {"code": "F68.1", "name": "Factitious Disorder",
-                 "specifiers": ["Imposed on self", "Imposed on another"]},
+                {
+                    "code": "F68.1",
+                    "name": "Factitious Disorder",
+                    "specifiers": ["Imposed on self", "Imposed on another"],
+                },
                 {"code": "F45.8", "name": "Other Specified Somatic Symptom and Related Disorder"},
                 {"code": "F45.9", "name": "Unspecified Somatic Symptom and Related Disorder"},
             ],
@@ -245,8 +384,11 @@ def _build_categories():
                 {"code": "F98.2", "name": "Pica"},
                 {"code": "F98.21", "name": "Rumination Disorder"},
                 {"code": "F50.82", "name": "Avoidant/Restrictive Food Intake Disorder"},
-                {"code": "F50.01", "name": "Anorexia Nervosa",
-                 "specifiers": ["Restricting type", "Binge-eating/purging type"]},
+                {
+                    "code": "F50.01",
+                    "name": "Anorexia Nervosa",
+                    "specifiers": ["Restricting type", "Binge-eating/purging type"],
+                },
                 {"code": "F50.02", "name": "Bulimia Nervosa"},
                 {"code": "F50.81", "name": "Binge-Eating Disorder"},
                 {"code": "F50.89", "name": "Other Specified Feeding or Eating Disorder"},
@@ -325,23 +467,42 @@ def _build_categories():
             "disorders": [
                 {"code": "F91.3", "name": "Oppositional Defiant Disorder"},
                 {"code": "F63.81", "name": "Intermittent Explosive Disorder"},
-                {"code": "F91.1", "name": "Conduct Disorder",
-                 "specifiers": ["Childhood-onset type", "Adolescent-onset type",
-                                "Unspecified onset", "With limited prosocial emotions"]},
-                {"code": "Z60.4", "name": "Antisocial Personality Disorder",
-                 "note": "Also listed in Personality Disorders chapter"},
+                {
+                    "code": "F91.1",
+                    "name": "Conduct Disorder",
+                    "specifiers": [
+                        "Childhood-onset type",
+                        "Adolescent-onset type",
+                        "Unspecified onset",
+                        "With limited prosocial emotions",
+                    ],
+                },
+                {
+                    "code": "Z60.4",
+                    "name": "Antisocial Personality Disorder",
+                    "note": "Also listed in Personality Disorders chapter",
+                },
                 {"code": "F91.2", "name": "Pyromania"},
                 {"code": "F63.2", "name": "Kleptomania"},
-                {"code": "F91.8", "name": "Other Specified Disruptive, Impulse-Control, and Conduct Disorder"},
-                {"code": "F91.9", "name": "Unspecified Disruptive, Impulse-Control, and Conduct Disorder"},
+                {
+                    "code": "F91.8",
+                    "name": "Other Specified Disruptive, Impulse-Control, and Conduct Disorder",
+                },
+                {
+                    "code": "F91.9",
+                    "name": "Unspecified Disruptive, Impulse-Control, and Conduct Disorder",
+                },
             ],
         },
         {
             "name": "Substance-Related and Addictive Disorders",
             "icd10cm_range": "F10-F19, F50.81, Z72.6, F63.0",
             "disorders": [
-                {"code": "F10.10", "name": "Alcohol Use Disorder",
-                 "specifiers": ["Mild", "Moderate", "Severe"]},
+                {
+                    "code": "F10.10",
+                    "name": "Alcohol Use Disorder",
+                    "specifiers": ["Mild", "Moderate", "Severe"],
+                },
                 {"code": "F10.20", "name": "Alcohol Intoxication"},
                 {"code": "F10.239", "name": "Alcohol Withdrawal"},
                 {"code": "F12.10", "name": "Cannabis Use Disorder"},
@@ -362,7 +523,10 @@ def _build_categories():
                 {"code": "F13.10", "name": "Sedative, Hypnotic, or Anxiolytic Use Disorder"},
                 {"code": "F13.20", "name": "Sedative, Hypnotic, or Anxiolytic Intoxication"},
                 {"code": "F13.239", "name": "Sedative, Hypnotic, or Anxiolytic Withdrawal"},
-                {"code": "F14.10", "name": "Cocaine Use Disorder — see also Stimulant Use Disorder"},
+                {
+                    "code": "F14.10",
+                    "name": "Cocaine Use Disorder — see also Stimulant Use Disorder",
+                },
                 {"code": "F63.0", "name": "Gambling Disorder"},
                 {"code": "F19.10", "name": "Other (or Unknown) Substance Use Disorder"},
                 {"code": "F19.20", "name": "Other (or Unknown) Substance Intoxication"},
@@ -374,27 +538,60 @@ def _build_categories():
             "icd10cm_range": "F01-F09, G30-G31",
             "disorders": [
                 {"code": "F02.80", "name": "Delirium"},
-                {"code": "F02.81", "name": "Major Neurocognitive Disorder Due to Alzheimer's Disease"},
-                {"code": "G31.84", "name": "Mild Neurocognitive Disorder Due to Alzheimer's Disease"},
+                {
+                    "code": "F02.81",
+                    "name": "Major Neurocognitive Disorder Due to Alzheimer's Disease",
+                },
+                {
+                    "code": "G31.84",
+                    "name": "Mild Neurocognitive Disorder Due to Alzheimer's Disease",
+                },
                 {"code": "F02.80", "name": "Major Neurocognitive Disorder With Lewy Bodies"},
                 {"code": "G31.84", "name": "Mild Neurocognitive Disorder With Lewy Bodies"},
                 {"code": "F02.81", "name": "Major Vascular Neurocognitive Disorder"},
                 {"code": "G31.84", "name": "Mild Vascular Neurocognitive Disorder"},
-                {"code": "F02.81", "name": "Major Neurocognitive Disorder Due to Traumatic Brain Injury"},
-                {"code": "G31.84", "name": "Mild Neurocognitive Disorder Due to Traumatic Brain Injury"},
-                {"code": "F02.81", "name": "Major Neurocognitive Disorder Due to Parkinson's Disease"},
-                {"code": "G31.84", "name": "Mild Neurocognitive Disorder Due to Parkinson's Disease"},
+                {
+                    "code": "F02.81",
+                    "name": "Major Neurocognitive Disorder Due to Traumatic Brain Injury",
+                },
+                {
+                    "code": "G31.84",
+                    "name": "Mild Neurocognitive Disorder Due to Traumatic Brain Injury",
+                },
+                {
+                    "code": "F02.81",
+                    "name": "Major Neurocognitive Disorder Due to Parkinson's Disease",
+                },
+                {
+                    "code": "G31.84",
+                    "name": "Mild Neurocognitive Disorder Due to Parkinson's Disease",
+                },
                 {"code": "F02.81", "name": "Major Neurocognitive Disorder Due to HIV Infection"},
                 {"code": "G31.84", "name": "Mild Neurocognitive Disorder Due to HIV Infection"},
-                {"code": "F02.81", "name": "Major Neurocognitive Disorder Due to Huntington's Disease"},
-                {"code": "G31.84", "name": "Mild Neurocognitive Disorder Due to Huntington's Disease"},
+                {
+                    "code": "F02.81",
+                    "name": "Major Neurocognitive Disorder Due to Huntington's Disease",
+                },
+                {
+                    "code": "G31.84",
+                    "name": "Mild Neurocognitive Disorder Due to Huntington's Disease",
+                },
                 {"code": "F02.81", "name": "Major Neurocognitive Disorder Due to Prion Disease"},
                 {"code": "G31.84", "name": "Mild Neurocognitive Disorder Due to Prion Disease"},
                 {"code": "F02.81", "name": "Major Frontotemporal Neurocognitive Disorder"},
                 {"code": "G31.84", "name": "Mild Frontotemporal Neurocognitive Disorder"},
-                {"code": "F02.81", "name": "Major Neurocognitive Disorder Due to Another Medical Condition"},
-                {"code": "G31.84", "name": "Mild Neurocognitive Disorder Due to Another Medical Condition"},
-                {"code": "F1x.5", "name": "Substance/Medication-Induced Major or Mild Neurocognitive Disorder"},
+                {
+                    "code": "F02.81",
+                    "name": "Major Neurocognitive Disorder Due to Another Medical Condition",
+                },
+                {
+                    "code": "G31.84",
+                    "name": "Mild Neurocognitive Disorder Due to Another Medical Condition",
+                },
+                {
+                    "code": "F1x.5",
+                    "name": "Substance/Medication-Induced Major or Mild Neurocognitive Disorder",
+                },
                 {"code": "R41.9", "name": "Unspecified Neurocognitive Disorder"},
             ],
         },
@@ -448,13 +645,19 @@ def _build_z_codes():
         {"code": "Z91.49", "name": "Other Personal History of Psychological Trauma"},
         {"code": "Z91.5", "name": "Personal History of Self-Harm"},
         {"code": "Z91.83", "name": "Wandering Associated with a Mental Disorder"},
-        {"code": "Z91.89", "name": "Other Specified Personal Risk Factors (Suicidality, Nonsuicidal Self-Injury)"},
+        {
+            "code": "Z91.89",
+            "name": "Other Specified Personal Risk Factors (Suicidality, Nonsuicidal Self-Injury)",
+        },
         {"code": "Z69", "name": "Problems Related to Living Alone"},
         {"code": "Z60", "name": "Acculturation Difficulty"},
         {"code": "Z62", "name": "Problems Related to Upbringing"},
         {"code": "Z63", "name": "Other Problems Related to Primary Support Group"},
         {"code": "Z64", "name": "Problems Related to Other Psychosocial Circumstances"},
-        {"code": "Z65", "name": "Problems Related to Other Psychosocial, Personal, and Environmental Circumstances"},
+        {
+            "code": "Z65",
+            "name": "Problems Related to Other Psychosocial, Personal, and Environmental Circumstances",
+        },
         {"code": "Z72.811", "name": "Adult Antisocial Behavior"},
         {"code": "Z72.810", "name": "Child or Adolescent Antisocial Behavior"},
         {"code": "Z91.19", "name": "Nonadherence to Medical Treatment"},
@@ -468,13 +671,23 @@ def _build_z_codes():
 def _build_section_iii():
     return [
         {"code": None, "name": "Attenuated Psychosis Syndrome", "status": "Further Study"},
-        {"code": None, "name": "Depressive Episodes With Short-Duration Hypomania", "status": "Further Study"},
-        {"code": None, "name": "Persistent Complex Bereavement Disorder",
-         "status": "Further Study (replaced by Prolonged Grief Disorder in DSM-5-TR Section II)"},
+        {
+            "code": None,
+            "name": "Depressive Episodes With Short-Duration Hypomania",
+            "status": "Further Study",
+        },
+        {
+            "code": None,
+            "name": "Persistent Complex Bereavement Disorder",
+            "status": "Further Study (replaced by Prolonged Grief Disorder in DSM-5-TR Section II)",
+        },
         {"code": "F15.98", "name": "Caffeine Use Disorder", "status": "Further Study"},
         {"code": "F63.0", "name": "Internet Gaming Disorder", "status": "Further Study"},
-        {"code": None, "name": "Neurobehavioral Disorder Associated With Prenatal Alcohol Exposure",
-         "status": "Further Study"},
+        {
+            "code": None,
+            "name": "Neurobehavioral Disorder Associated With Prenatal Alcohol Exposure",
+            "status": "Further Study",
+        },
         {"code": None, "name": "Suicidal Behavior Disorder", "status": "Further Study"},
         {"code": None, "name": "Nonsuicidal Self-Injury", "status": "Further Study"},
     ]
@@ -502,7 +715,9 @@ def setup(force=False):
         raise
 
     total = sum(len(category["disorders"]) for category in data["categories"])
-    print(f"Created DSM-5-TR classification: {len(data['categories'])} categories, {total} disorders")
+    print(
+        f"Created DSM-5-TR classification: {len(data['categories'])} categories, {total} disorders"
+    )
     return True
 
 
@@ -566,8 +781,10 @@ def main():
     source_md = CLASSIFICATION_PATH.parent / "source.md"
     if not source_md.exists():
         print()
-        print("  source.md not found — it should be created separately "
-              "(it ships with the repo under med-db/guidelines/dsm-5-tr/source.md)")
+        print(
+            "  source.md not found — it should be created separately "
+            "(it ships with the repo under med-db/guidelines/dsm-5-tr/source.md)"
+        )
 
     if utils.verify_and_report_integrity(MED_DB) != 0:
         return 1

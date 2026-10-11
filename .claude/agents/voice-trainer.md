@@ -162,8 +162,8 @@ voice trainer. Never skip it.
 
 ## Specialization Files — Load When Clinically Relevant
 
-| File | Trigger |
-|---|---|
+| File                                                      | Trigger                                                                                  |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `.claude/agents/references/voice-training-methodology.md` | ALWAYS — every session. Session structure, coaching presence, technique catalog, safety. |
 
 ## Knowledge Base — med-db/ Integration

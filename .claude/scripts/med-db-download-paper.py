@@ -246,7 +246,8 @@ def metadata_from_crossref(doi, fetch_url_func):
 
 def metadata_from_doi(doi, email, pubmed_fetch_func, epmc_fetch_func, fetch_url_func):
     source, identifier = utils.resolve_doi_to_id(
-        doi, email=email,
+        doi,
+        email=email,
         pubmed_fetch_func=pubmed_fetch_func,
         epmc_fetch_func=epmc_fetch_func,
         # Crossref metadata is fetched by metadata_from_crossref below; skip the
@@ -278,9 +279,7 @@ def metadata_from_pmcid(pmcid, email, pubmed_fetch_func, epmc_fetch_func, fetch_
     params = {"ids": pmcid, "format": "json", "tool": "med-db-download-paper"}
     if email:
         params["email"] = email
-    raw = fetch_url_func(
-        f"{PMC_IDCONV_URL}?{urllib.parse.urlencode(params)}", "PMC ID converter"
-    )
+    raw = fetch_url_func(f"{PMC_IDCONV_URL}?{urllib.parse.urlencode(params)}", "PMC ID converter")
     records = json.loads(raw).get("records", [])
     if not records or records[0].get("status") == "error":
         raise RuntimeError(f"PMC ID converter could not resolve {pmcid}")
@@ -288,7 +287,9 @@ def metadata_from_pmcid(pmcid, email, pubmed_fetch_func, epmc_fetch_func, fetch_
     if item.get("pmid"):
         return metadata_from_pubmed(item["pmid"], email, pubmed_fetch_func)
     if item.get("doi"):
-        return metadata_from_doi(item["doi"], email, pubmed_fetch_func, epmc_fetch_func, fetch_url_func)
+        return metadata_from_doi(
+            item["doi"], email, pubmed_fetch_func, epmc_fetch_func, fetch_url_func
+        )
     raise RuntimeError(f"PMC ID converter returned no PMID or DOI for {pmcid}")
 
 
@@ -377,7 +378,9 @@ def metadata_from_title(title, year, email, pubmed_fetch_func, epmc_fetch_func, 
         raw = fetch_url_func(f"{CROSSREF_API}works?{urllib.parse.urlencode(params)}", "Crossref")
         items = json.loads(raw).get("message", {}).get("items", [])
         if items and items[0].get("DOI"):
-            return metadata_from_doi(items[0]["DOI"], email, pubmed_fetch_func, epmc_fetch_func, fetch_url_func)
+            return metadata_from_doi(
+                items[0]["DOI"], email, pubmed_fetch_func, epmc_fetch_func, fetch_url_func
+            )
     except (RuntimeError, json.JSONDecodeError):
         pass
 
@@ -385,7 +388,8 @@ def metadata_from_title(title, year, email, pubmed_fetch_func, epmc_fetch_func, 
     try:
         query = f'all:"{title}"'
         raw = fetch_url_func(
-            f"{ARXIV_EXPORT_API}?search_query={urllib.parse.quote(query)}&max_results=1", "arXiv API"
+            f"{ARXIV_EXPORT_API}?search_query={urllib.parse.quote(query)}&max_results=1",
+            "arXiv API",
         )
         arxiv_id = _parse_arxiv_id_from_atom(raw)
         if arxiv_id:
@@ -411,8 +415,15 @@ def metadata_from_url(url):
     }
 
 
-def resolve_metadata(reference_kind, reference_value, year=None, email=None,
-                     pubmed_fetch_func=None, epmc_fetch_func=None, fetch_url_func=None):
+def resolve_metadata(
+    reference_kind,
+    reference_value,
+    year=None,
+    email=None,
+    pubmed_fetch_func=None,
+    epmc_fetch_func=None,
+    fetch_url_func=None,
+):
     """Resolve a reference to a metadata dict. Raises RuntimeError/ValueError."""
     pubmed_fetch = pubmed_fetch_func or utils.fetch_pubmed
     epmc_fetch = epmc_fetch_func or utils.fetch_europe_pmc
@@ -430,7 +441,9 @@ def resolve_metadata(reference_kind, reference_value, year=None, email=None,
     if reference_kind == "arxiv":
         return metadata_from_arxiv(reference_value, fetch_url)
     if reference_kind == "title":
-        return metadata_from_title(reference_value, year, email, pubmed_fetch, epmc_fetch, fetch_url)
+        return metadata_from_title(
+            reference_value, year, email, pubmed_fetch, epmc_fetch, fetch_url
+        )
     if reference_kind in ("pdf-url", "url"):
         return metadata_from_url(reference_value)
     raise ValueError(f"unsupported reference kind: {reference_kind}")
@@ -484,9 +497,7 @@ def fetch_openalex_oa(doi, fetch_url_func=None):
     """
     fetch_url = fetch_url_func or utils._fetch_url
     try:
-        raw = fetch_url(
-            f"{OPENALEX_API}{urllib.parse.quote(f'https://doi.org/{doi}')}", "OpenAlex"
-        )
+        raw = fetch_url(f"{OPENALEX_API}{urllib.parse.quote(f'https://doi.org/{doi}')}", "OpenAlex")
         data = json.loads(raw)
     except (RuntimeError, json.JSONDecodeError, ValueError):
         return None, None
@@ -547,7 +558,7 @@ def fetch_scihub_pdf_url(reference_value, mirror, fetch_url_func=None):
         return None
     pdf_url = urllib.parse.urljoin(page_url, match.group(1))
     if pdf_url.startswith("http://"):
-        pdf_url = "https://" + pdf_url[len("http://"):]
+        pdf_url = "https://" + pdf_url[len("http://") :]
     return pdf_url
 
 
@@ -566,9 +577,7 @@ def download_binary(url, destination, timeout=60):
     destination = Path(destination)
     tmp = destination.with_suffix(destination.suffix + ".tmp")
     try:
-        response = utils._request_with_retry(
-            request, url, timeout, retries=2, retry_delay=0.25
-        )
+        response = utils._request_with_retry(request, url, timeout, retries=2, retry_delay=0.25)
     except (urllib.error.HTTPError, urllib.error.URLError, OSError):
         return False
     try:
@@ -673,34 +682,50 @@ def legal_pdf_candidates(resolved, email, source_chain, oa_pdf_url=None, fetch_u
     if oa_pdf_url:
         yield "openalex", oa_pdf_url
     else:
-        source_chain.append({
-            "source": "openalex",
-            "outcome": "failed",
-            "detail": "no open-access PDF location recorded",
-        })
+        source_chain.append(
+            {
+                "source": "openalex",
+                "outcome": "failed",
+                "detail": "no open-access PDF location recorded",
+            }
+        )
     if email:
         try:
-            url = fetch_unpaywall_pdf_url(doi, email, fetch_url_func=fetch_url_func or utils._fetch_url)
+            url = fetch_unpaywall_pdf_url(
+                doi, email, fetch_url_func=fetch_url_func or utils._fetch_url
+            )
             if url:
                 yield "unpaywall", url
             else:
-                source_chain.append({
-                    "source": "unpaywall",
-                    "outcome": "failed",
-                    "detail": "no open-access location recorded",
-                })
+                source_chain.append(
+                    {
+                        "source": "unpaywall",
+                        "outcome": "failed",
+                        "detail": "no open-access location recorded",
+                    }
+                )
         except RuntimeError as exc:
             source_chain.append({"source": "unpaywall", "outcome": "failed", "detail": str(exc)})
     else:
-        source_chain.append({
-            "source": "unpaywall",
-            "outcome": "skipped",
-            "detail": "no email provided (Unpaywall requires one)",
-        })
+        source_chain.append(
+            {
+                "source": "unpaywall",
+                "outcome": "skipped",
+                "detail": "no email provided (Unpaywall requires one)",
+            }
+        )
 
 
-def _try_sci_hub(reference_value, resolved, mirrors, pdf_destination, source_chain,
-                 provenance, download_binary_func, fetch_url_func):
+def _try_sci_hub(
+    reference_value,
+    resolved,
+    mirrors,
+    pdf_destination,
+    source_chain,
+    provenance,
+    download_binary_func,
+    fetch_url_func,
+):
     """Try Sci-Hub mirrors in order; return True when a PDF is fetched."""
     lookup_value = resolved.get("doi") or resolved.get("pmid") or reference_value
     for mirror in mirrors:
@@ -709,20 +734,26 @@ def _try_sci_hub(reference_value, resolved, mirrors, pdf_destination, source_cha
                 lookup_value, mirror, fetch_url_func=fetch_url_func or utils._fetch_url
             )
         except RuntimeError as exc:
-            source_chain.append({
-                "source": "sci-hub",
-                "outcome": "failed",
-                "detail": f"{mirror}: {exc}",
-            })
+            source_chain.append(
+                {
+                    "source": "sci-hub",
+                    "outcome": "failed",
+                    "detail": f"{mirror}: {exc}",
+                }
+            )
             continue
         if not url:
-            source_chain.append({
-                "source": "sci-hub",
-                "outcome": "failed",
-                "detail": f"{mirror}: captcha or no PDF link",
-            })
+            source_chain.append(
+                {
+                    "source": "sci-hub",
+                    "outcome": "failed",
+                    "detail": f"{mirror}: captcha or no PDF link",
+                }
+            )
             continue
-        if attempt_pdf_download(url, "sci-hub", pdf_destination, source_chain, download_binary_func):
+        if attempt_pdf_download(
+            url, "sci-hub", pdf_destination, source_chain, download_binary_func
+        ):
             provenance["pdf_source"] = "sci-hub"
             provenance["pdf_url"] = url
             provenance["sci_hub_used"] = True
@@ -730,8 +761,16 @@ def _try_sci_hub(reference_value, resolved, mirrors, pdf_destination, source_cha
     return False
 
 
-def _download_legal_pdf(resolved, email, source_chain, pdf_destination, provenance,
-                        oa_pdf_url, download_binary_func, fetch_url_func):
+def _download_legal_pdf(
+    resolved,
+    email,
+    source_chain,
+    pdf_destination,
+    provenance,
+    oa_pdf_url,
+    download_binary_func,
+    fetch_url_func,
+):
     """Try legal PDF sources; return True when a PDF was fetched.
 
     Order: OpenAlex OA location, Unpaywall (only with email), publisher open
@@ -754,17 +793,21 @@ def _download_legal_pdf(resolved, email, source_chain, pdf_destination, provenan
             fetched_pdf = True
             provenance["pdf_source"] = "publisher-open-access"
             provenance["pdf_url"] = f"{DOI_RESOLVER}{resolved['doi']}"
-            source_chain.append({
-                "source": "publisher-open-access",
-                "outcome": "ok",
-                "detail": provenance["pdf_url"],
-            })
+            source_chain.append(
+                {
+                    "source": "publisher-open-access",
+                    "outcome": "ok",
+                    "detail": provenance["pdf_url"],
+                }
+            )
         except RuntimeError as exc:
-            source_chain.append({
-                "source": "publisher-open-access",
-                "outcome": "failed",
-                "detail": str(exc),
-            })
+            source_chain.append(
+                {
+                    "source": "publisher-open-access",
+                    "outcome": "failed",
+                    "detail": str(exc),
+                }
+            )
 
     if not fetched_pdf and resolved.get("arxiv_id"):
         url = build_arxiv_pdf_url(resolved["arxiv_id"])
@@ -781,11 +824,22 @@ def _remove_temporary_files(target):
         path.unlink(missing_ok=True)
 
 
-def download_paper(reference_kind, reference_value, year=None, topic="uncategorized",
-                   med_db=None, email=None, force=False, allow_sci_hub=True,
-                   sci_hub_mirrors=None, pubmed_fetch_func=None, epmc_fetch_func=None,
-                   fetch_url_func=None, download_binary_func=None,
-                   extract_pdf_text_func=None):
+def download_paper(
+    reference_kind,
+    reference_value,
+    year=None,
+    topic="uncategorized",
+    med_db=None,
+    email=None,
+    force=False,
+    allow_sci_hub=True,
+    sci_hub_mirrors=None,
+    pubmed_fetch_func=None,
+    epmc_fetch_func=None,
+    fetch_url_func=None,
+    download_binary_func=None,
+    extract_pdf_text_func=None,
+):
     """Download one paper's full text into the med-db fulltext archive.
 
     Returns a result dict; raises RuntimeError when no source could provide
@@ -796,22 +850,25 @@ def download_paper(reference_kind, reference_value, year=None, topic="uncategori
     med_db = Path(med_db)
 
     resolved = resolve_metadata(
-        reference_kind, reference_value, year=year, email=email,
-        pubmed_fetch_func=pubmed_fetch_func, epmc_fetch_func=epmc_fetch_func,
+        reference_kind,
+        reference_value,
+        year=year,
+        email=email,
+        pubmed_fetch_func=pubmed_fetch_func,
+        epmc_fetch_func=epmc_fetch_func,
         fetch_url_func=fetch_url_func,
     )
     folder_name = build_fulltext_folder(resolved)
     target = med_db / "fulltext" / topic / folder_name
 
-    if (target / "paper.pdf").is_file() or (target / "source.md").is_file():
-        if not force:
-            return {
-                "status": "skipped",
-                "folder": str(target),
-                "identifier": resolved["identifier"],
-                "url": resolved["url"],
-                "title": resolved["title"],
-            }
+    if ((target / "paper.pdf").is_file() or (target / "source.md").is_file()) and not force:
+        return {
+            "status": "skipped",
+            "folder": str(target),
+            "identifier": resolved["identifier"],
+            "url": resolved["url"],
+            "title": resolved["title"],
+        }
 
     created = not target.exists()
     target.mkdir(parents=True, exist_ok=True)
@@ -828,14 +885,16 @@ def download_paper(reference_kind, reference_value, year=None, topic="uncategori
     fetched_pdf = False
 
     # 1. Direct PDF URL (--url input)
-    if resolved.get("direct_pdf_url"):
-        if attempt_pdf_download(
-            resolved["direct_pdf_url"], "direct-url", pdf_destination, source_chain,
-            download_binary_func,
-        ):
-            fetched_pdf = True
-            provenance["pdf_source"] = "direct-url"
-            provenance["pdf_url"] = resolved["direct_pdf_url"]
+    if resolved.get("direct_pdf_url") and attempt_pdf_download(
+        resolved["direct_pdf_url"],
+        "direct-url",
+        pdf_destination,
+        source_chain,
+        download_binary_func,
+    ):
+        fetched_pdf = True
+        provenance["pdf_source"] = "direct-url"
+        provenance["pdf_url"] = resolved["direct_pdf_url"]
 
     # 2. Europe PMC fullTextXML (open-access text). PMID-resolved records use
     #    the MED:<pmid> alias so PubMed-only records get an open-access attempt.
@@ -851,13 +910,17 @@ def download_paper(reference_kind, reference_value, year=None, topic="uncategori
             )
             text = fulltext_xml_to_text(xml_string)
             provenance["extraction_method"] = "europe-pmc-fulltext-xml"
-            source_chain.append({
-                "source": "europe-pmc-fulltext",
-                "outcome": "ok",
-                "detail": f"https://www.ebi.ac.uk/europepmc/webservices/rest/{epmc_record}/fullTextXML",
-            })
+            source_chain.append(
+                {
+                    "source": "europe-pmc-fulltext",
+                    "outcome": "ok",
+                    "detail": f"https://www.ebi.ac.uk/europepmc/webservices/rest/{epmc_record}/fullTextXML",
+                }
+            )
         except (RuntimeError, ValueError) as exc:
-            source_chain.append({"source": "europe-pmc-fulltext", "outcome": "failed", "detail": str(exc)})
+            source_chain.append(
+                {"source": "europe-pmc-fulltext", "outcome": "failed", "detail": str(exc)}
+            )
 
     # 3. OpenAlex OA status drives the branch: open-access papers use legal
     #    sources first; paywalled papers go straight to Sci-Hub.
@@ -876,33 +939,58 @@ def download_paper(reference_kind, reference_value, year=None, topic="uncategori
         # Paywalled: Sci-Hub first, legal alternatives only after it fails.
         if allow_sci_hub:
             fetched_pdf = _try_sci_hub(
-                reference_value, resolved, mirrors, pdf_destination, source_chain,
-                provenance, download_binary_func, fetch_url_func,
+                reference_value,
+                resolved,
+                mirrors,
+                pdf_destination,
+                source_chain,
+                provenance,
+                download_binary_func,
+                fetch_url_func,
             )
         if not fetched_pdf:
             fetched_pdf = _download_legal_pdf(
-                resolved, email, source_chain, pdf_destination, provenance,
-                oa_pdf_url, download_binary_func, fetch_url_func,
+                resolved,
+                email,
+                source_chain,
+                pdf_destination,
+                provenance,
+                oa_pdf_url,
+                download_binary_func,
+                fetch_url_func,
             )
     elif not fetched_pdf and not text:
         # Open access (or unknown status): legal sources first, Sci-Hub last.
         fetched_pdf = _download_legal_pdf(
-            resolved, email, source_chain, pdf_destination, provenance,
-            oa_pdf_url, download_binary_func, fetch_url_func,
+            resolved,
+            email,
+            source_chain,
+            pdf_destination,
+            provenance,
+            oa_pdf_url,
+            download_binary_func,
+            fetch_url_func,
         )
         if not fetched_pdf and allow_sci_hub:
             fetched_pdf = _try_sci_hub(
-                reference_value, resolved, mirrors, pdf_destination, source_chain,
-                provenance, download_binary_func, fetch_url_func,
+                reference_value,
+                resolved,
+                mirrors,
+                pdf_destination,
+                source_chain,
+                provenance,
+                download_binary_func,
+                fetch_url_func,
             )
 
     if not fetched_pdf and not text:
         _remove_temporary_files(target)
         if created:
             target.rmdir()
-        chain_report = ", ".join(
-            f"{step['source']} {step['outcome']}" for step in source_chain
-        ) or "no sources attempted"
+        chain_report = (
+            ", ".join(f"{step['source']} {step['outcome']}" for step in source_chain)
+            or "no sources attempted"
+        )
         raise RuntimeError(
             f"could not obtain full text for {resolved['identifier'] or reference_value}; chain: {chain_report}"
         )
@@ -911,7 +999,9 @@ def download_paper(reference_kind, reference_value, year=None, topic="uncategori
     body = text
     if body is None and fetched_pdf:
         try:
-            extract = extract_pdf_text_func if extract_pdf_text_func is not None else extract_pdf_text
+            extract = (
+                extract_pdf_text_func if extract_pdf_text_func is not None else extract_pdf_text
+            )
             body = extract(pdf_destination)
             provenance["extraction_method"] = "pypdf"
         except (ValueError, PdfReadError) as exc:
@@ -1059,7 +1149,8 @@ def _format_results_text(results, failures):
         else:
             lines.append("  pdf: none (text-only archive)")
         lines.append(
-            "  chain: " + ", ".join(f"{step['source']} {step['outcome']}" for step in result["source_chain"])
+            "  chain: "
+            + ", ".join(f"{step['source']} {step['outcome']}" for step in result["source_chain"])
         )
     if failures:
         lines.append(f"{failures} reference(s) failed; see stderr for details")
@@ -1079,7 +1170,7 @@ def main():
 
     sci_hub_mirrors = None
     if args.sci_hub_mirror:
-        sci_hub_mirrors = [args.sci_hub_mirror] + SCIHUB_MIRRORS
+        sci_hub_mirrors = [args.sci_hub_mirror, *SCIHUB_MIRRORS]
 
     references = [detect_reference_type(reference) for reference in args.reference]
     if args.url:
@@ -1122,7 +1213,9 @@ def main():
     med_db_module.sync_index(med_db, fulltext_updates=fulltext_updates)
 
     if args.format == "json":
-        print(json.dumps({"downloaded": results, "failures": failures}, indent=2, ensure_ascii=False))
+        print(
+            json.dumps({"downloaded": results, "failures": failures}, indent=2, ensure_ascii=False)
+        )
     else:
         print(_format_results_text(results, failures))
 

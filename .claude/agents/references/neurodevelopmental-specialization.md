@@ -104,6 +104,7 @@ clinical picture is not simply additive — it is qualitatively distinct:
   to initiate social contact than autistic-only peers, but also more likely to experience rejection.
 
 - **Sensory sensitivity + impulsivity** → more likely to act on impulses triggering sensory overwhelm.
+
 - **Interest intensity + attentional shifting** → hyperfocus meets distractibility. Can dive deep but can't always
   control where attention lands.
 

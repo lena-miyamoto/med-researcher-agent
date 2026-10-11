@@ -119,9 +119,17 @@ def main():
     args = parse_args()
     try:
         result = fetch_wikipedia_summary(args.lang, args.title)
-    except (LookupError, urllib.error.HTTPError, urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
+    except (
+        LookupError,
+        urllib.error.HTTPError,
+        urllib.error.URLError,
+        OSError,
+        json.JSONDecodeError,
+    ) as exc:
         if args.format == "json":
-            print(json.dumps({"title": args.title, "error": str(exc)}, indent=2, ensure_ascii=False))
+            print(
+                json.dumps({"title": args.title, "error": str(exc)}, indent=2, ensure_ascii=False)
+            )
         else:
             print(f"error: {exc}", file=sys.stderr)
         return 1
