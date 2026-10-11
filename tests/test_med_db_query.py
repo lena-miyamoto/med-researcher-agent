@@ -1226,3 +1226,215 @@ class TestIdentifiersOnlyExtended:
         assert all("adhd" in line for line in out)
         assert any("pubmed-a" in line for line in out)
         assert any("epmc-b" in line for line in out)
+
+
+# ---------------------------------------------------------------------------
+# stats
+# ---------------------------------------------------------------------------
+
+
+class TestStats:
+    def test_empty_archive(self, tmp_path):
+        counts = mq.stats(tmp_path)
+        assert counts == {
+            "searches": 0,
+            "papers": 0,
+            "fulltext": 0,
+            "guidelines": 0,
+            "web": 0,
+            "dictionary": 0,
+        }
+
+    def test_missing_directories(self, tmp_path):
+        (tmp_path / "papers" / "adhd").mkdir(parents=True)
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-test")
+        counts = mq.stats(tmp_path)
+        assert counts["papers"] == 1
+        assert counts["searches"] == 0
+        assert counts["web"] == 0
+
+    def test_all_categories_populated(self, tmp_path):
+        _make_search_json(
+            tmp_path / "searches" / "adhd" / "pubmed-a.json", "pubmed", ["1"], query="ADHD"
+        )
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-test")
+        _make_paper(tmp_path, "papers/adhd/pmid-22222-test")
+        _make_paper(tmp_path, "fulltext/adhd/pmid-11111-test")
+        guideline_file = tmp_path / "guidelines" / "adhd" / "source.md"
+        guideline_file.parent.mkdir(parents=True)
+        guideline_file.write_text("---\ntitle: x\n---\nbody\n", encoding="utf-8")
+        (tmp_path / "web" / "adhd").mkdir(parents=True)
+        (tmp_path / "web" / "adhd" / "page.html").write_text("<html></html>", encoding="utf-8")
+        (tmp_path / "dictionary" / "vitamin-d").mkdir(parents=True)
+        (tmp_path / "dictionary" / "vitamin-d" / "metadata.json").write_text("{}", encoding="utf-8")
+
+        counts = mq.stats(tmp_path)
+        assert counts["searches"] == 1
+        assert counts["papers"] == 2
+        assert counts["fulltext"] == 1
+        assert counts["guidelines"] == 1
+        assert counts["web"] == 1
+        assert counts["dictionary"] == 1
+
+    def test_guidelines_counted_once_per_directory(self, tmp_path):
+        adhd_dir = tmp_path / "guidelines" / "adhd"
+        adhd_dir.mkdir(parents=True)
+        (adhd_dir / "source.md").write_text("---\nterm: x\n---\nbody\n", encoding="utf-8")
+        (adhd_dir / "source.de.md").write_text("---\nterm: x\n---\nInhalt\n", encoding="utf-8")
+        counts = mq.stats(tmp_path)
+        assert counts["guidelines"] == 1
+
+
+# ---------------------------------------------------------------------------
+# read-source
+# ---------------------------------------------------------------------------
+
+
+class TestReadSource:
+    def make_guideline_source(self, tmp_path, rel_path, frontmatter="title: x", body="Body line"):
+        source_file = tmp_path / rel_path
+        source_file.parent.mkdir(parents=True, exist_ok=True)
+        source_file.write_text(f"---\n{frontmatter}\n---\n\n{body}\n", encoding="utf-8")
+        return source_file
+
+    def test_reads_single_file(self, tmp_path):
+        self.make_guideline_source(tmp_path, "guidelines/adhd/source.md")
+        result = mq.read_source(tmp_path, "guidelines/adhd/source.md")
+        assert result["path"] == "guidelines/adhd/source.md"
+        assert result["content"].startswith("---\ntitle: x")
+
+    def test_reads_directory_with_single_source(self, tmp_path):
+        self.make_guideline_source(tmp_path, "guidelines/adhd/source.md")
+        result = mq.read_source(tmp_path, "guidelines/adhd")
+        assert result["path"] == "guidelines/adhd/source.md"
+        assert "content" in result
+
+    def test_reads_directory_with_multiple_sources(self, tmp_path):
+        self.make_guideline_source(tmp_path, "guidelines/adhd/source.md")
+        self.make_guideline_source(
+            tmp_path, "guidelines/adhd/source.de.md", frontmatter="sprache: de", body="Inhalt"
+        )
+        result = mq.read_source(tmp_path, "guidelines/adhd")
+        assert result["path"] == "guidelines/adhd"
+        assert set(result["files"]) == {
+            "guidelines/adhd/source.md",
+            "guidelines/adhd/source.de.md",
+        }
+
+    def test_body_only_strips_frontmatter(self, tmp_path):
+        self.make_guideline_source(tmp_path, "guidelines/adhd/source.md")
+        result = mq.read_source(tmp_path, "guidelines/adhd/source.md", body_only=True)
+        assert result["content"] == "Body line\n"
+
+    def test_body_only_without_frontmatter_returns_content_unchanged(self, tmp_path):
+        source_file = tmp_path / "guidelines" / "adhd" / "source.md"
+        source_file.parent.mkdir(parents=True)
+        source_file.write_text("Plain body only.\n", encoding="utf-8")
+        result = mq.read_source(tmp_path, "guidelines/adhd/source.md", body_only=True)
+        assert result["content"] == "Plain body only.\n"
+
+    def test_body_only_keeps_incomplete_frontmatter(self, tmp_path):
+        source_file = tmp_path / "guidelines" / "adhd" / "source.md"
+        source_file.parent.mkdir(parents=True)
+        source_file.write_text("---\nnever closed\n", encoding="utf-8")
+        result = mq.read_source(tmp_path, "guidelines/adhd/source.md", body_only=True)
+        assert result["content"] == "---\nnever closed\n"
+
+    def test_missing_path_returns_error(self, tmp_path):
+        result = mq.read_source(tmp_path, "guidelines/nonexistent")
+        assert result == {"error": "path not found: guidelines/nonexistent"}
+
+    def test_directory_without_source_files_returns_error(self, tmp_path):
+        (tmp_path / "guidelines" / "adhd").mkdir(parents=True)
+        result = mq.read_source(tmp_path, "guidelines/adhd")
+        assert result == {"error": "no source files in: guidelines/adhd"}
+
+    def test_falls_back_to_txt_files(self, tmp_path):
+        (tmp_path / "guidelines" / "adhd").mkdir(parents=True)
+        text_file = tmp_path / "guidelines" / "adhd" / "notes.txt"
+        text_file.write_text("Text fallback.\n", encoding="utf-8")
+        result = mq.read_source(tmp_path, "guidelines/adhd")
+        assert result["path"] == "guidelines/adhd/notes.txt"
+        assert result["content"] == "Text fallback.\n"
+
+
+class TestMainStatsAndReadSource:
+    def test_stats_json(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-test")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", ["med-db-query", "--med-db", str(tmp_path), "--stats"])
+            mq.main()
+
+        out = json.loads(capsys.readouterr().out)
+        assert out["papers"] == 1
+        assert out["searches"] == 0
+
+    def test_stats_text(self, tmp_path, capsys):
+        _make_paper(tmp_path, "papers/adhd/pmid-11111-test")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(
+                sys,
+                "argv",
+                ["med-db-query", "--med-db", str(tmp_path), "--stats", "--format", "text"],
+            )
+            mq.main()
+
+        out = capsys.readouterr().out
+        assert "med-db statistics:" in out
+        assert "papers:" in out
+
+    def test_read_source_text_with_body_only(self, tmp_path, capsys):
+        source_file = tmp_path / "guidelines" / "adhd" / "source.md"
+        source_file.parent.mkdir(parents=True)
+        source_file.write_text("---\ntitle: x\n---\n\nArchived body\n", encoding="utf-8")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--read-source",
+                    "guidelines/adhd",
+                    "--body-only",
+                    "--format",
+                    "text",
+                ],
+            )
+            mq.main()
+
+        out = capsys.readouterr().out
+        assert "Archived body" in out
+        assert "title: x" not in out
+
+    def test_read_source_json(self, tmp_path, capsys):
+        source_file = tmp_path / "guidelines" / "adhd" / "source.md"
+        source_file.parent.mkdir(parents=True)
+        source_file.write_text("body\n", encoding="utf-8")
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(
+                sys,
+                "argv",
+                [
+                    "med-db-query",
+                    "--med-db",
+                    str(tmp_path),
+                    "--read-source",
+                    "guidelines/adhd",
+                ],
+            )
+            mq.main()
+
+        out = json.loads(capsys.readouterr().out)
+        assert out["path"] == "guidelines/adhd/source.md"
+
+    def test_body_only_requires_read_source(self):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(sys, "argv", ["med-db-query", "--body-only", "--stats"])
+            with pytest.raises(SystemExit):
+                mq.parse_args()

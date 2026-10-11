@@ -8,6 +8,7 @@ from unittest import mock
 
 import med_db
 import pytest
+import utils
 
 # ---------------------------------------------------------------------------
 # slugify
@@ -1036,6 +1037,235 @@ class TestRemovePaperFolders:
         assert removed == ["papers/topic/pmid-33515606-some-title"]
         assert not paper_dir.exists()
         assert keep_dir.exists()
+
+
+# ---------------------------------------------------------------------------
+# remove_entry
+# ---------------------------------------------------------------------------
+
+
+def _make_paper(med_db_path, topic="adhd", name="pmid-1-test-paper"):
+    paper_dir = med_db_path / "papers" / topic / name
+    paper_dir.mkdir(parents=True)
+    (paper_dir / "metadata.json").write_text("{}", encoding="utf-8")
+    return paper_dir
+
+
+def _make_search(med_db_path, topic="adhd", name="pubmed-test.json"):
+    topic_dir = med_db_path / "searches" / topic
+    topic_dir.mkdir(parents=True, exist_ok=True)
+    search_file = topic_dir / name
+    search_file.write_text(
+        '{"esearchresult": {"querytranslation": "adhd[Title]"}}', encoding="utf-8"
+    )
+    return search_file
+
+
+def _make_web(med_db_path, topic="adhd", name="page.html"):
+    topic_dir = med_db_path / "web" / topic
+    topic_dir.mkdir(parents=True, exist_ok=True)
+    web_file = topic_dir / name
+    web_file.write_text("<html></html>", encoding="utf-8")
+    return web_file
+
+
+def _make_guideline(med_db_path, topic="adhd-therapy"):
+    guideline_dir = med_db_path / "guidelines" / topic
+    guideline_dir.mkdir(parents=True)
+    (guideline_dir / "source.md").write_text("---\ntitle: x\n---\nbody\n", encoding="utf-8")
+    return guideline_dir
+
+
+def _make_dictionary_term(med_db_path, slug="vitamin-d"):
+    term_dir = med_db_path / "dictionary" / slug
+    term_dir.mkdir(parents=True)
+    (term_dir / "metadata.json").write_text('{"term": "x"}', encoding="utf-8")
+    (term_dir / "source.md").write_text("---\nterm: x\n---\nbody\n", encoding="utf-8")
+    return term_dir
+
+
+class TestRemoveEntry:
+    def test_removes_existing_paper_entry(self, tmp_path):
+        paper_dir = _make_paper(tmp_path)
+        med_db.sync_index(tmp_path)
+        category = med_db.remove_entry(tmp_path, "papers/adhd/pmid-1-test-paper")
+        assert category == "papers"
+        assert not paper_dir.exists()
+
+    def test_removes_search_json_file(self, tmp_path):
+        search_file = _make_search(tmp_path)
+        med_db.sync_index(tmp_path)
+        category = med_db.remove_entry(tmp_path, "searches/adhd/pubmed-test.json")
+        assert category == "searches"
+        assert not search_file.exists()
+
+    def test_removes_web_html_file(self, tmp_path):
+        web_file = _make_web(tmp_path)
+        med_db.sync_index(tmp_path)
+        category = med_db.remove_entry(tmp_path, "web/adhd/page.html")
+        assert category == "web"
+        assert not web_file.exists()
+
+    def test_removes_guidelines_topic_dir(self, tmp_path):
+        guideline_dir = _make_guideline(tmp_path)
+        med_db.sync_index(tmp_path)
+        category = med_db.remove_entry(tmp_path, "guidelines/adhd-therapy")
+        assert category == "guidelines"
+        assert not guideline_dir.exists()
+
+    def test_removes_dictionary_term(self, tmp_path):
+        term_dir = _make_dictionary_term(tmp_path)
+        med_db.sync_index(tmp_path)
+        category = med_db.remove_entry(tmp_path, "dictionary/vitamin-d")
+        assert category == "dictionary"
+        assert not term_dir.exists()
+
+    def test_removes_stale_index_only_entry(self, tmp_path):
+        paper_dir = _make_paper(tmp_path)
+        med_db.sync_index(tmp_path)
+        # Delete the folder by hand, leaving a stale index entry behind.
+        utils.trash_or_rmtree(paper_dir)
+        category = med_db.remove_entry(tmp_path, "papers/adhd/pmid-1-test-paper")
+        assert category == "papers"
+        med_db.sync_index(tmp_path)
+        data = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
+        assert data["papers"] == []
+
+    def test_prunes_empty_parent_dirs(self, tmp_path):
+        _make_web(tmp_path, name="page-1.html")
+        _make_web(tmp_path, name="page-2.html")
+        med_db.sync_index(tmp_path)
+        med_db.remove_entry(tmp_path, "web/adhd/page-1.html")
+        # The topic dir survives because page-2.html still lives inside it.
+        assert (tmp_path / "web" / "adhd").is_dir()
+        med_db.remove_entry(tmp_path, "web/adhd/page-2.html")
+        # Now the topic dir is empty and pruned; the category root is preserved.
+        assert not (tmp_path / "web" / "adhd").exists()
+        assert (tmp_path / "web").is_dir()
+
+    def test_prunes_nested_container_dirs(self, tmp_path):
+        paper_dir = _make_paper(tmp_path, topic="adhd", name="pmid-1-test-paper")
+        med_db.sync_index(tmp_path)
+        med_db.remove_entry(tmp_path, "papers/adhd/pmid-1-test-paper")
+        assert not paper_dir.exists()
+        assert not (tmp_path / "papers" / "adhd").exists()
+        # The category root is preserved.
+        assert (tmp_path / "papers").is_dir()
+
+    def test_raises_lookup_error_when_nothing_exists(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        med_db.sync_index(tmp_path)
+        with pytest.raises(LookupError, match="no archive entry found"):
+            med_db.remove_entry(tmp_path, "papers/adhd/nonexistent")
+
+    def test_raises_value_error_on_unknown_category(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        with pytest.raises(ValueError, match="known archive category"):
+            med_db.remove_entry(tmp_path, "unknown/foo/bar")
+
+    def test_raises_value_error_on_container_path(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        # A category root, a topic dir, or a term-less grouping is not an entry.
+        with pytest.raises(ValueError, match="full archive entry"):
+            med_db.remove_entry(tmp_path, "papers")
+        with pytest.raises(ValueError, match="full archive entry"):
+            med_db.remove_entry(tmp_path, "papers/adhd")
+        with pytest.raises(ValueError, match="full archive entry"):
+            med_db.remove_entry(tmp_path, "searches/adhd")
+        with pytest.raises(ValueError, match="full archive entry"):
+            med_db.remove_entry(tmp_path, "web/adhd")
+        with pytest.raises(ValueError, match="full archive entry"):
+            med_db.remove_entry(tmp_path, "guidelines")
+        with pytest.raises(ValueError, match="full archive entry"):
+            med_db.remove_entry(tmp_path, "dictionary")
+
+    def test_raises_value_error_on_path_escape(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        with pytest.raises(ValueError, match="escapes"):
+            med_db.remove_entry(tmp_path, "papers/../../outside")
+
+    def test_raises_value_error_on_empty_path(self, tmp_path):
+        med_db.ensure_med_db_structure(tmp_path)
+        with pytest.raises(ValueError, match="empty"):
+            med_db.remove_entry(tmp_path, "")
+
+
+class TestMainRemove:
+    def test_remove_path_removes_entry(self, tmp_path, capsys):
+        med_db.ensure_med_db_structure(tmp_path)
+        search_file = _make_search(tmp_path)
+        med_db.sync_index(tmp_path)
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "med-db.py",
+                "--med-db",
+                str(tmp_path),
+                "--remove",
+                "--path",
+                "searches/adhd/pubmed-test.json",
+            ],
+        ):
+            exit_code = med_db.main()
+        captured = capsys.readouterr()
+        assert exit_code == 0
+        assert "Removed searches entry" in captured.out
+        assert not search_file.exists()
+
+    def test_remove_nonexistent_path_fails(self, tmp_path, capsys):
+        with mock.patch.object(
+            sys,
+            "argv",
+            [
+                "med-db.py",
+                "--med-db",
+                str(tmp_path),
+                "--remove",
+                "--path",
+                "papers/adhd/nonexistent",
+            ],
+        ):
+            exit_code = med_db.main()
+        captured = capsys.readouterr()
+        assert exit_code == 1
+        assert "error" in captured.err
+
+    def test_remove_requires_path(self):
+        with (
+            mock.patch.object(sys, "argv", ["med-db.py", "--remove"]),
+            pytest.raises(SystemExit),
+        ):
+            med_db.parse_args()
+
+    def test_path_requires_remove(self):
+        with (
+            mock.patch.object(sys, "argv", ["med-db.py", "--path", "papers/a/b"]),
+            pytest.raises(SystemExit),
+        ):
+            med_db.parse_args()
+
+    def test_remove_conflicts_with_archive_flags(self):
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                ["med-db.py", "--remove", "--path", "papers/a/b", "--pmid", "1"],
+            ),
+            pytest.raises(SystemExit),
+        ):
+            med_db.parse_args()
+
+    def test_remove_conflicts_with_remove_pmid(self):
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                ["med-db.py", "--remove", "--path", "papers/a/b", "--remove-pmid", "1"],
+            ),
+            pytest.raises(SystemExit),
+        ):
+            med_db.parse_args()
 
 
 # ---------------------------------------------------------------------------

@@ -676,6 +676,68 @@ class TestCheckEmptyFiles:
         assert len(findings) == 1
 
 
+class TestCheckNoLooseFiles:
+    def test_clean_root(self, tmp_path):
+        (tmp_path / "index.json").write_text("{}")
+        (tmp_path / "papers").mkdir()
+        findings = []
+        utils.check_no_loose_files(tmp_path, findings)
+        assert findings == []
+
+    def test_loose_file_flagged(self, tmp_path):
+        (tmp_path / "index.json").write_text("{}")
+        (tmp_path / "stray.txt").write_text("content")
+        findings = []
+        utils.check_no_loose_files(tmp_path, findings)
+        assert len(findings) == 1
+        assert findings[0]["severity"] == "error"
+        assert "Loose file" in findings[0]["description"]
+        assert "stray.txt" in findings[0]["description"]
+
+    def test_files_inside_directories_not_flagged(self, tmp_path):
+        (tmp_path / "papers").mkdir()
+        (tmp_path / "papers" / "something.txt").write_text("content")
+        findings = []
+        utils.check_no_loose_files(tmp_path, findings)
+        assert findings == []
+
+
+class TestCheckNoIntermediateFiles:
+    def test_clean_archive(self, tmp_path):
+        (tmp_path / "papers").mkdir()
+        (tmp_path / "papers" / "paper").mkdir()
+        (tmp_path / "papers" / "paper" / "metadata.json").write_text("{}")
+        findings = []
+        utils.check_no_intermediate_files(tmp_path, findings)
+        assert findings == []
+
+    def test_web_html_not_flagged(self, tmp_path):
+        (tmp_path / "web" / "adhd").mkdir(parents=True)
+        (tmp_path / "web" / "adhd" / "page.html").write_text("<html></html>")
+        findings = []
+        utils.check_no_intermediate_files(tmp_path, findings)
+        assert findings == []
+
+    def test_html_under_papers_flagged(self, tmp_path):
+        (tmp_path / "papers" / "adhd" / "paper").mkdir(parents=True)
+        intermediate = tmp_path / "papers" / "adhd" / "paper" / "fulltext.html"
+        intermediate.write_text("<html></html>")
+        findings = []
+        utils.check_no_intermediate_files(tmp_path, findings)
+        assert len(findings) == 1
+        assert findings[0]["severity"] == "error"
+        assert "Intermediate HTML file" in findings[0]["description"]
+        assert "papers/adhd/paper/fulltext.html" in findings[0]["location"]
+
+    def test_htm_suffix_flagged(self, tmp_path):
+        (tmp_path / "fulltext" / "paper").mkdir(parents=True)
+        (tmp_path / "fulltext" / "paper" / "page.htm").write_text("<html></html>")
+        findings = []
+        utils.check_no_intermediate_files(tmp_path, findings)
+        assert len(findings) == 1
+        assert "Intermediate HTM file" in findings[0]["description"]
+
+
 # ---------------------------------------------------------------------------
 # Integrity check — index validation
 # ---------------------------------------------------------------------------
@@ -1155,6 +1217,50 @@ class TestRunIntegrityCheck:
         findings = utils.run_integrity_check(tmp_path)
         assert findings == []
 
+    def _make_clean_archive(self, tmp_path, index=None):
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
+            (tmp_path / name).mkdir()
+        full_index = {
+            "searches": [],
+            "papers": [],
+            "fulltext": [],
+            "guidelines": [],
+            "web": [],
+            "dictionary": [],
+        }
+        if index:
+            full_index.update(index)
+        (tmp_path / "index.json").write_text(json.dumps(full_index))
+
+    def test_loose_file_reported(self, tmp_path):
+        self._make_clean_archive(tmp_path)
+        (tmp_path / "stray.txt").write_text("content")
+        findings = utils.run_integrity_check(tmp_path)
+        assert any("Loose file" in f["description"] for f in findings)
+
+    def test_intermediate_html_reported(self, tmp_path):
+        self._make_clean_archive(tmp_path)
+        (tmp_path / "papers" / "adhd").mkdir()
+        (tmp_path / "papers" / "adhd" / "paper.html").write_text("<html></html>")
+        findings = utils.run_integrity_check(tmp_path)
+        assert any("Intermediate HTML" in f["description"] for f in findings)
+
+    def test_web_html_not_flagged(self, tmp_path):
+        self._make_clean_archive(tmp_path, index={"web": [{"path": "web/adhd/page.html"}]})
+        (tmp_path / "web" / "adhd").mkdir()
+        (tmp_path / "web" / "adhd" / "page.html").write_text("<html></html>")
+        findings = utils.run_integrity_check(tmp_path)
+        assert findings == []
+
+    def test_structural_checks_run_when_dirs_missing(self, tmp_path):
+        # The file-level checks are structural and must run even when a
+        # required directory is missing (fatal gate applies afterward).
+        (tmp_path / "papers").mkdir()
+        (tmp_path / "stray.txt").write_text("content")
+        findings = utils.run_integrity_check(tmp_path)
+        assert any("Required top-level directory is missing" in f["description"] for f in findings)
+        assert any("Loose file" in f["description"] for f in findings)
+
 
 class TestVerifyAndReportIntegrity:
     def test_clean_returns_zero(self, tmp_path, capsys):
@@ -1177,3 +1283,101 @@ class TestVerifyAndReportIntegrity:
         assert result == 1
         captured = capsys.readouterr()
         assert "FAILED" in captured.err
+
+
+# ---------------------------------------------------------------------------
+# source-md line-length linting
+# ---------------------------------------------------------------------------
+
+
+class TestNormalizeSourceMd:
+    def test_wraps_long_line(self, tmp_path):
+        source_file = tmp_path / "source.md"
+        source_file.write_text("word " * 40, encoding="utf-8")
+        assert utils._normalize_source_md(source_file) is True
+        for line in source_file.read_text(encoding="utf-8").splitlines():
+            assert len(line) <= utils.SOURCE_LINE_LENGTH
+
+    def test_short_line_is_noop(self, tmp_path):
+        source_file = tmp_path / "source.md"
+        source_file.write_text("Short line.\n", encoding="utf-8")
+        assert utils._normalize_source_md(source_file) is False
+        assert source_file.read_text(encoding="utf-8") == "Short line.\n"
+
+    def test_long_frontmatter_line_untouched(self, tmp_path):
+        source_file = tmp_path / "source.md"
+        long_title = "title: " + "x" * 200
+        source_file.write_text(f"---\n{long_title}\n---\nShort body.\n", encoding="utf-8")
+        assert utils._normalize_source_md(source_file) is False
+        assert long_title in source_file.read_text(encoding="utf-8")
+
+    def test_preserves_indentation(self, tmp_path):
+        source_file = tmp_path / "source.md"
+        source_file.write_text("  " + "word " * 40, encoding="utf-8")
+        assert utils._normalize_source_md(source_file) is True
+        lines = source_file.read_text(encoding="utf-8").splitlines()
+        assert all(line.startswith("  ") for line in lines)
+
+
+class TestLintSourceMd:
+    def test_no_violations_returns_zero(self, tmp_path, capsys):
+        source_file = tmp_path / "source.md"
+        source_file.write_text("Short line.\n", encoding="utf-8")
+        result = utils.lint_source_md(["--check-source-md", str(source_file)])
+        assert result == 0
+        assert capsys.readouterr().out == ""
+
+    def test_long_line_flagged(self, tmp_path, capsys):
+        source_file = tmp_path / "source.md"
+        source_file.write_text("x" * 130 + "\n", encoding="utf-8")
+        result = utils.lint_source_md(["--check-source-md", str(source_file)])
+        assert result == 1
+        out = capsys.readouterr().out
+        assert "line length 130 > 120" in out
+        assert ":1:" in out
+
+    def test_frontmatter_long_line_skipped(self, tmp_path, capsys):
+        source_file = tmp_path / "source.md"
+        source_file.write_text(f"---\ntitle: {'x' * 200}\n---\nShort body.\n", encoding="utf-8")
+        result = utils.lint_source_md(["--check-source-md", str(source_file)])
+        assert result == 0
+
+    def test_directory_is_recursed(self, tmp_path):
+        nested = tmp_path / "guidelines" / "adhd"
+        nested.mkdir(parents=True)
+        (nested / "source.md").write_text("x" * 130 + "\n", encoding="utf-8")
+        result = utils.lint_source_md(["--check-source-md", str(tmp_path)])
+        assert result == 1
+
+    def test_missing_operand_returns_usage_error(self, capsys):
+        result = utils.lint_source_md(["--check-source-md"])
+        assert result == 2
+        assert "usage: lint-md" in capsys.readouterr().err
+
+    def test_non_markdown_path_returns_two(self, tmp_path, capsys):
+        text_file = tmp_path / "notes.txt"
+        text_file.write_text("content", encoding="utf-8")
+        result = utils.lint_source_md(["--check-source-md", str(text_file)])
+        assert result == 2
+        assert "not a markdown file or directory" in capsys.readouterr().err
+
+    def test_unrelated_flag_returns_minus_one(self):
+        assert utils.lint_source_md(["--other-flag"]) == -1
+        assert utils.lint_source_md([]) == -1
+
+    def test_fix_normalizes_and_reports(self, tmp_path, capsys):
+        source_file = tmp_path / "source.md"
+        source_file.write_text("word " * 40, encoding="utf-8")
+        result = utils.lint_source_md(["--fix-source-md", str(source_file)])
+        assert result == 0
+        out = capsys.readouterr().out
+        assert "normalized 1 of 1 archive markdown file(s)" in out
+        for line in source_file.read_text(encoding="utf-8").splitlines():
+            assert len(line) <= utils.SOURCE_LINE_LENGTH
+
+    def test_fix_unchanged_file_reported_as_zero(self, tmp_path, capsys):
+        source_file = tmp_path / "source.md"
+        source_file.write_text("Short line.\n", encoding="utf-8")
+        result = utils.lint_source_md(["--fix-source-md", str(source_file)])
+        assert result == 0
+        assert "normalized 0 of 1 archive markdown file(s)" in capsys.readouterr().out

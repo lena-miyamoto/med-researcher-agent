@@ -514,6 +514,106 @@ class TestSourceChainOrder:
 
 
 # ---------------------------------------------------------------------------
+# --body-file (archive.is fallback)
+# ---------------------------------------------------------------------------
+
+
+def raise_network_call(*args, **kwargs):
+    raise AssertionError("network source must not be called when --body-file is given")
+
+
+class TestBodyFile:
+    def test_body_file_skips_network_chain(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
+        monkeypatch.setattr(paper, "fetch_fulltext_xml", raise_network_call)
+        monkeypatch.setattr(paper, "fetch_openalex_oa", raise_network_call)
+        monkeypatch.setattr(paper, "fetch_unpaywall_pdf_url", raise_network_call)
+        monkeypatch.setattr(paper, "fetch_publisher_pdf", raise_network_call)
+        monkeypatch.setattr(paper, "fetch_scihub_pdf_url", raise_network_call)
+        monkeypatch.setattr(paper, "download_binary", raise_network_call)
+        body_file = tmp_path / "scraped.txt"
+        body_file.write_text("Scraped archive.is text body.", encoding="utf-8")
+
+        result = paper.download_paper(
+            "pmid",
+            "35350465",
+            topic="test",
+            med_db=tmp_path / "med-db",
+            body_file=body_file,
+        )
+
+        assert result["status"] == "downloaded"
+        assert result["pdf"] is False
+        assert result["pdf_source"] is None
+        assert result["source_chain"] == [
+            {"source": "archive.is", "outcome": "ok", "detail": str(body_file)}
+        ]
+        folder = tmp_path / "med-db" / "fulltext" / "test" / "pmid-35350465-test-paper-title"
+        source_text = (folder / "source.md").read_text()
+        assert "Scraped archive.is text body." in source_text
+        assert "Full text from archive.is scrape; no PDF available" in source_text
+
+    def test_body_file_provenance_recorded(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
+        body_file = tmp_path / "scraped.txt"
+        body_file.write_text("Scraped text.", encoding="utf-8")
+
+        paper.download_paper(
+            "pmid",
+            "35350465",
+            topic="test",
+            med_db=tmp_path / "med-db",
+            body_file=body_file,
+        )
+
+        folder = tmp_path / "med-db" / "fulltext" / "test" / "pmid-35350465-test-paper-title"
+        meta = json.loads((folder / "metadata.json").read_text())
+        provenance = meta["provenance"]
+        assert provenance["extraction_method"] == "archive.is-scrape"
+        assert provenance["pdf_source"] is None
+        assert provenance["sci_hub_used"] is False
+        assert provenance["source_chain"] == [
+            {"source": "archive.is", "outcome": "ok", "detail": str(body_file)}
+        ]
+        assert not (folder / "paper.pdf").exists()
+
+    def test_unreadable_body_file_raises_without_creating_folder(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(paper, "resolve_metadata", lambda *a, **k: fake_resolved())
+        med_db_path = tmp_path / "med-db"
+        missing = tmp_path / "does-not-exist.txt"
+
+        with pytest.raises(RuntimeError, match="could not read --body-file"):
+            paper.download_paper(
+                "pmid",
+                "35350465",
+                topic="test",
+                med_db=med_db_path,
+                body_file=missing,
+            )
+
+        assert not (med_db_path / "fulltext" / "test" / "pmid-35350465-test-paper-title").exists()
+
+    def test_body_file_requires_reference_or_title(self, tmp_path):
+        body_file = tmp_path / "scraped.txt"
+        body_file.write_text("Scraped text.", encoding="utf-8")
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "med-db-download-paper.py",
+                    "--body-file",
+                    str(body_file),
+                    "--topic",
+                    "test",
+                ],
+            ),
+            pytest.raises(SystemExit),
+        ):
+            paper.main()
+
+
+# ---------------------------------------------------------------------------
 # End-to-end via main()
 # ---------------------------------------------------------------------------
 
