@@ -729,6 +729,97 @@ def remove_paper_folders(med_db, folder_prefix):
 
 
 # ---------------------------------------------------------------------------
+# Entry removal
+# ---------------------------------------------------------------------------
+
+
+ARCHIVE_CATEGORIES = ("searches", "papers", "fulltext", "guidelines", "web", "dictionary")
+
+# Minimum path depth (in path components) for a full archive entry per
+# category.  Guards against accidentally removing a container directory such
+# as ``papers`` or ``papers/adhd`` (a topic with multiple papers).
+_ENTRY_MIN_DEPTH = {
+    "searches": 3,  # searches/<topic>/<search>.json
+    "papers": 3,  # papers/<topic>/<paper>
+    "fulltext": 3,  # fulltext/<topic>/<paper>
+    "guidelines": 2,  # guidelines/<topic>
+    "web": 3,  # web/<topic>/<page>.html
+    "dictionary": 2,  # dictionary/<term-slug>
+}
+
+
+def remove_entry(med_db, path):
+    """Remove the archive entry at *path* from disk and return its category.
+
+    Trashes the entry (a directory, or a single file such as a search JSON or
+    web HTML snapshot) when present, then prunes now-empty parent directories
+    up to (but not including) the category root.  The caller re-syncs
+    index.json afterward, which drops the entry because it no longer exists on
+    disk.  A path that exists only in index.json (its file already deleted) is
+    still accepted so the stale index entry can be dropped on the following
+    sync.
+
+    Raises ``ValueError`` for a malformed, too-shallow, or out-of-tree path,
+    ``LookupError`` when nothing exists at *path* (neither on disk nor in
+    index.json).
+    """
+    root = Path(med_db)
+    path = str(path).strip("/")
+    parts = Path(path).parts
+    if not parts:
+        raise ValueError("empty --path")
+
+    category = parts[0]
+    if category not in ARCHIVE_CATEGORIES:
+        raise ValueError(f"--path is not under a known archive category: {path}")
+
+    if len(parts) < _ENTRY_MIN_DEPTH[category]:
+        raise ValueError(f"--path is not a full archive entry: {path}")
+
+    target = (root / path).resolve()
+    root_resolved = root.resolve()
+    if not target.is_relative_to(root_resolved) or target == root_resolved:
+        raise ValueError(f"--path escapes the archive root: {path}")
+
+    existed = target.is_dir() or target.is_file()
+
+    in_index = False
+    index_path = root / "index.json"
+    if index_path.is_file():
+        try:
+            data = json.loads(index_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            data = {}
+        for cat in ARCHIVE_CATEGORIES:
+            if any(entry.get("path") == path for entry in data.get(cat, [])):
+                in_index = True
+                break
+
+    if not existed and not in_index:
+        raise LookupError(f"no archive entry found at path '{path}'")
+
+    if existed:
+        if target.is_dir():
+            utils.trash_or_rmtree(target)
+        else:
+            utils._trash_or_unlink(target)
+        _prune_empty_parents(target.parent, root / category)
+
+    return category
+
+
+def _prune_empty_parents(directory, stop_at):
+    """Trash empty ancestor directories up to (but not including) *stop_at*."""
+    stop = Path(stop_at).resolve()
+    current = Path(directory).resolve()
+    while current != stop and current.is_relative_to(stop):
+        if not current.is_dir() or any(current.iterdir()):
+            break
+        utils.trash_or_rmtree(current)
+        current = current.parent
+
+
+# ---------------------------------------------------------------------------
 # Migration from old flat structure
 # ---------------------------------------------------------------------------
 
@@ -876,6 +967,15 @@ def parse_args():
         help="Remove archived papers by Europe PMC record (SOURCE:ID). May be passed multiple times.",
     )
     parser.add_argument(
+        "--remove",
+        action="store_true",
+        help="Remove the archive entry at --path (folder, search JSON, or web HTML). Requires --path.",
+    )
+    parser.add_argument(
+        "--path",
+        help="Archive-relative path of the entry to remove. Requires --remove.",
+    )
+    parser.add_argument(
         "--archive-first",
         type=int,
         default=0,
@@ -929,6 +1029,25 @@ def parse_args():
         help="Output only created folder paths, one per line.",
     )
     args = parser.parse_args()
+
+    if args.remove or args.path is not None:
+        if not args.remove:
+            parser.error("--path requires --remove")
+        if not args.path:
+            parser.error("--remove requires --path")
+        if (
+            args.query
+            or args.pmid
+            or args.epmc_record
+            or args.doi
+            or args.archive_first
+            or args.remove_pmid
+            or args.remove_epmc_record
+            or args.migrate
+            or args.migrate_dry_run
+        ):
+            parser.error("--remove/--path cannot be combined with archival or migration options")
+        return args
 
     if args.migrate or args.migrate_dry_run:
         return args
@@ -1034,6 +1153,18 @@ def main():
                 print(f"removed: {rel}")
         else:
             print("no matching papers found", file=sys.stderr)
+        if utils.verify_and_report_integrity(med_db) != 0:
+            return 1
+        return 0
+
+    if args.remove:
+        try:
+            category = remove_entry(med_db, args.path)
+        except (ValueError, LookupError, OSError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(f"Removed {category} entry: {args.path}")
+        sync_index(med_db)
         if utils.verify_and_report_integrity(med_db) != 0:
             return 1
         return 0
