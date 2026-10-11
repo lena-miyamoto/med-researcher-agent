@@ -13,7 +13,8 @@
 ## Source Of Truth
 
 - `.claude/` owns skills/agents/scripts; `.github/` holds thin wrappers only. Shared utilities: `.claude/scripts/utils.py` (extract helpers used by ≥2 scripts; don't pre-emptively generalize).
-- Instruction files must not cite generated, ignored, or archive output paths as templates, exemplars, or sources of truth.
+- Instruction files under `.claude/` must never reference the `med-db` archive by file path or CLI command — `med-db/` is gitignored and regenerated per checkout, so such references break on a fresh machine. Refer to the `med-db` skill by name only. Exception: the `med-db` skill's own files (`.claude/skills/med-db/SKILL.md` and `.claude/agents/references/med-db-commands.md`) are the sole owners of those paths and commands. Never cite generated, ignored, or archive output paths as templates, exemplars, or sources of truth.
+- Repo-owned content (DSM-5-TR and ICD-11 mental-health codes, therapy methodology guidelines, research briefs) lives in version-controlled files under `.claude/`; copyrighted or external content is fetched via the `med-db` skill at first init.
 - German prose: standard orthography (umlauts, `ß`), unless requested.
 
 ## Working Rules

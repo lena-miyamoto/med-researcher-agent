@@ -2,7 +2,7 @@
 
 [global]
 disable = ["MD013", "MD041"]
-exclude = [".git", ".pytest_cache", ".ruff_cache", ".rumdl_cache", ".venv", "venv", "tmp", "temp", "sessions", "med-db", "workouts", "diet-plans"]
+exclude = [".git", ".pytest_cache", ".ruff_cache", ".rumdl_cache", ".venv", "venv", "tmp", "temp", "sessions", "workouts", "diet-plans"]
 respect-gitignore = true
 
 [MD004]

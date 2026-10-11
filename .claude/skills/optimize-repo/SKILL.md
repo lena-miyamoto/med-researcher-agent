@@ -1,7 +1,7 @@
 ---
 name: optimize-repo
 description: >
-             Optimize this repo''s instruction, skill, and agent files: cut redundancy, restore source-of-truth
+             Optimize this repo's instruction, skill, and agent files: cut redundancy, restore source-of-truth
              ownership, keep Copilot and Claude surfaces aligned. Use when cleaning up customization files in this
              workspace.
 argument-hint: 'Scope to optimize; report-only or apply fixes'
@@ -24,7 +24,7 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 
 | Surface                                                   | Owner / Shape                                                                                                                                       |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Repo workflow, command contract, bootstrap, command table | `CLAUDE.md`; shared constitution, keep compact (under 150 lines hard max per context-engineering-best-practices).                                   |
+| Repo workflow, command contract                           | `CLAUDE.md`; shared constitution, keep compact (under 150 lines hard max per context-engineering-best-practices).                                   |
 | Copilot entrypoint                                        | `.github/copilot-instructions.md`; thin pointer to `CLAUDE.md` and Copilot wrappers.                                                                |
 | Claude entrypoint                                         | `CLAUDE.md`; shared constitution loaded directly.                                                                                                   |
 | Copilot router                                            | `AGENTS.md`; thin Copilot-specific pointer to `CLAUDE.md`.                                                                                          |
@@ -39,18 +39,20 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 
 Skills and docs must point to these owner files instead of restating their rules.
 
-| Domain                                                 | Owner                                                                           |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| Archive layout, naming, frontmatter, required tools    | `CLAUDE.md` (Medical DB section)                                                |
-| Command invocation contract (`uv run ...` only)        | `CLAUDE.md` (Command Contract section)                                          |
-| Bootstrap after fresh checkout                         | `CLAUDE.md` (Medical DB section)                                                |
-| Canonical markdown lint command (`uv run lint-md`)     | `CLAUDE.md` (Command Contract section)                                          |
-| Markdown lint config                                   | `.rumdl.toml`                                                                   |
-| Evidence hierarchy, quality standards, search protocol | `.claude/agents/med-researcher.md`                                              |
-| Harms/safety search, counter-evidence requirements     | `.claude/agents/med-researcher.md`                                              |
-| Research output format                                 | `.claude/agents/med-researcher.md`                                              |
-| Context engineering best practices                     | `.claude/skills/optimize-repo/references/context-engineering-best-practices.md` |
-| Shared Python utilities                                | `.claude/scripts/utils.py`                                                      |
+| Domain                                                 | Owner                                                                                                           |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Archive layout, naming, frontmatter, required tools    | `med-db` skill (`.claude/skills/med-db/SKILL.md`)                                                               |
+| Command invocation contract (`uv run ...` only)        | `CLAUDE.md` (Command Contract section)                                                                          |
+| Bootstrap after fresh checkout                         | `med-db` skill (`.claude/skills/med-db/SKILL.md`)                                                               |
+| Diagnostic content (DSM-5-TR, ICD-11 mental health)    | `.claude/agents/references/dsm5-tr-classification.md`, `.claude/agents/references/icd11-mental-health-codes.md` |
+| Therapy methodology content                            | `.claude/agents/references/therapy-methodologies.md`                                                            |
+| Canonical markdown lint command (`uv run lint-md`)     | `CLAUDE.md` (Command Contract section)                                                                          |
+| Markdown lint config                                   | `.rumdl.toml`                                                                                                   |
+| Evidence hierarchy, quality standards, search protocol | `.claude/agents/med-researcher.md`                                                                              |
+| Harms/safety search, counter-evidence requirements     | `.claude/agents/med-researcher.md`                                                                              |
+| Research output format                                 | `.claude/agents/med-researcher.md`                                                                              |
+| Context engineering best practices                     | `.claude/skills/optimize-repo/references/context-engineering-best-practices.md`                                 |
+| Shared Python utilities                                | `.claude/scripts/utils.py`                                                                                      |
 
 ## Procedure
 
@@ -125,9 +127,23 @@ After cleanup, grep for these patterns in all repo `*.md` files (excluding wrapp
 matches must only appear in the listed owner files.
 
 All `uv run med-db*` entry points (`med-db`, `med-db-lookup`, `med-db-query`, `med-db-lookup-icd11`,
-`med-db-lookup-dsm5`, `med-db-download-icd11`, `med-db-download-paper`, `med-db-setup-dsm5`,
-`med-db-setup-therapy-methods`, `med-db-integrity-check`)
+`med-db-download-icd11`, `med-db-download-paper`, `med-db-integrity-check`, `med-db-term`,
+`med-db-term-lookup`, `med-db-term-mesh`, `med-db-term-wikipedia`)
 → `.claude/skills/med-db/SKILL.md` and `.claude/agents/references/med-db-commands.md` only.
+
+`med-db/` filesystem paths, archive layout, `bootstrap`
+→ `.claude/skills/med-db/SKILL.md` and `.claude/agents/references/med-db-commands.md`. `gitignored`
+→ `.claude/skills/med-db/SKILL.md` only. Instruction files elsewhere refer to the `med-db` skill by
+name only — never by path or command.
+
+DSM-5-TR codes, names, categories
+→ `.claude/agents/references/dsm5-tr-classification.md` only.
+
+ICD-11 Chapter 06 (mental health) codes and titles
+→ `.claude/agents/references/icd11-mental-health-codes.md` only.
+
+Therapy methodology reference
+→ `.claude/agents/references/therapy-methodologies.md` only.
 
 `uv run test`, `uv run lint-md`
 → `CLAUDE.md` only (README may show examples).
