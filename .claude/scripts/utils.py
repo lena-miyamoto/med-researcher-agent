@@ -493,7 +493,7 @@ def parse_frontmatter(text):
 #
 # These functions are used by both the standalone med-db-integrity-check CLI
 # (thin wrapper in med-db-integrity-check.py) and by every script that modifies
-# med-db/ (med-db.py, med-db-setup-dsm5.py, etc.).  After a modification, call
+# med-db/ (med-db.py, med-db-download-icd11.py, etc.).  After a modification, call
 # ``verify_and_report_integrity(root)`` — it returns 0 on success and prints
 # actionable error details on failure so an agent can fix issues immediately.
 
@@ -1108,7 +1108,7 @@ def check_guideline_integrity(root, findings):
                     CATEGORY_GUIDELINE,
                     rel,
                     "Guideline source.md is empty.",
-                    "Restore from backup or re-run the setup command (e.g. uv run med-db-setup-dsm5).",
+                    "Restore from backup or re-run the setup command (e.g. uv run med-db-download-icd11).",
                 )
             )
 

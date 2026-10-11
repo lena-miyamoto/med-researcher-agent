@@ -7,8 +7,8 @@ description: >
 
 # med-db Developer Notes
 
-Internal directory structure and conventions. **Only relevant when extending the med-db script
-stack.** Agents and skills must never manipulate `med-db/` directly — all access goes through the
+Internal archive conventions. **Only relevant when extending the med-db script
+stack.** Agents and skills must never manipulate the archive directly — all access goes through the
 `uv run` entry points documented in `../agents/references/med-db-commands.md`.
 
 ## Development Workflow
@@ -21,10 +21,14 @@ stack.** Agents and skills must never manipulate `med-db/` directly — all acce
 - **`uv run lint-md`** after batch-editing tracked `*.md` files. Never `uv run rumdl` directly — only
   `uv run lint-md` (or `--fix`); wraps the linter with correct config (`.rumdl.toml`).
 
-## Directory Structure (`./med-db/`)
+## Directory Structure
 
-Lowercase kebab-case names. `./med-db/index.json` mandatory — every entry listed there.
-Update `index.json` with every new or moved archive.
+The `med-db` skill owns the user-facing archive layout. This section documents it from the script
+side — a deliberate, justified deviation, because the tool layer implements the layout and script
+developers need it here.
+
+Lowercase kebab-case names. `index.json` at the archive root is mandatory — every entry listed
+there. Update it with every new or moved archive.
 
 Required top-level categories:
 

@@ -7,8 +7,7 @@ fix hint.  Use ``--format json`` for machine-parseable output consumable by suba
 
 Thin CLI wrapper around the shared check library in ``utils.py``.  The same
 checks also run automatically at the end of every script that modifies med-db/
-(med-db.py, med-db-setup-dsm5.py, med-db-setup-therapy-methods.py,
-med-db-download-icd11.py).
+(med-db.py, med-db-download-icd11.py).
 """
 
 import argparse
