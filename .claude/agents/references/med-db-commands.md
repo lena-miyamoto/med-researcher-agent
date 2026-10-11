@@ -1,7 +1,7 @@
 ---
 description: >
   Complete `uv run` parameter reference covering all med-db entry points. Command tables for
-  archival, lookup, query, ICD-11, DSM-5-TR, therapy methods, and integrity check operations.
+  archival, lookup, query, ICD-11, and integrity check operations.
 ---
 
 # med-db Command Reference
@@ -221,28 +221,6 @@ At least one input required: `--reference`, `--title`, or `--url`. `--topic` is 
 
 ---
 
-## `uv run med-db-setup-dsm5` — DSM-5-TR Setup
-
-Generate DSM-5-TR classification data in `med-db/`. Integrity check runs on completion.
-
-| Parameter       | Type | Default | Description                                                |
-| --------------- | ---- | ------- | ---------------------------------------------------------- |
-| `--force`       | flag | off     | Regenerate `classification.json` even if it already exists |
-| `--verify-only` | flag | off     | Only verify presence; do not create or overwrite           |
-
----
-
-## `uv run med-db-setup-therapy-methods` — Therapy Methodology Setup
-
-Generate therapy methodology guideline files in `med-db/`. Integrity check runs on completion.
-
-| Parameter       | Type | Default | Description                                      |
-| --------------- | ---- | ------- | ------------------------------------------------ |
-| `--force`       | flag | off     | Regenerate all files even if they already exist  |
-| `--verify-only` | flag | off     | Only verify presence; do not create or overwrite |
-
----
-
 ## `uv run med-db-lookup-icd11` — ICD-11 Lookup (local, read-only)
 
 Fast local ICD-11 MMS lookup from downloaded WHO data. At least one query parameter required.
@@ -261,20 +239,3 @@ Fast local ICD-11 MMS lookup from downloaded WHO data. At least one query parame
 | `--children`       | flag   | off       | Include direct children in code lookup output                         |
 | `--format`         | choice | `json`    | Output format: `json` or `text`                                       |
 | `--title-only`     | flag   | off       | Output only the title text (for `--code`)                             |
-
----
-
-## `uv run med-db-lookup-dsm5` — DSM-5-TR Lookup (local, read-only)
-
-Fast local DSM-5-TR classification lookup. At least one of `--code`, `--keyword`, `--category`, or
-`--list-categories` required.
-
-| Parameter           | Type   | Default | Description                                         |
-| ------------------- | ------ | ------- | --------------------------------------------------- |
-| `--code`            | str    | —       | ICD-10-CM code (e.g. `F32.0`, `F90.2`)              |
-| `--keyword`         | str    | —       | Search disorder names by keyword (case-insensitive) |
-| `--category`        | str    | —       | Search diagnostic categories by keyword             |
-| `--list-categories` | flag   | `false` | List all DSM-5-TR diagnostic categories             |
-| `--limit`           | int    | `50`    | Max keyword search results                          |
-| `--format`          | choice | `json`  | Output format: `json` or `text`                     |
-| `--title-only`      | flag   | off     | Output only the disorder name (for `--code`)        |

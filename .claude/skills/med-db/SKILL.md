@@ -21,9 +21,8 @@ command contract, bootstrap logic, and the quick-reference command table.
 
 Any operation reading from or writing to the local `./med-db/` archive tree: checking whether
 a paper is archived; searching by keyword, topic, or PMID; reading metadata; listing contents;
-archiving via PMID, DOI, or search query; setting up diagnostic classifications (ICD-11,
-DSM-5-TR, therapy methodologies); looking up codes; syncing or validating the index; running
-integrity checks.
+archiving via PMID, DOI, or search query; setting up the ICD-11 classification; looking up ICD
+codes; syncing or validating the index; running integrity checks.
 
 Other skills (`analyze-med-claims`, `create-diet-plan`, `start-therapy-session`) and agents
 (med-researcher, psychotherapist, dietologist) delegate archive operations to this skill.
@@ -35,7 +34,7 @@ Other skills (`analyze-med-claims`, `create-diet-plan`, `start-therapy-session`)
   `node -e`, and every other ad-hoc snippet or shell tool.
 - The archive is a black box: **every read** goes through `uv run med-db-query ...` or
   `uv run med-db-lookup* ...` and **every write** goes through `uv run med-db ...` or
-  `uv run med-db-setup-* ...` or `uv run med-db-download-* ...`. There are zero exceptions.
+  `uv run med-db-download-* ...`. There are zero exceptions.
 - Do not run repo scripts with `python`, `python3`, direct script paths, absolute paths,
   or shebang execution. All repo Python tools run through `uv run ...` from the repo root.
 - **If the `uv run` tools don't support a query pattern you need, report it — do not work
@@ -46,16 +45,16 @@ Other skills (`analyze-med-claims`, `create-diet-plan`, `start-therapy-session`)
 These patterns violate the Command Contract. Each one has been observed
 in real sessions. **None of them are acceptable.**
 
-| Forbidden | Why | Use Instead |
-|---|---|---|
-| `python3 -c "import json; ..."` reading `index.json` | Bypasses validation layer | `uv run med-db-query --search-keyword "..."` |
-| `python3 -c "..."` for JSON post-processing | Tools have extraction flags for this | `uv run med-db-query ... --{identifiers,names,locations,title,abstract}-only` |
-| `python3 -c "..."` for any med-db operation | Direct file access, no integrity checks | `uv run med-db-lookup --pmid ...` |
-| `jq` / `cat` / `grep` on `med-db/index.json` | Bypasses the tool layer | `uv run med-db-query --list-topics` |
-| `jq` / `sed` / `awk` on JSON output | Extraction flags output plain text directly | `uv run med-db-query ... --identifiers-only` etc. |
-| `python3` or `python` in any form | Forbidden by CLAUDE.md contract | `uv run <entry-point>` |
-| `node -e`, `perl -e` touching med-db files | Same bypass, different language | `uv run med-db-*` tools |
-| `WebFetch` / `WebSearch` / `wget` / `curl` on a Wikipedia article | Scrapes raw HTML, bypasses the REST summary tool and its error contract | `uv run med-db-term-wikipedia --title "<English title>"` |
+| Forbidden                                                         | Why                                                                     | Use Instead                                                                   |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `python3 -c "import json; ..."` reading `index.json`              | Bypasses validation layer                                               | `uv run med-db-query --search-keyword "..."`                                  |
+| `python3 -c "..."` for JSON post-processing                       | Tools have extraction flags for this                                    | `uv run med-db-query ... --{identifiers,names,locations,title,abstract}-only` |
+| `python3 -c "..."` for any med-db operation                       | Direct file access, no integrity checks                                 | `uv run med-db-lookup --pmid ...`                                             |
+| `jq` / `cat` / `grep` on `med-db/index.json`                      | Bypasses the tool layer                                                 | `uv run med-db-query --list-topics`                                           |
+| `jq` / `sed` / `awk` on JSON output                               | Extraction flags output plain text directly                             | `uv run med-db-query ... --identifiers-only` etc.                             |
+| `python3` or `python` in any form                                 | Forbidden by CLAUDE.md contract                                         | `uv run <entry-point>`                                                        |
+| `node -e`, `perl -e` touching med-db files                        | Same bypass, different language                                         | `uv run med-db-*` tools                                                       |
+| `WebFetch` / `WebSearch` / `wget` / `curl` on a Wikipedia article | Scrapes raw HTML, bypasses the REST summary tool and its error contract | `uv run med-db-term-wikipedia --title "<English title>"`                      |
 
 ## Bootstrap
 
@@ -70,27 +69,35 @@ in real sessions. **None of them are acceptable.**
 - Query and lookup tools are read-only. If they report that `med-db/` is missing, run an
   archival command first.
 
+### What First Init Fetches
+
+The archive starts empty. On first init, two things are fetched (both between sessions):
+
+| Content            | How                                                                                                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Research papers    | Read the research briefs in `.claude/agents/references/research-brief-*.md`, then dispatch the `med-researcher` agent to archive the core PMIDs and run the search queries. |
+| ICD-11 MMS dataset | `uv run med-db-download-icd11 --release 2026-01`, then verify (see Diagnostic Classification Setup below).                                                                  |
+
+Repo-owned classification and therapy content is NOT fetched — it ships with the repo as
+version-controlled resource files under `.claude/agents/references/` (DSM-5-TR codes,
+ICD-11 mental-health codes, therapy methodologies).
+
 ### Diagnostic Classification Setup
 
-Three optional components add structured diagnostic reference data to `med-db/guidelines/`.
-Each is independent — set up only what you need:
+One optional component adds structured diagnostic reference data to `med-db/guidelines/`:
 
-| Component | Bootstrap command | Lookup tool |
-|---|---|---|
+| Component             | Bootstrap command                                | Lookup tool                  |
+| --------------------- | ------------------------------------------------ | ---------------------------- |
 | ICD-11 classification | `uv run med-db-download-icd11 --release 2026-01` | `uv run med-db-lookup-icd11` |
-| DSM-5-TR classification | `uv run med-db-setup-dsm5` | `uv run med-db-lookup-dsm5` |
-| Therapy methodologies | `uv run med-db-setup-therapy-methods` | Read `med-db/guidelines/therapy-methodologies/source.md` |
 
-To verify all components at once:
+To verify:
 
 ```bash
 uv run med-db-query --list-topics 2>/dev/null
 uv run med-db-download-icd11 --release 2026-01 --verify 2>&1
-uv run med-db-setup-dsm5 --verify-only 2>&1
-uv run med-db-setup-therapy-methods --verify-only 2>&1
 ```
 
-All checks must pass. If any component is missing, run its bootstrap command above.
+All checks must pass. If the component is missing, run its bootstrap command above.
 See `.claude/agents/references/knowledge-base.md` for the psychotherapist agent's full knowledge
 base bootstrap procedure including research briefs.
 
@@ -99,14 +106,14 @@ base bootstrap procedure including research briefs.
 Archive access is governed by these reference files. Consult them before archiving,
 querying, or analyzing evidence from the archive:
 
-| Domain                                              | Reference                                     |
-| --------------------------------------------------- | --------------------------------------------- |
-| med-db command reference with every parameter       | `.claude/agents/references/med-db-commands.md`     |
-| Knowledge base bootstrap and component overview     | `.claude/agents/references/knowledge-base.md`      |
-| Evidence quality standards and search protocol      | `.claude/agents/med-researcher.md`            |
-| Full-text download procedure and source policy      | `fetch-paper`                                 |
-| Script development conventions                      | `.claude/scripts/DEVELOPER.md`                |
-| Overall integration and CLI contract                | `CLAUDE.md`                                   |
+| Domain                                          | Reference                                      |
+| ----------------------------------------------- | ---------------------------------------------- |
+| med-db command reference with every parameter   | `.claude/agents/references/med-db-commands.md` |
+| Knowledge base bootstrap and component overview | `.claude/agents/references/knowledge-base.md`  |
+| Evidence quality standards and search protocol  | `.claude/agents/med-researcher.md`             |
+| Full-text download procedure and source policy  | `fetch-paper`                                  |
+| Script development conventions                  | `.claude/scripts/DEVELOPER.md`                 |
+| Overall integration and CLI contract            | `CLAUDE.md`                                    |
 
 ## Archival Conventions
 
@@ -123,30 +130,25 @@ querying, or analyzing evidence from the archive:
 When operating in a live session (e.g., therapy, coaching, consultation), only **read-only,
 local, no-network** commands are permitted during the session:
 
-| Permitted during session | Must wait until after session |
-|---|---|
-| `uv run med-db-query --search-keyword "..."` | `uv run med-db --pmid ...` (archival — writes) |
-| `uv run med-db-query --search-keyword "..." --identifiers-only` | `uv run med-db --source pubmed --query "..."` (network search) |
-| `uv run med-db-query --list-topics` | `uv run med-db-download-icd11` (setup — writes) |
-| `uv run med-db-query --stats` | |
-| `uv run med-db-query --list-topics` | `uv run med-db-download-paper ...` (full-text download — network + writes) |
-| `uv run med-db-query --list-topics --names-only` | `uv run med-db-setup-dsm5` (setup — writes) |
-| `uv run med-db-query --check-pmid "..."` | `uv run med-db-setup-therapy-methods` (setup — writes) |
-| `uv run med-db-query --check-pmid "..." --locations-only` | `uv run med-db-integrity-check` (harmless but unnecessary mid-session) |
-| `uv run med-db-query --read-metadata "..."` | `WebSearch`, `WebFetch` for new papers (network) |
-| `uv run med-db-query --read-metadata "..." --title-only` | Dispatching `med-researcher` agent (writes to med-db/) |
-| `uv run med-db-query --read-metadata "..." --abstract-only` | Dispatching any sub-agent other than Haiku for med-db access |
-| `uv run med-db-query --pmids-from-search "..." --identifiers-only` | |
-| `uv run med-db-query --search-searches "..." --identifiers-only` | |
-| `uv run med-db-query --recent N --identifiers-only` | |
-| `uv run med-db-lookup --pmid ...` | |
-| `uv run med-db-lookup-icd11 --code "..."` | |
-| `uv run med-db-lookup-icd11 --code "..." --title-only` | |
-| `uv run med-db-lookup-dsm5 --code "..."` | |
-| `uv run med-db-lookup-dsm5 --code "..." --title-only` | |
-| `uv run med-db-lookup --doi ...` | |
-| `uv run med-db-query --read-source "guidelines/therapy-methodologies" --body-only` | |
-| Dispatching Haiku sub-agent for read-only med-db queries | |
+| Permitted during session                                           | Must wait until after session                                              |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `uv run med-db-query --search-keyword "..."`                       | `uv run med-db --pmid ...` (archival — writes)                             |
+| `uv run med-db-query --search-keyword "..." --identifiers-only`    | `uv run med-db --source pubmed --query "..."` (network search)             |
+| `uv run med-db-query --list-topics`                                | `uv run med-db-download-icd11` (setup — writes)                            |
+| `uv run med-db-query --stats`                                      |                                                                            |
+| `uv run med-db-query --list-topics --names-only`                   | `uv run med-db-download-paper ...` (full-text download — network + writes) |
+| `uv run med-db-query --check-pmid "..." --locations-only`          | `uv run med-db-integrity-check` (harmless but unnecessary mid-session)     |
+| `uv run med-db-query --read-metadata "..."`                        | `WebSearch`, `WebFetch` for new papers (network)                           |
+| `uv run med-db-query --read-metadata "..." --title-only`           | Dispatching `med-researcher` agent (writes to med-db/)                     |
+| `uv run med-db-query --read-metadata "..." --abstract-only`        | Dispatching any sub-agent other than Haiku for med-db access               |
+| `uv run med-db-query --pmids-from-search "..." --identifiers-only` |                                                                            |
+| `uv run med-db-query --search-searches "..." --identifiers-only`   |                                                                            |
+| `uv run med-db-query --recent N --identifiers-only`                |                                                                            |
+| `uv run med-db-lookup --pmid ...`                                  |                                                                            |
+| `uv run med-db-lookup-icd11 --code "..."`                          |                                                                            |
+| `uv run med-db-lookup-icd11 --code "..." --title-only`             |                                                                            |
+| `uv run med-db-lookup --doi ...`                                   |                                                                            |
+| Dispatching Haiku sub-agent for read-only med-db queries           |                                                                            |
 
 Read-only commands: sub-second, local, equivalent to consulting a reference shelf.
 Network searches and archival: between-session work.
@@ -163,19 +165,19 @@ Every query and lookup command defaults to JSON (`--format json`). For a single 
 use an extraction flag instead of piping through `python3 -c`, `jq`, `grep`, or `sed`.
 Extraction flags output plain text, one value per line — no post-processing needed.
 
-| Flag | Applies to | Output |
-|---|---|---|
-| `--identifiers-only` | `--topic`, `--search-keyword`, `--recent`, `--pmids-from-search`, `--search-searches` | Identifiers (PMIDs, EPMC IDs, or paths) one per line |
-| `--title-only` | `--read-metadata`, ICD-11 `--code`, DSM-5 `--code` | Title/disorder name text |
-| `--abstract-only` | `--read-metadata` | Abstract text (auto-loads it — no `--show-abstract` needed) |
-| `--names-only` | `--list-topics` | Topic names one per line |
-| `--locations-only` | `--check-pmid`, `--check-epmc` | Archive folder paths one per line |
+| Flag                 | Applies to                                                                            | Output                                                      |
+| -------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `--identifiers-only` | `--topic`, `--search-keyword`, `--recent`, `--pmids-from-search`, `--search-searches` | Identifiers (PMIDs, EPMC IDs, or paths) one per line        |
+| `--title-only`       | `--read-metadata`, ICD-11 `--code`                                                    | Title text                                                  |
+| `--abstract-only`    | `--read-metadata`                                                                     | Abstract text (auto-loads it — no `--show-abstract` needed) |
+| `--names-only`       | `--list-topics`                                                                       | Topic names one per line                                    |
+| `--locations-only`   | `--check-pmid`, `--check-epmc`                                                        | Archive folder paths one per line                           |
 
 **Archive (`med-db`) also supports:** `--format json` (structured machine output),
 `--quiet` (created folder paths only, one per line). Default is `--format text`.
 
-**Diagnostic lookups** support `--title-only` for `--code` (ICD-11: condition title;
-DSM-5: disorder name). For partial code matches, all matching titles are printed one per line.
+**Diagnostic lookups** support `--title-only` for `--code` (ICD-11: condition title).
+For partial code matches, all matching titles are printed one per line.
 
 ## Command Reference
 
@@ -222,11 +224,11 @@ min-depth guard, and empty parent dirs are pruned.
 PDF + extracted text into `med-db/fulltext/`. Owned by the `fetch-paper` skill (procedure, source
 policy, Sci-Hub fallback); full parameter reference in `med-db-commands.md`.
 
-| Operation    | Command                                                                                       |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| Download PDF | `uv run med-db-download-paper --reference '<DOI|PMID|arXiv|SOURCE:ID|URL>' --topic '<name>'`  |
-| Title + year | `uv run med-db-download-paper --title '<title>' --year <YEAR> --topic '<name>'`               |
-| archive.is text | `uv run med-db-download-paper --reference '<DOI>' --body-file <FILE> --topic '<name>'`     |
+| Operation       | Command                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| Download PDF    | `uv run med-db-download-paper --reference '<DOI|PMID|arXiv|SOURCE:ID|URL>' --topic '<name>'` |
+| Title + year    | `uv run med-db-download-paper --title '<title>' --year <YEAR> --topic '<name>'`              |
+| archive.is text | `uv run med-db-download-paper --reference '<DOI>' --body-file <FILE> --topic '<name>'`       |
 
 When the automatic source chain fails, an interactive `uv run fetch-archive '<url>' -o tmp/<slug>.txt`
 scrape (headed browser, human CAPTCHA; host prerequisite `uvx playwright install chromium`) can be
@@ -277,12 +279,12 @@ Default JSON. Use `--format text` for readable output, or extraction flags for s
 Term definitions for the `define-terms` skill. Archive writes to `dictionary/<term-slug>/`;
 lookup is read-only.
 
-| Operation       | Command                                                                                          |
-| --------------- | ------------------------------------------------------------------------------------------------ |
-| Archive term    | `uv run med-db-term --term '<Term>' --definition '<Definition>' --source-type <TYPE>`            |
-| Lookup term     | `uv run med-db-term-lookup --term '<Term>'`                                                       |
-| Keyword search  | `uv run med-db-term-lookup --keyword '<text>'`                                                    |
-| List all terms  | `uv run med-db-term-lookup --list`                                                                |
+| Operation      | Command                                                                               |
+| -------------- | ------------------------------------------------------------------------------------- |
+| Archive term   | `uv run med-db-term --term '<Term>' --definition '<Definition>' --source-type <TYPE>` |
+| Lookup term    | `uv run med-db-term-lookup --term '<Term>'`                                           |
+| Keyword search | `uv run med-db-term-lookup --keyword '<text>'`                                        |
+| List all terms | `uv run med-db-term-lookup --list`                                                    |
 
 ### Term Source Helpers (`med-db-term-wikipedia`, `med-db-term-mesh`)
 
@@ -304,11 +306,6 @@ stage-3 authoritative source. Both default to JSON (`--format text` for readable
 | ICD-11 keyword        | `uv run med-db-lookup-icd11 --keyword '<term>'`                                                  |
 | ICD-10 → ICD-11       | `uv run med-db-lookup-icd11 --icd10-code '<CODE>'`                                               |
 | ICD-11 → ICD-10       | `uv run med-db-lookup-icd11 --icd11-to-icd10 '<CODE>'`                                           |
-| Setup DSM-5-TR        | `uv run med-db-setup-dsm5`                                                                       |
-| DSM-5 by code         | `uv run med-db-lookup-dsm5 --code '<CODE>'`                                                      |
-| DSM-5 title only      | `uv run med-db-lookup-dsm5 --code '<CODE>' --title-only`                                         |
-| DSM-5 keyword         | `uv run med-db-lookup-dsm5 --keyword '<term>'`                                                   |
-| Setup therapy         | `uv run med-db-setup-therapy-methods`                                                            |
 
 ### Maintenance
 
