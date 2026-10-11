@@ -37,6 +37,7 @@
     ],
     "Skill": [
       "^analyze-med-claims$",
+      "^apply-fixes$",
       "^check-retraction$",
       "^compress-skill$",
       "^create-diet-plan$",

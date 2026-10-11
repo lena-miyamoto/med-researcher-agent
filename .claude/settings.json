@@ -32,6 +32,7 @@
       "WebFetch(domain:www.tripdatabase.com)",
       "WebFetch(domain:www2.mdpi.com)",
       "Skill(analyze-med-claims)",
+      "Skill(apply-fixes)",
       "Skill(check-retraction)",
       "Skill(compress-skill)",
       "Skill(create-diet-plan)",

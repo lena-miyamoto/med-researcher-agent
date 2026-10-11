@@ -3,16 +3,22 @@ name: review-changeset
 description: >
              Review the current changeset for logical inconsistencies, obvious flaws, stale
              cross-file references, and wrapper/source misalignment. Auto-detects scope: staged changes if
-             present, otherwise unstaged. Produces a structured findings report; creates a fix plan file when
-             issues warrant it.
+             present, otherwise unstaged. Produces a structured findings report; returns a fix plan to the
+             caller and hands off to `apply-fixes` when issues warrant it.
+disable-model-invocation: false
 user-invocable: true
+model: haiku
+effort: high
+context: fork
+background: true
 ---
 
 # Review Changeset
 
 Diff-driven review of instruction files in the current changeset. Analyzes for inconsistencies, stale
 references, and contradictions that cause wrong behavior. Produces a findings report with severity
-labels. When findings warrant fixes, creates a plan file and offers it for execution.
+labels. When findings warrant fixes, returns a fix plan to the caller as text and instructs the
+caller to invoke the `apply-fixes` skill.
 
 ## When to Use
 
@@ -47,6 +53,7 @@ From the file list, keep only `.md` files under these directories:
 
 - `.claude/agents/`
 - `.claude/agents/references/`
+- `.claude/reference/`
 - `.claude/skills/`
 - `.github/agents/`
 - `.github/skills/`
@@ -64,7 +71,8 @@ Read every file from step 2 in full (current on-disk version). For each file, ex
   matching shared topics: session ending, crisis redirection, dispatch protocol, command invocation
   contract, source-of-truth ownership, evidence hierarchy, compression rules.
 - **Frontmatter fields** — note presence/absence of `name`, `description`, `user-invocable`,
-  `argument-hint` (for skills); `name`, `description`, `tools`, `model` (for agents).
+  `argument-hint`, `disable-model-invocation`, `model`, `effort`, `context`, `background` (for skills);
+  `name`, `description`, `tools`, `model` (for agents).
 
 ### 4. Stale-Reference Check
 
@@ -100,18 +108,60 @@ For each related pair where at least one file is in the diff, read both files an
 
 ### 6. Wrapper Alignment
 
-For each changed file under `.github/`, verify the pointer line matches the repo's wrapper convention:
+For each changed file under `.github/`, verify the pointer line matches this repo's wrapper convention.
+
+Skill wrappers (`.github/skills/<name>/SKILL.md`) open their body with:
 
 ```text
-Wrapper. Source of truth: `.claude/<agents|skills>/<name>.<md|SKILL.md>`.
+Wrapper. Source of truth: `.claude/skills/<name>/SKILL.md`.
+```
+
+Agent wrappers (`.github/agents/<name>.agent.md`) open their body with a one-line role summary, then:
+
+```text
+Wrapper for `.claude/agents/<name>.md`. Harness differences: <what differs>.
 ```
 
 Check that:
 
 - The referenced `.claude/` file exists.
-- The frontmatter `name` and `description` match between wrapper and source (must be identical).
+- The frontmatter `name` matches, and `description` is **byte-identical** between wrapper and source. Any
+  description drift is a finding.
+- Wrapper frontmatter carries only Copilot-valid fields, per
+  `.claude/reference/frontmatter-fields.md`. A Claude-only field in a wrapper is a finding — **Error** for
+  skill wrappers (`disable-model-invocation`, `user-invocable`, `model`, `effort`, `context`,
+  `background`, `argument-hint`, and the rest are ignored/rejected by Copilot), **Warning** for agent
+  wrappers.
+- Skill execution fields (`model`, `effort`, `context`, `background`, `disable-model-invocation`) live only
+  in the `.claude/` source; their absence from the wrapper is expected, not a mismatch.
+- Agent wrapper `tools` must be the exact Copilot-alias mapping of the source `tools` (`Read`→`read`,
+  `Grep`/`Glob`→`search`, `Bash`→`execute`, `WebFetch`/`WebSearch`→`web`, `Agent`→`agent`,
+  `Edit`/`Write`→`edit`). A tool present in the source but missing from the wrapper, or present in the
+  wrapper but absent from the source, is a finding.
 
-### 7. Internal Consistency
+### 7. Model & Effort Appropriateness
+
+For every changed `.claude/` skill or agent file carrying a `model` and/or `effort` field, read
+`.claude/reference/model-capabilities.md` and resolve the value there before judging it. Resolve
+aliases against the service the session is pointed at — never the Claude model of the same alias
+name. Under this repo's default DeepSeek wiring `haiku` → `deepseek-flash` and `sonnet`/`opus` →
+`deepseek-v4-pro`; on an Anthropic session the aliases map to the Claude models of those names. Flag:
+
+- **Error** — `model` is not one of `haiku`, `sonnet`, `opus`, `fable`, `best`, `opusplan`,
+  `default`, `inherit`, or a full `claude-*` / `deepseek-*` model ID; or `effort` is not one of
+  `low`, `medium`, `high`, `xhigh`, `max`.
+- **Warning** — the `(model, effort)` pair mismatches the work the file's body and description say it
+  does, per the Selection Guide. Examples: a deep-synthesis skill pinned to `haiku` + `low`; a
+  mechanical extraction skill pinned to `sonnet` + `max`; an agent that should follow the caller but
+  hard-codes a model instead of `inherit`.
+- **Info** — `effort` is `medium` or `xhigh`: on the DeepSeek wiring both collapse to `high` and add
+  no capability over `high`. Flag only when the file's prose implies they do.
+- **Info** — `model` is `opus`: on the DeepSeek wiring it resolves to the same model as `sonnet`.
+
+Cite `.claude/reference/model-capabilities.md` in every finding from this step. This step never edits
+frontmatter — corrections go into the fix plan like any other finding.
+
+### 8. Internal Consistency
 
 Within each changed file, flag:
 
@@ -127,7 +177,7 @@ Within each changed file, flag:
   was removed, verify the rule is still enforced elsewhere or flag it.
 - **Missing steps** — numbered procedure steps where a number is skipped (1, 2, 4 — missing 3).
 
-### 8. Assemble Findings Report
+### 9. Assemble Findings Report
 
 Produce a report organized by file. For each finding, include:
 
@@ -138,43 +188,43 @@ Produce a report organized by file. For each finding, include:
 - **Related files**: if the issue spans multiple files, list all involved.
 
 If no findings: report "No issues found in `N` instruction files." Include a summary line listing which
-files were reviewed. Stop here — no plan file needed.
+files were reviewed. Stop here — no handoff needed.
 
-### 9. Create Fix Plan (When Findings Warrant It)
+### 10. Hand Off the Fix Plan (When Findings Warrant It)
 
-If the report contains any **Error** or **Warning** findings, create a plan file at
-`.claude/plans/fix-review-findings-<slug>.md` proposing concrete fixes for each actionable finding.
-
-The plan file must:
+If the report contains any **Error** or **Warning** findings, append the fix plan to your final message
+as text — do **not** write a file. The plan must:
 
 - **Summarize each finding** — one bullet per finding with severity, file, and a one-line description.
 - **Propose a fix** for each Error and Warning. Info findings are listed but fixes are optional.
-- **Be concise** — the plan is a fix checklist, not a restatement of the review report.
-- **End with a question** asking the user whether to execute the plan.
+- **Be concise** — a fix checklist, not a restatement of the review report.
 
-After writing the plan file, present it to the user:
+End the message with this handoff line:
 
-> Review found `N` issue(s) that warrant fixes. Fix plan written to `.claude/plans/fix-review-findings-<slug>.md`.
-> Execute the plan?
+> Caller: present this plan to the user, wait for explicit approval, then invoke the `apply-fixes`
+> skill with this plan as `args` to apply the fixes.
 
-**Stop and wait for the user to respond.** Do not apply fixes without explicit approval — the plan is an
-offer, not an auto-execute. If the user approves, follow the plan and apply each fix.
+Do not apply any fix here. `apply-fixes` owns applying approved fixes and is not forked — the caller
+runs it inline after approval.
 
-Info-only findings (no Errors or Warnings) → mention them in the report but skip the plan file. The user
-can act on them or not.
+If there are no Errors or Warnings, state that and stop — no plan, no handoff.
 
 ## Writing Rules
 
-- Read-only during review (steps 1–8). Plan file creation (step 9) is the only write allowed.
+- Read-only always. This skill writes no files — including no plan file. The review summary and fix
+  plan are returned as text to the caller.
 - Never edit, move, or delete instruction files during review. Never run formatters, linters, or fix-up
   scripts during review.
+- Never apply fixes. This skill stops at the handoff — `apply-fixes` owns applying approved fixes.
 - If the diff includes `.py` files alongside instruction files, note their presence but do not review
   them — this skill reviews instruction files only.
 - Treat `.gitignore` boundaries as out of scope. Skip any file excluded by `.gitignore`.
 - Every flagged issue must cite the specific contradiction or missing reference. No vague findings.
 - Cross-file consistency checks are the highest-value part of this skill — prioritize them over
   exhaustive internal checks when time is limited.
-- The fix plan is an offer — never apply fixes without user approval.
+- Model/effort findings must cite `.claude/reference/model-capabilities.md` and name the model the
+  alias resolves to under the session's wiring — never call a value wrong based on the Claude model
+  of the same alias name.
 
 ## Validation
 
@@ -186,12 +236,17 @@ can act on them or not.
 6. Internal consistency checked for every changed file.
 7. Report includes severity, location, and description for every finding. "No issues found" is an
    acceptable result when the changeset is clean.
-8. If Errors or Warnings found: fix plan file created with concrete fixes, presented to user for approval.
+8. Every changed file carrying `model` or `effort` was checked against
+   `.claude/reference/model-capabilities.md`, and each such finding names the model the alias
+   resolves to under the session's wiring.
+9. If Errors or Warnings found: a fix plan was returned as text with concrete fixes, and the final
+   message instructs the caller to invoke `apply-fixes` after user approval. No plan file was written.
 
 ## Output
 
 - Findings report with severity labels (Error / Warning / Info), organized by file.
 - Summary line: number of files reviewed, number of findings by severity.
-- If Errors or Warnings present: fix plan file at `.claude/plans/fix-review-findings-<slug>.md`, offered
-  for user approval.
-- If no issues: confirmation that the changeset is clean.
+- If Errors or Warnings present: a fix plan returned as text in the final message, plus an explicit
+  handoff line instructing the caller to present it to the user and, on approval, invoke the
+  `apply-fixes` skill with the plan.
+- If no issues: confirmation that the changeset is clean; no handoff.

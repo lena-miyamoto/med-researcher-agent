@@ -114,7 +114,14 @@ All API handlers must validate input with Zod before processing.
 - A skill arrives as fresh, contextually relevant instruction at the moment of action — unlike CLAUDE.md loaded thousands of tokens ago.
 - Procedural instructions (deploy workflows, release checklists, review processes) belong in skills, not CLAUDE.md.
 - A 30-line procedure in CLAUDE.md is a sign it should be a skill instead.
-- `disable-model-invocation: true` prevents auto-trigger for side-effect workflows.
+- `disable-model-invocation: true` prevents auto-trigger for side-effect workflows; it lives only in the
+  `.claude/` source — Copilot skill wrappers do not carry it (see `.claude/reference/frontmatter-fields.md`).
+- `model`, `effort`, `context`, and `background` are Claude-runtime fields — set them in
+  `.claude/skills/<name>/SKILL.md` only, never in wrappers.
+- `context: fork` runs the body in an isolated subagent that sees no conversation history and cannot ask the user.
+  Use it only for self-contained skills taking all input from arguments.
+- `background` applies only with `context: fork` (default `true`); set `background: false` when the invoking turn
+  needs the forked result.
 - Invoked skills are re-injected on compaction, capped at 5,000 tokens per skill / 25,000 total shared budget.
 
 ## Subagents: Isolation Is the Point
