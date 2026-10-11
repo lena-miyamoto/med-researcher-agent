@@ -115,7 +115,7 @@ All API handlers must validate input with Zod before processing.
 - Procedural instructions (deploy workflows, release checklists, review processes) belong in skills, not CLAUDE.md.
 - A 30-line procedure in CLAUDE.md is a sign it should be a skill instead.
 - `disable-model-invocation: true` prevents auto-trigger for side-effect workflows; it lives only in the
-  `.claude/` source — Copilot skill wrappers do not carry it (see `.claude/reference/frontmatter-fields.md`).
+  `.claude/` source — Copilot skill wrappers do not carry it (see `.claude/references/frontmatter-fields.md`).
 - `model`, `effort`, `context`, and `background` are Claude-runtime fields — set them in
   `.claude/skills/<name>/SKILL.md` only, never in wrappers.
 - `context: fork` runs the body in an isolated subagent that sees no conversation history and cannot ask the user.

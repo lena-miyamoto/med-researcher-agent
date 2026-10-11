@@ -29,7 +29,7 @@ effort: high
    - Invocation control and Claude-only fields (`disable-model-invocation`, `user-invocable`, `argument-hint`,
      `model`, `effort`, `context`, `background`) live only in the `.claude/` source. Set
      `disable-model-invocation: true` only for skills the user must trigger manually. The Copilot wrapper carries
-     `name` and `description` only — see `.claude/reference/frontmatter-fields.md`.
+     `name` and `description` only — see `.claude/references/frontmatter-fields.md`.
    - `context: fork` runs the body in an isolated subagent that sees no conversation history and cannot ask the user.
      Use it only for self-contained skills that take all input from arguments; pair `background: false` when the
      invoking turn needs the result.
@@ -58,7 +58,7 @@ only when routing boundaries change.
 2. Frontmatter parses in each. The wrapper carries only `name` + `description`, and its `description` is
    byte-identical to the source. Claude-only fields (`disable-model-invocation`, `user-invocable`,
    `argument-hint`, `model`, `effort`, `context`, `background`) appear only in the `.claude/` file — per
-   `.claude/reference/frontmatter-fields.md`.
+   `.claude/references/frontmatter-fields.md`.
 3. Shared file holds the procedure; wrappers do not duplicate it.
 4. Wrapper bodies cite the shared file path exactly.
 5. Run `uv run lint-md` on every changed file — follow `CLAUDE.md`; diagnostics must be clean.

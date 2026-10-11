@@ -6,7 +6,7 @@ wrappers exist only to give Copilot a thin entry point; the `.claude/` files are
 ## Hard Rules
 
 Value semantics for `model` and `effort` — what each alias resolves to per service, per-model
-capabilities, and the allowed effort levels — live in `.claude/reference/model-capabilities.md`.
+capabilities, and the allowed effort levels — live in `.claude/references/model-capabilities.md`.
 
 1. **Description sync.** A wrapper's `description` must be byte-identical to its `.claude/` source
    `description`. Any drift is a finding.
