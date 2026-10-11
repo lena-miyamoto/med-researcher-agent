@@ -6,8 +6,6 @@ description: >
   technical jargon kept verbatim. No scripts, no external calls. Skips README.md, CONTRIBUTING.md,
   DEVELOPMENT.md, CHANGELOG.md unless named directly. Invoke after editing any instruction file, or
   when explicitly asked to compress instruction files.
-disable-model-invocation: false
-user-invocable: true
 ---
 
 # Compress Skill

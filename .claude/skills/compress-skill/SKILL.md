@@ -8,6 +8,10 @@ description: >
   when explicitly asked to compress instruction files.
 disable-model-invocation: false
 user-invocable: true
+model: haiku
+effort: high
+context: fork
+background: false
 ---
 
 # compress-skill

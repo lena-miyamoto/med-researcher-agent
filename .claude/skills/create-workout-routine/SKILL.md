@@ -6,7 +6,10 @@ description: >
              fitness-coach agent to design a full program with exercises, sets, reps, RPE targets, warm-up, cool-down,
              technique cues, and progression rules. Writes the completed plan to workouts/.
 argument-hint: "Optional: training goal and constraints (e.g. 'hypertrophy, home gym, 3 days/week')"
+disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
 ---
 
 # Create Workout Routine

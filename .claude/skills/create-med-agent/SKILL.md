@@ -6,7 +6,10 @@ description: >
 argument-hint: >
                Provide the new agent name, role, trigger description, tool scope, and whether it should be
                user-invocable or subagent-only
+disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
 ---
 
 # Create Med Agent
@@ -27,7 +30,7 @@ user-invocable: true
 put the role, stable behavior, and output expectations here. Don't restate the multi-agent architecture — `CLAUDE.md`
 covers that. Don't add "this file is the shared source of truth" boilerplate — it's implicit in where the file lives.
 4. Write the Copilot wrapper at `.github/agents/<name>.agent.md` with valid Copilot frontmatter and minimal Copilot tool
-aliases. Point the body at the shared agent file.
+aliases, per `.claude/reference/frontmatter-fields.md`. Point the body at the shared agent file.
 5. Keep wrappers aligned. Differences are limited to harness frontmatter, tool names, model settings, invocation fields,
 and brief runtime notes.
 6. Push broader workflow out of the agent: repo-wide behavior into `CLAUDE.md`, reusable procedure into

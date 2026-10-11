@@ -5,7 +5,12 @@ description: >
              ownership, keep Copilot and Claude surfaces aligned. Use when cleaning up customization files in this
              workspace.
 argument-hint: 'Scope to optimize; report-only or apply fixes'
+disable-model-invocation: false
 user-invocable: true
+model: opus
+effort: high
+context: fork
+background: false
 ---
 
 # Optimize Repo
@@ -22,18 +27,19 @@ or drifted instructions. Use this as the audit path in report-only mode and as t
 
 ## Current Structure
 
-| Surface                                                   | Owner / Shape                                                                                                                                       |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Repo workflow, command contract                           | `CLAUDE.md`; shared constitution, keep compact (under 150 lines hard max per context-engineering-best-practices).                                   |
-| Copilot entrypoint                                        | `.github/copilot-instructions.md`; thin pointer to `CLAUDE.md` and Copilot wrappers.                                                                |
-| Claude entrypoint                                         | `CLAUDE.md`; shared constitution loaded directly.                                                                                                   |
-| Copilot router                                            | `AGENTS.md`; thin Copilot-specific pointer to `CLAUDE.md`.                                                                                          |
-| Shared skills (also Claude entrypoint)                    | `.claude/skills/<name>/SKILL.md`; owns actual procedure. Claude loads directly.                                                                     |
-| Copilot skill wrappers                                    | `.github/skills/<name>/SKILL.md`; frontmatter plus one pointer line.                                                                                |
-| Shared agent behavior (also Claude entrypoint)            | `.claude/agents/<name>.md`; role, routing, and repo-specific behavior. Claude loads directly.                                                       |
-| Copilot agent wrappers                                    | `.github/agents/<name>.agent.md`; harness metadata plus pointer.                                                                                    |
-| Agent/skill resource dirs                                 | `.claude/agents/references/` or `.claude/skills/<name>/references/`; on-demand reference files for oversized instruction files (see 500-line rule). |
-| Human onboarding                                          | `README.md`; install/bootstrap/command examples, not policy detail.                                                                                 |
+| Surface                                        | Owner / Shape                                                                                                                                       |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repo workflow, command contract                | `CLAUDE.md`; shared constitution, keep compact (under 150 lines hard max per context-engineering-best-practices).                                   |
+| Copilot entrypoint                             | `.github/copilot-instructions.md`; thin pointer to `CLAUDE.md` and Copilot wrappers.                                                                |
+| Claude entrypoint                              | `CLAUDE.md`; shared constitution loaded directly.                                                                                                   |
+| Copilot router                                 | `AGENTS.md`; thin Copilot-specific pointer to `CLAUDE.md`.                                                                                          |
+| Shared skills (also Claude entrypoint)         | `.claude/skills/<name>/SKILL.md`; owns actual procedure. Claude loads directly.                                                                     |
+| Copilot skill wrappers                         | `.github/skills/<name>/SKILL.md`; frontmatter plus one pointer line.                                                                                |
+| Shared agent behavior (also Claude entrypoint) | `.claude/agents/<name>.md`; role, routing, and repo-specific behavior. Claude loads directly.                                                       |
+| Copilot agent wrappers                         | `.github/agents/<name>.agent.md`; harness metadata plus pointer.                                                                                    |
+| Agent/skill resource dirs                      | `.claude/agents/references/` or `.claude/skills/<name>/references/`; on-demand reference files for oversized instruction files (see 500-line rule). |
+| Cross-cutting reference docs                   | `.claude/reference/`; harness, model, and policy docs read on demand (e.g. `frontmatter-fields.md`, `model-capabilities.md`).                       |
+| Human onboarding                               | `README.md`; install/bootstrap/command examples, not policy detail.                                                                                 |
 
 ## Reference Ownership
 
@@ -52,12 +58,15 @@ Skills and docs must point to these owner files instead of restating their rules
 | Harms/safety search, counter-evidence requirements     | `.claude/agents/med-researcher.md`                                                                              |
 | Research output format                                 | `.claude/agents/med-researcher.md`                                                                              |
 | Context engineering best practices                     | `.claude/skills/optimize-repo/references/context-engineering-best-practices.md`                                 |
+| Skill/agent frontmatter fields (Claude + Copilot)      | `.claude/reference/frontmatter-fields.md`                                                                       |
+| `model` / `effort` alias resolution and capabilities   | `.claude/reference/model-capabilities.md`                                                                       |
 | Shared Python utilities                                | `.claude/scripts/utils.py`                                                                                      |
 
 ## Procedure
 
-1. Mode: review-only (report) or cleanup (smallest edits that restore ownership and cut repetition). If the user asked
-   for a plan only, do not edit.
+1. Mode: review-only (report) or cleanup (smallest edits that restore ownership and cut repetition). This skill runs
+   forked and sees no conversation history, so the mode comes from the invocation's argument hint (for example
+   "report-only or apply fixes"), not prior turns. If the mode is report-only, do not edit.
 2. Respect repo ignore boundaries before any audit or edit:
    - Treat all files and folders excluded by `.gitignore` as out of scope for this skill.
    - Do not read, audit, edit, move, delete, or regenerate ignored paths.

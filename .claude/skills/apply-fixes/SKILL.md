@@ -9,7 +9,6 @@ disable-model-invocation: false
 user-invocable: false
 model: haiku
 effort: high
-background: false
 ---
 
 # Apply Fixes

@@ -8,7 +8,10 @@ description: >
              agent for direct coaching dialogue. After the session, delegates to `end-voice-training`
              skill for documentation.
 argument-hint: "Optional: path to a session history file (continues previous work), or nothing for a new client"
+disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
 ---
 
 # Start Voice Training

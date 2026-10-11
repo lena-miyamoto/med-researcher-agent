@@ -6,7 +6,10 @@ description: >
 argument-hint: >
                Provide the new skill name and what it should do; include description keywords, optional argument hint,
                and any routing or doc updates needed
+disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
 ---
 
 # Create Med Skill
@@ -23,6 +26,13 @@ user-invocable: true
    hint, `user-invocable` value.
 2. Write the shared source of truth at `.claude/skills/<name>/SKILL.md`:
    - Frontmatter `name` matches folder; `description` is keyword-rich.
+   - Invocation control and Claude-only fields (`disable-model-invocation`, `user-invocable`, `argument-hint`,
+     `model`, `effort`, `context`, `background`) live only in the `.claude/` source. Set
+     `disable-model-invocation: true` only for skills the user must trigger manually. The Copilot wrapper carries
+     `name` and `description` only — see `.claude/reference/frontmatter-fields.md`.
+   - `context: fork` runs the body in an isolated subagent that sees no conversation history and cannot ask the user.
+     Use it only for self-contained skills that take all input from arguments; pair `background: false` when the
+     invoking turn needs the result.
    - Body is self-contained. Use sections: `When to Use`, `Procedure`, `Writing Rules` (when needed), `Validation`,
      `Output`.
    - Don't restate the multi-agent architecture — `CLAUDE.md` covers that. Don't repeat "this skill does not duplicate"
@@ -45,7 +55,10 @@ only when routing boundaries change.
 ## Validation
 
 1. Both files exist: `.claude/skills/<name>/SKILL.md` (source of truth), `.github/skills/<name>/SKILL.md` (Copilot wrapper).
-2. Frontmatter parses in each.
+2. Frontmatter parses in each. The wrapper carries only `name` + `description`, and its `description` is
+   byte-identical to the source. Claude-only fields (`disable-model-invocation`, `user-invocable`,
+   `argument-hint`, `model`, `effort`, `context`, `background`) appear only in the `.claude/` file — per
+   `.claude/reference/frontmatter-fields.md`.
 3. Shared file holds the procedure; wrappers do not duplicate it.
 4. Wrapper bodies cite the shared file path exactly.
 5. Run `uv run lint-md` on every changed file — follow `CLAUDE.md`; diagnostics must be clean.

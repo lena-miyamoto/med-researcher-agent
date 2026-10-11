@@ -7,7 +7,10 @@ description: >
              to design a full plan with meal structure, macronutrient guidance, food-group recommendations,
              supplementation notes, and education. Writes the completed plan to diet-plans/.
 argument-hint: "Optional: nutrition goal and dietary preferences (e.g. 'plant-based, support endurance training, 4 meals/day')"
+disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
 ---
 
 # Create Diet Plan

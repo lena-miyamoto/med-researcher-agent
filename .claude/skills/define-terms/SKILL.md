@@ -5,7 +5,12 @@ description: >
   or define one or more terms on the fly and write them as CSV to tmp/output.csv. Backed by
   authoritative sources archived in the local archive.
 argument-hint: 'Either one or more .csv/.tsv file URIs to complete, or one or more terms to define into tmp/output.csv'
+disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
+context: fork
+background: false
 ---
 
 # Define Terms

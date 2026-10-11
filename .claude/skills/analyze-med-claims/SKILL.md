@@ -5,7 +5,12 @@ description: >
              inline text; verifies each claim against the literature using the med-researcher agent and produces a
              structured evidence report with verdicts.
 argument-hint: 'Path to a text file containing claims, or inline claim text to analyze'
+disable-model-invocation: false
 user-invocable: true
+model: opus
+effort: high
+context: fork
+background: false
 ---
 
 # Analyze Med Claims

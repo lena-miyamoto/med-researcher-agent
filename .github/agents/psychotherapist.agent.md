@@ -9,7 +9,7 @@ description: >
              dialogue, DSM/ICD diagnosis, treatment planning, case formulation, psychoeducation, and literature-backed
              technique selection across integrative modalities (systemic, narrative, CBT, ACT, trauma-informed).
              Bilingual DE/EN.
-tools: [read, search, execute, web, todo]
+tools: [read, search, execute, web, edit, agent]
 model: "GPT-5 (copilot)"
 argument-hint: "Clinical presentation, ADHD/ASD assessment, diagnostic question, treatment plan, or case formulation"
 user-invocable: true

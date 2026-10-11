@@ -7,8 +7,6 @@ description: >
              Collects client intake, establishes informed consent, then hands off to the voice-trainer
              agent for direct coaching dialogue. After the session, delegates to `end-voice-training`
              skill for documentation.
-argument-hint: "Optional: path to a session history file (continues previous work), or nothing for a new client"
-user-invocable: true
 ---
 
 # Start Voice Training

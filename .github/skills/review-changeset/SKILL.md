@@ -3,9 +3,8 @@ name: review-changeset
 description: >
              Review the current changeset for logical inconsistencies, obvious flaws, stale
              cross-file references, and wrapper/source misalignment. Auto-detects scope: staged changes if
-             present, otherwise unstaged. Produces a structured findings report; creates a fix plan file when
-             issues warrant it.
-user-invocable: true
+             present, otherwise unstaged. Produces a structured findings report; returns a fix plan to the
+             caller and hands off to `apply-fixes` when issues warrant it.
 ---
 
 # Review Changeset

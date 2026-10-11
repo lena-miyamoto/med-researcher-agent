@@ -7,7 +7,12 @@ description: >
   straight to Sci-Hub, with legal alternatives tried only if Sci-Hub fails. When the automatic chain
   fails, an interactive archive.is scrape (fetch-archive) can feed the text in via --body-file.
 argument-hint: "DOI, PMID, arXiv ID, Europe PMC SOURCE:ID, title (+year), or URL of the paper to download"
+disable-model-invocation: false
 user-invocable: true
+model: haiku
+effort: high
+context: fork
+background: false
 ---
 
 # Fetch Paper

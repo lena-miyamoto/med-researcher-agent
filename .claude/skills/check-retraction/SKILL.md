@@ -4,7 +4,12 @@ description: >
   Check whether a scientific paper is retracted or has an outstanding expression of concern, via the
   Crossref and PubMed APIs. Run before citing, trusting, archiving, or scoring any paper.
 argument-hint: 'DOI, PMID, or paper title to check'
+disable-model-invocation: false
 user-invocable: true
+model: haiku
+effort: high
+context: fork
+background: false
 ---
 
 # Check Retraction

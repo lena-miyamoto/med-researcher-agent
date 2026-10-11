@@ -6,7 +6,10 @@ description: >
   automatically by `start-voice-training` skill when the voice training session ends (client signals end +
   SESSION_ENDED marker detected). Never invoked manually by the user.
 argument-hint: "<client-slug>"
+disable-model-invocation: false
 user-invocable: false
+model: opus
+effort: high
 ---
 
 # End Voice Training
