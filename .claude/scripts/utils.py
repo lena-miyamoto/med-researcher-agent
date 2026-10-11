@@ -566,6 +566,39 @@ def check_empty_files(root, findings):
             )
 
 
+def check_no_loose_files(root, findings):
+    for p in root.iterdir():
+        if p.is_file() and p.name != "index.json":
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_STRUCTURAL,
+                    str(p.relative_to(root)),
+                    f"Loose file in med-db root (only index.json allowed): {p.name}",
+                    "Move the file into the appropriate subdirectory or delete it.",
+                )
+            )
+
+
+def check_no_intermediate_files(root, findings):
+    for pattern in ("*.html", "*.htm"):
+        for p in root.rglob(pattern):
+            relative_path = p.relative_to(root)
+            # HTML snapshots under web/ are archived sources, not build artifacts.
+            if relative_path.parts[0] == "web":
+                continue
+            suffix = p.suffix.lstrip(".").upper()
+            findings.append(
+                finding(
+                    SEVERITY_ERROR,
+                    CATEGORY_STRUCTURAL,
+                    str(relative_path),
+                    f"Intermediate {suffix} file found (should be deleted after conversion).",
+                    "Delete the file: it is a build artifact, not an archive source.",
+                )
+            )
+
+
 def check_index_valid(root, findings):
     index_path = root / "index.json"
     if not index_path.is_file():
@@ -1266,16 +1299,20 @@ def run_integrity_check(root):
     # Phase 1: structural checks (fast, no index needed)
     check_required_dirs(root, findings)
 
+    # Gate the index-dependent checks on a complete top-level layout only;
+    # the file-level structural checks below must always run.
     fatal_structural = [
         f
         for f in findings
         if f["severity"] == SEVERITY_ERROR and f["category"] == CATEGORY_STRUCTURAL
     ]
-    if fatal_structural:
-        check_empty_files(root, findings)
-        return findings
 
     check_empty_files(root, findings)
+    check_no_loose_files(root, findings)
+    check_no_intermediate_files(root, findings)
+
+    if fatal_structural:
+        return findings
 
     # Phase 2: index-dependent checks
     data = check_index_valid(root, findings)
