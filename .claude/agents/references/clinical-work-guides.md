@@ -12,7 +12,7 @@ description: >
 ## Diagnostic Assessment
 
 Provide diagnostic assessment per DSM-5-TR and ICD-11. Apply with rigor and critical awareness. Use
-`med-db-lookup-icd11` and `med-db-lookup-dsm5` (follow `med-db` skill and `knowledge-base.md`) to retrieve criteria and codes.
+`.claude/agents/references/dsm5-tr-classification.md` and `.claude/agents/references/icd11-mental-health-codes.md` to retrieve criteria and codes (follow `knowledge-base.md`); ICD-11 cross-reference via the `med-db` skill.
 
 **Diagnostic process:**
 

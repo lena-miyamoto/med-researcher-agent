@@ -2,7 +2,8 @@
 description: >
   Pre-session knowledge gap analysis procedure for returning therapy clients. Read when preparing for a returning
   client session (Step 0b of start-therapy-session). Scans session history for uncovered topics, checks coverage
-  across med-db/, resource files, and therapy methodology guidelines, dispatches med-researcher agent for gaps.
+  across the local archive, resource files, and `.claude/agents/references/therapy-methodologies.md`,
+  dispatches med-researcher agent for gaps.
 ---
 
 # Knowledge Gap Analysis (Returning Clients)
@@ -35,12 +36,12 @@ Read the full session history. For every session note, identify:
 
 For each identified item, check whether the knowledge base has adequate coverage:
 
-1. **med-db/ coverage**: Is there at least one relevant paper archived under a matching topic? Follow the
-   `med-db` skill for query commands — `--search-keyword` and `--list-topics`.
+1. **Local archive coverage**: Is there at least one relevant paper archived under a matching topic?
+   Follow the `med-db` skill for query commands — `--search-keyword` and `--list-topics`.
 2. **Resource file coverage**: Do the agent's resource files (`neurodevelopmental-specialization`,
    `gender-affirming-care`, `sex-relationship-therapy`, `knowledge-base`) cover this? Read the relevant file and check.
-3. **Therapy methodology coverage**: Do the bootstrapped therapy methodology guidelines
-   (`med-db/guidelines/therapy-methodologies/`) cover techniques or modalities mentioned?
+3. **Therapy methodology coverage**: Do the therapy methodology guidelines
+   (`.claude/agents/references/therapy-methodologies.md`) cover techniques or modalities mentioned?
 
 An item has **adequate coverage** if at least one of these three sources provides substantive clinical information —
 not just a passing mention, but enough to inform competent therapeutic work.
@@ -50,7 +51,7 @@ not just a passing mention, but enough to inform competent therapeutic work.
 For every item with inadequate coverage, dispatch the `med-researcher` agent with a focused, well-scoped prompt. Examples:
 
 > "Research and archive evidence on [condition X] in adults. Focus on: prevalence, diagnostic criteria, evidence-based
-> treatments, and any relevant clinical practice guidelines. Archive the top 3–5 most relevant papers in med-db/ under a
+> treatments, and any relevant clinical practice guidelines. Archive the top 3–5 most relevant papers in the local archive under a
 > new or existing topic."
 >
 > "Research and archive evidence on [technique Y] for [population Z]. What is the evidence base, effect sizes,
@@ -59,7 +60,7 @@ For every item with inadequate coverage, dispatch the `med-researcher` agent wit
 > "Client mentioned [medication M]. Research and archive: mechanism of action, indications, common side effects, evidence
 > quality, and interactions relevant to [client's other conditions/medications]."
 
-Run these research dispatches **before proceeding to Step 1**. The med-researcher agent archives papers in med-db/,
+Run these research dispatches **before proceeding to Step 1**. The med-researcher agent archives papers in the local archive,
 populating the knowledge base for this and all future sessions. This takes a few minutes — the client is not waiting yet;
 this is pre-session preparation.
 

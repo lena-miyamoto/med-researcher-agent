@@ -60,18 +60,14 @@ evidence.
 5. **Compile the report** — assign a verdict for each claim by weighing the supporting, counter, and harms evidence
 streams:
 
-| Verdict                                                                            | Criteria                                                                                        |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| **supported**                                                                      | Consistent high-quality evidence (quality rating: high); counter-evidence absent or weak; harms |
-| assessed and acceptable                                                            |                                                                                                 |
-| **weakly supported**                                                               | Some evidence exists but quality is limited (quality rating: moderate or low); single           |
-| moderate-quality study; or evidence is observational when an RCT would be feasible |                                                                                                 |
-| **refuted**                                                                        | Consistent high-quality evidence contradicts the claim                                          |
-| **mixed**                                                                          | Supporting and refuting evidence of comparable quality exist; present both sides                |
-| **inconclusive — insufficient quality**                                            | Studies exist but all fail the mandatory quality criteria; better                               |
-| research is needed                                                                 |                                                                                                 |
-| **inconclusive — no evidence**                                                     | No adequate studies exist; absence of evidence must not be mistaken for evidence                |
-| of absence                                                                         |                                                                                                 |
+| Verdict                                 | Criteria                                                                                                                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **supported**                           | Consistent high-quality evidence (quality rating: high); counter-evidence absent or weak; harms assessed and acceptable                                                  |
+| **weakly supported**                    | Some evidence exists but quality is limited (quality rating: moderate or low); single moderate-quality study; or evidence is observational when an RCT would be feasible |
+| **refuted**                             | Consistent high-quality evidence contradicts the claim                                                                                                                   |
+| **mixed**                               | Supporting and refuting evidence of comparable quality exist; present both sides                                                                                         |
+| **inconclusive — insufficient quality** | Studies exist but all fail the mandatory quality criteria; better research is needed                                                                                     |
+| **inconclusive — no evidence**          | No adequate studies exist; absence of evidence must not be mistaken for evidence of absence                                                                              |
 
    Each verdict entry in the report must include:
 

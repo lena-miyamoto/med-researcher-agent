@@ -12,7 +12,7 @@ last_updated: 2026-08-30
 
 # Voice Feminization — Knowledge Base Bootstrap
 
-Directs med-researcher agent what to archive in `med-db/` for voice-trainer agent's local evidence base:
+Directs med-researcher agent what to archive for voice-trainer agent's local evidence base:
 voice feminization research and guidelines. Read-only.
 
 ## Archive access
@@ -22,10 +22,10 @@ in its phase heading.
 
 ## Pre-flight
 
-Verify `med-db/` exists, check existing topics via the `med-db` skill (`med-db-query --list-topics`).
+Verify the archive exists, check existing topics via the `med-db` skill.
 
 If `voice-feminization` has papers, the knowledge base may already be bootstrapped. Check via
-`med-db-query --topic voice-feminization`. Populated → skip to report. Otherwise proceed through phases.
+the matching topic query through the `med-db` skill. Populated → skip to report. Otherwise proceed through phases.
 
 ---
 
@@ -151,6 +151,6 @@ archive first 5 under `voice-feminization`.
 
 ## Phase 5: Validation
 
-Run validation via the `med-db` skill (`med-db-integrity-check`), then verify the topic is populated
-via `med-db-query --list-topics` and `med-db-query --topic voice-feminization`. Check retraction
-status of all newly archived papers via `uv run check-retraction`.
+Run validation via the `med-db` skill, then verify the topic is populated
+via the `med-db` skill. Check retraction
+status of all newly archived papers via the `check-retraction` skill.

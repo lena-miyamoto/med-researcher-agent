@@ -1,74 +1,71 @@
 ---
 description: >
-  med-db/ knowledge base bootstrap for the voice-trainer agent. Single component: the
-  voice-feminization evidence archive. Run the Mandatory Pre-Work Bootstrap Check on first use per
-  system. Read when bootstrap or archive query procedures are needed. For the coaching manual
-  (technique catalog, program design, safety, session structure), see voice-training-methodology.md.
+  Voice-trainer agent knowledge base — the voice-feminization evidence archive. Single component.
+  Run the Mandatory Pre-Work Knowledge Check on first use per system. Read when evidence setup or
+  archive query procedures are needed. For the coaching manual (technique catalog, program design,
+  safety, session structure), see voice-training-methodology.md.
 ---
 
-## Knowledge Base — med-db/ Integration
+## Knowledge Base
 
-Coaching work backed by structured, reproducible evidence in `med-db/`. All instances share same root
-knowledge.
+Coaching work is backed by structured, reproducible evidence in the local archive (rebuilt per
+machine, reached only through the `med-db` skill). All instances share the same root knowledge.
 
-**One component.** Unlike the psychotherapist agent's four-component knowledge base (research evidence,
-ICD-11, DSM-5-TR, therapy methodologies), the voice-trainer agent needs only the research evidence
-archive. No diagnostic classification components are required.
+**One component.** Unlike the psychotherapist agent's knowledge base (research evidence plus
+diagnostic classification and therapy resources), the voice-trainer agent needs only the research
+evidence archive. No diagnostic classification components are required.
 
-| Component         | Location                             | Bootstrap                               | Lookup tool                     |
-| ----------------- | ------------------------------------ | --------------------------------------- | ------------------------------- |
-| Research evidence | `med-db/papers/`, `med-db/searches/` | Research brief → `med-researcher` agent | `med-db-query`, `med-db-lookup` |
+| Component         | Backed by                          | How to use                                                   |
+| ----------------- | ---------------------------------- | ------------------------------------------------------------ |
+| Research evidence | Local archive — the `med-db` skill | Read the research brief; query papers via the `med-db` skill |
 
-`med-db/` gitignored — created locally, does **not** ship with repo. Must be bootstrapped once per
-system before coaching work.
+### Mandatory Pre-Work Knowledge Check
 
-### Mandatory Pre-Work Bootstrap Check
+**You MUST verify the knowledge base before engaging in any coaching work.** Run at the start of
+every instance.
 
-**You MUST verify the knowledge base before engaging in any coaching work.** Run at start of every instance.
+Follow the `med-db` skill to check whether the `voice-feminization` topic is populated. Populated →
+ready. Skip setting up.
 
-List topics via the `med-db` skill (`med-db-query --list-topics`). The `voice-feminization` topic
-appears with papers → ready. Skip bootstrapping.
+**Topic missing or empty → set it up:**
 
-**Topic missing or empty → bootstrap:**
-
-Dispatch `med-researcher` agent with the research brief:
+Dispatch the `med-researcher` agent with the research brief:
 
 > "Read and execute the research brief in `.claude/agents/references/research-brief-voice-training.md`.
-> Follow the brief's instructions to bootstrap the med-db/ knowledge base. Archive all core PMIDs and
-> run all search queries. Validate when done. Report what was archived and under which topics."
+> Follow the brief's instructions to populate the local archive. Archive all core PMIDs and run all
+> search queries. Validate when done. Report what was archived and under which topics."
 
-med-researcher checks existing archives, fetches missing papers (full text via the `fetch-paper`
-skill), runs queries, validates. Takes several minutes — run before the voice training session,
-not during.
+The `med-researcher` agent checks existing archives, fetches missing papers (full text via the
+`fetch-paper` skill), runs queries, and validates. Takes several minutes — run before the voice
+training session, not during.
 
-**Alternative — manual bootstrap:**
+**Alternative — manual setup:** archive the core PMIDs via the `med-db` skill under topic
+`voice-feminization`: 36238954, 37481572, 39465090, 38704279, 23415146, 36328187, 34706847, 34565626,
+19525544, 16301101, 2299839, 10764114. Full setup needs the research brief. The `med-researcher`
+approach above is strongly preferred.
 
-Archive the core PMIDs via the `med-db` skill under topic `voice-feminization`: 36238954, 37481572,
-39465090, 38704279, 23415146, 36328187, 34706847, 34565626, 19525544, 16301101, 2299839, 10764114.
-Full bootstrapping needs the research brief. med-researcher approach (above) strongly preferred.
-
-If bootstrapping fails, tell user:
+If setup fails, tell the user:
 
 > "My voice training evidence archive isn't fully set up on this system yet. I can coach from my
 > training knowledge, but my technique recommendations won't be backed by the local evidence base.
 > Let me fix this — it should only take a few minutes."
 
-Run missing bootstrap commands. All pass → proceed with coaching work.
+Run the missing setup steps. All pass → proceed with coaching work.
 
 ---
 
 ### Querying Research Evidence
 
-Follow `med-db` skill for all query commands. All queries read-only.
+Follow the `med-db` skill for all query commands. All queries are read-only.
 
-### Keeping Knowledge Base Current
+### Keeping the Knowledge Base Current
 
-- **Research briefs:** Re-run every 12 months. New systematic reviews or meta-analyses superseding core
-  references → update research brief and methodology file.
-- Citing outcomes or technique evidence from med-db/ papers: note publication year and evidence-quality
-  assessment. Foundational perception studies >10 years old (Wolfe 1990, Gelfer 2000/2005, Hillenbrand
-  2009): cite with year, flag as foundational.
-- Guidelines not in med-db (ASHA Practice Portal): cite by URL with access date.
+- **Research briefs:** re-run every 12 months. When a new systematic review or meta-analysis
+  supersedes a core reference, update the research brief and the methodology file.
+- Citing outcomes or technique evidence from archived papers: note the publication year and
+  evidence-quality assessment. Foundational perception studies over 10 years old (Wolfe 1990,
+  Gelfer 2000/2005, Hillenbrand 2009): cite with year, flag as foundational.
+- Guidelines not in the archive (ASHA Practice Portal): cite by URL with access date.
 
 See `.claude/agents/references/voice-training-methodology.md` for the coaching manual: technique
 catalog, program design, assessment-without-hearing, safety rules, special contexts, and session

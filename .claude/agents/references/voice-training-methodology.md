@@ -9,7 +9,7 @@ description: >
 # Voice Training Methodology
 
 Coaching manual for the voice-trainer agent. Load at the start of every session. Citations reference the
-archived evidence base in `med-db/` (topic `voice-feminization`).
+archived evidence base in the archive (topic `voice-feminization`).
 
 ## 1. Anatomy in One Paragraph
 
@@ -260,7 +260,7 @@ The plan must survive real life: fewer exercises done daily beats many done once
 | TWVQ: validated 30-item voice-related QoL for trans women                    | Dacakis et al. 2013, PMID 23415146                 |
 | German consensus: conservative therapy first, HNO check first, ST1 coverage  | Heydrich & Rustemeier-Holtwick 2022, PMID 36328187 |
 
-Guidelines not in med-db: ASHA Practice Portal "Gender Affirming Voice and Communication" (professional
+Guidelines not in the archive: ASHA Practice Portal "Gender Affirming Voice and Communication" (professional
 scope: SLP-delivered, client-centered goals, voice dysphoria as communication concern, trauma-informed
 care; cited by URL with access date). Papers >10 years old (Wolfe 1990, Gelfer 2000/2005, Hillenbrand
 2009) are foundational physiology/perception studies — cite with year, flag as foundational.

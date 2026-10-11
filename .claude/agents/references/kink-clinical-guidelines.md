@@ -14,7 +14,7 @@ Authoritative source: Kink Clinical Practice Guidelines Project (2019). _Clinica
 Working with People with Kink Interests._ <https://www.kinkguidelines.com>. Published: Sprott, R.A.,
 Herbitter, C., Grant, P., Moser, C., & Kleinplatz, P.J. (2023). Clinical Guidelines for Working with
 Clients Involved in Kink. _Journal of Sex & Marital Therapy_, 49(8), 978–995. PMID: 37439228. Archived in
-med-db/ under `kink-clinical-guidelines`.
+the local archive under `kink-clinical-guidelines`.
 
 2026 revision: Moser, C., Kleinplatz, P., & Randall, A. (2026). Kink Clinical Guidelines — 2026 Revision.
 _The Journal of Sexual Medicine_, 23(Supplement_4), qdag118.227. DOI: 10.1093/jsxmed/qdag118.227
@@ -449,7 +449,7 @@ Based on the conference abstract (Moser, Kleinplatz & Randall, 2026, DOI: 10.109
 
 **Status note:** As of 2026-08, the full revised guidelines are not yet freely available. Continue
 checking <https://www.kinkguidelines.com> for the updated text. When the full 2026 revision is published,
-archive it in med-db/ and update this file.
+archive it in the local archive and update this file.
 
 ---
 
@@ -467,7 +467,7 @@ TASHRA (<https://www.tashra.org>), CARAS (<https://www.carasresearch.org>), Kink
 _Safe, Sane and Consensual_; Ortmann & Sprott (2013) _Sexual Outsiders_; Shahbaz & Chirinos (2017)
 _Becoming a Kink Aware Therapist_.
 
-**Key articles (all med-db/archived):** Sprott et al. (2023, PMID: 37439228) — guidelines publication;
+**Key articles (all archived in the local archive):** Sprott et al. (2023, PMID: 37439228) — guidelines publication;
 Dunkley & Brotto (2018, PMID: 29543573) — BDSM practitioners psychologically healthy; Kolmes et al.
 (2006, PMID: 16803769) — therapist bias; Waldura et al. (2016, PMID: 28340946) — disclosure barriers.
 
@@ -507,4 +507,4 @@ When a kink-involved client presents, verify:
 - [ ] Reflected on own biases about this client's kink practices
 
 **Knowledge gaps:** admit honestly during session → flag for session note → research between sessions via
-med-researcher → archive in med-db/ → bring to next session unprompted.
+med-researcher → archive in the local archive → bring to next session unprompted.

@@ -2,7 +2,7 @@
 description: >
   Pre-session knowledge gap analysis procedure for returning voice training clients. Read when preparing for a
   returning client session (Step 0b of start-voice-training). Scans session history for uncovered topics, checks
-  coverage across med-db/ and resource files, dispatches med-researcher agent for gaps.
+  coverage across the local archive and resource files, dispatches med-researcher agent for gaps.
 ---
 
 # Knowledge Gap Analysis (Returning Clients)
@@ -41,8 +41,9 @@ Read the full session history. For every session note, identify:
 
 For each identified item, check whether the knowledge base has adequate coverage:
 
-1. **med-db/ coverage**: Is there at least one relevant paper archived under a matching topic (start with
-   `voice-feminization`)? Follow the `med-db` skill for query commands — `--search-keyword` and `--list-topics`.
+1. **Local archive coverage**: Is there at least one relevant paper archived under a matching topic
+   (start with `voice-feminization`)? Follow the `med-db` skill for query commands — `--search-keyword`
+   and `--list-topics`.
 2. **Resource file coverage**: Do the agent's resource files (`voice-training-methodology`,
    `research-brief-voice-training`, `voice-training-knowledge-base`) cover this? Read the relevant file and check.
 
@@ -62,7 +63,7 @@ For every item with inadequate coverage, dispatch the `med-researcher` agent wit
 > "Research and archive evidence on [surgery Z] for voice feminization: outcomes, risks, and the standard
 > post-operative voice training pathway. Archive key papers."
 
-Run these research dispatches **before proceeding to Step 1**. The med-researcher agent archives papers in med-db/,
+Run these research dispatches **before proceeding to Step 1**. The med-researcher agent archives papers in the local archive,
 populating the knowledge base for this and all future sessions. This takes a few minutes — the client is not waiting yet;
 this is pre-session preparation.
 

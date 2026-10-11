@@ -32,9 +32,9 @@ owns coaching methodology — this skill manages files and frames.
 
 ### Knowledge Base Bootstrap (First Use Per System)
 
-Voice-trainer agent requires local knowledge base in `med-db/` (gitignored) — specifically the
+Voice-trainer agent requires local knowledge base in the local archive (gitignored) — specifically the
 `voice-feminization` topic with the core evidence archive. Follow `med-db` skill for bootstrap. Run
-Mandatory Pre-Work Bootstrap Check from `.claude/agents/references/voice-training-knowledge-base.md`.
+Mandatory Pre-Work Knowledge Check from `.claude/agents/references/voice-training-knowledge-base.md`.
 Client prefers to proceed without bootstrapping → note limitation — technique guidance uses training
 knowledge, not the archived evidence base.
 
@@ -128,7 +128,7 @@ Skip Step 1's name question — greet client by name in history file. Proceed to
 
 Read `.claude/skills/start-voice-training/references/knowledge-gap-analysis.md`. Execute full procedure:
 scan session history for knowledge gaps (techniques, surgery types, anatomy, measurement tools,
-voice-affecting conditions, singing), check coverage across med-db/ and resource files, dispatch
+voice-affecting conditions, singing), check coverage across the local archive and resource files, dispatch
 med-researcher agent for every uncovered gap, assemble session context block with newly filled and
 unresolved gaps. Increment `sessions` by 1 in frontmatter (written after session).
 
@@ -288,8 +288,8 @@ authoritative format reference — `end-voice-training` skill reads and applies 
 1. Client identity resolved — language selected (wait point respected), name confirmed (wait point respected),
    slug created, history file at `sessions/voice/<client-slug>.md` located or created.
 2. **Returning client: Pre-session knowledge gap analysis completed (Step 0b).** Session log scanned, coverage
-   checked against med-db/ and resource files. Gaps dispatched to med-researcher agent.
-   Research results archived in med-db/. New and unresolved gaps documented in session context.
+   checked against the local archive and resource files. Gaps dispatched to med-researcher agent.
+   Research results archived in the local archive. New and unresolved gaps documented in session context.
 3. History file read and context extracted — including newly filled and unresolved knowledge gaps.
 4. **New client: structured intake collected one question at a time** (name confirmation, gender/pronouns, age,
    phoniatric/HNO check, voice complaints, surgery history, GAHT status, goals, daily voice demands,

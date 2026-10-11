@@ -353,6 +353,6 @@ All checks run in Step 5b. Summarizes what was verified for traceability.
 
 - Match client's language (DE/EN) from frontmatter `language` field
 - Use standard German orthography (umlauts, ß) per CLAUDE.md
-- All med-db access through `med-db` skill — never touch med-db/ files directly
+- All archive access through the `med-db` skill — never touch the local archive directly
 - Session notes compact — clinical documentation, not narrative
 - Permanent Client Profile never compressed

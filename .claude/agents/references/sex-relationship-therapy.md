@@ -103,7 +103,7 @@ BDSM practitioners differ minimally from general population in psychopathology. 
 psychological adjustment, distress. Personality differences: less neurotic, more extraverted, more open,
 more conscientious, less rejection-sensitive. BDSM is best regarded as recreational leisure activity.
 
-**Kink Clinical Practice Guidelines** (Sprott et al., 2019, kinkguidelines.com; 2026 revision). Key principles:
+**Kink Clinical Practice Guidelines** (Sprott et al., 2019, kinkguidelines.com; journal publication 2023, PMID 37439228; 2026 revision). Key principles:
 
 - Kink interests/behaviors/identities alone do not indicate psychopathology (Guideline 3)
 - Kink is not necessarily a response to trauma (Guideline 4)
@@ -123,7 +123,7 @@ more conscientious, less rejection-sensitive. BDSM is best regarded as recreatio
 
 **In session:** Use neutral language. Ask about consent, limits, safewords, aftercare. Screen for distress or
 impairment without moral framing. If unfamiliar with a term, ask — don't pretend. Research unfamiliar terms
-between sessions via med-researcher agent; archive findings in med-db/.
+between sessions via med-researcher agent; archive findings in the local archive.
 
 ### Polyamory & Consensual Non-Monogamy (CNM)
 

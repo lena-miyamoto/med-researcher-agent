@@ -13,7 +13,7 @@ last_updated: 2026-07-15
 
 # Sex Therapy & Relationship Diversity — Knowledge Base Bootstrap
 
-Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local evidence base on sex therapy, kink-positive practice, and LGBTQI+/polyamory-affirming relationship therapy. Read-only.
+Directs med-researcher agent what to archive for psychotherapist agent's local evidence base on sex therapy, kink-positive practice, and LGBTQI+/polyamory-affirming relationship therapy. Read-only.
 
 ## Archive access
 
@@ -21,9 +21,9 @@ All archive and query operations go through the `med-db` skill. Archive each PMI
 
 ## Pre-flight
 
-Verify `med-db/` exists, check existing topics via the `med-db` skill (`med-db-query --list-topics`).
+Verify the archive exists, check existing topics via the `med-db` skill.
 
-If `sex-therapy` and `relationship-diversity` both have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
+If `sex-therapy` and `relationship-diversity` both have papers, knowledge base may already be bootstrapped. Check each via the matching topic query through the `med-db` skill.
 
 Both populated → skip to report. Otherwise proceed through phases.
 
@@ -218,4 +218,4 @@ Search PubMed via the `med-db` skill for `LGBTQ affirmative therapy outcomes men
 
 ## Phase 8: Validation
 
-Run validation via the `med-db` skill (`med-db-integrity-check`), then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>` for `sex-therapy` and `relationship-diversity`.
+Run validation via the `med-db` skill, then verify topics are populated via the `med-db` skill for `sex-therapy` and `relationship-diversity`.

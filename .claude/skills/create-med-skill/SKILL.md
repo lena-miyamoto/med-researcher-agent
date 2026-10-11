@@ -30,7 +30,7 @@ user-invocable: true
 3. Write the Copilot wrapper at `.github/skills/<name>/SKILL.md`: mirror discovery frontmatter, point body at the shared
 file.
 4. Never duplicate procedure across `.github` and `.claude`. The `.claude/skills/` file is the sole source of truth.
-5. Reuse repo tooling: `.claude/scripts/` and the `med-db/` workflow. Keep medical-research workflow in `CLAUDE.md` and
+5. Reuse repo tooling: `.claude/scripts/` and the `med-db` skill workflow. Keep medical-research workflow in `CLAUDE.md` and
 the `med-researcher` agents, not in generic skills.
 6. Update `README.md` only if the skill should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md`
 only when routing boundaries change.

@@ -13,7 +13,7 @@ last_updated: 2026-08-25
 
 # Gender-Affirming Care & TNB Mental Health — Knowledge Base Bootstrap
 
-Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local evidence base: gender-affirming care, TNB mental health. Read-only.
+Directs med-researcher agent what to archive for psychotherapist agent's local evidence base: gender-affirming care, TNB mental health. Read-only.
 
 ## Archive access
 
@@ -21,9 +21,9 @@ All archive and query operations go through the `med-db` skill. Archive each PMI
 
 ## Pre-flight
 
-Verify `med-db/` exists, check existing topics via the `med-db` skill (`med-db-query --list-topics`).
+Verify the archive exists, check existing topics via the `med-db` skill.
 
-If `gender-affirming-care` and `trans-nb-mental-health` both have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
+If `gender-affirming-care` and `trans-nb-mental-health` both have papers, knowledge base may already be bootstrapped. Check each via the matching topic query through the `med-db` skill.
 
 Both populated → skip to report. Otherwise proceed through phases.
 
@@ -48,7 +48,7 @@ Archive under `gender-affirming-care`.
 **DOI:** 10.1037/a0029597
 **Why:** Landmark adaptation of Meyer's minority stress model for TGNC populations. Maps distal and proximal stressors specific to gender minority experience. Adds nonaffirmation as TNB-specific distal stressor.
 
-Resolve the DOI via the `med-db` skill (`med-db-lookup`), then archive under `gender-affirming-care`.
+Resolve the DOI via the `med-db` skill, then archive under `gender-affirming-care`.
 
 ### 1.4 Testa et al. (2015) — Gender Minority Stress and Resilience Measure
 
@@ -132,9 +132,9 @@ Archive under `trans-nb-mental-health`.
 
 ---
 
-## Phase 5: DOI-Only References
+## Phase 5: Supplementary References
 
-May lack PMIDs (APA journals not always indexed in PubMed). Resolve via DOI lookup first; fall back to Europe PMC search.
+Additional references across topics not covered by the phases above.
 
 Archive under `gender-affirming-care`.
 
@@ -185,4 +185,4 @@ Search PubMed via the `med-db` skill for `transgender minority stress interventi
 
 ## Phase 7: Validation
 
-Run validation via the `med-db` skill (`med-db-integrity-check`), then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>` for `gender-affirming-care` and `trans-nb-mental-health`.
+Run validation via the `med-db` skill, then verify topics are populated via the `med-db` skill for `gender-affirming-care` and `trans-nb-mental-health`.

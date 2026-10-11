@@ -72,10 +72,10 @@ Full rule: `.claude/agents/references/premature-relational-judgments.md`.
 
 ### Knowledge Base Bootstrap (First Use Per System)
 
-Psychotherapist agent requires local knowledge base in `med-db/` (gitignored). Follow `med-db` skill for bootstrap and diagnostic classification setup. Run Mandatory
-Pre-Work Bootstrap Check from `.claude/agents/references/knowledge-base.md`. Client prefers to proceed
-without bootstrapping → note limitation — diagnostic assessment uses training knowledge, not structured
-local reference data.
+Psychotherapist agent requires local knowledge base in the local archive (gitignored). Follow `med-db` skill for bootstrap and diagnostic classification setup. Run Mandatory
+Pre-Work Knowledge Check from `.claude/agents/references/knowledge-base.md`. Client prefers to proceed
+without bootstrapping → note limitation — research-grounded decisions fall back to training knowledge,
+not the archived evidence base.
 
 ### 0. Resolve Client Identity and History File
 
@@ -166,9 +166,9 @@ Skip Step 1's name question — greet client by name in history file. Proceed to
 
 Read `.claude/skills/start-therapy-session/references/knowledge-gap-analysis.md`. Execute full procedure:
 scan session history for knowledge gaps (conditions, techniques, concepts, medications, life contexts,
-flagged gaps), check coverage across med-db/, resource files, therapy methodology guidelines, dispatch
-med-researcher agent for every uncovered gap, assemble session context block with newly filled and
-unresolved gaps. Increment `sessions` by 1 in frontmatter (written after session).
+flagged gaps), check coverage across the local archive, resource files, and
+`.claude/agents/references/therapy-methodologies.md`, dispatch med-researcher agent for every
+uncovered gap, assemble session context block with newly filled and unresolved gaps. Increment `sessions` by 1 in frontmatter (written after session).
 
 ### 1. Welcome — Intake
 
@@ -326,8 +326,9 @@ authoritative format reference — `end-therapy-session` skill reads and applies
 1. Client identity resolved — language selected (wait point respected), name confirmed (wait point respected),
    slug created, history file located or created.
 2. **Returning client: Pre-session knowledge gap analysis completed (Step 0b).** Session log scanned, coverage
-   checked against med-db/, resource files, therapy methodology guidelines. Gaps dispatched to med-researcher agent.
-   Research results archived in med-db/. New and unresolved gaps documented in session context.
+   checked against the local archive, resource files, and `.claude/agents/references/therapy-methodologies.md`.
+   Gaps dispatched to med-researcher agent. Research results archived in the local archive. New and
+   unresolved gaps documented in session context.
 3. History file read and context extracted — including newly filled and unresolved knowledge gaps.
 4. **New client: structured intake collected one question at a time** (name confirmation, gender/pronouns, age,
    diagnoses, medication, opening, context). Each question had own wait point — no batched questions, no

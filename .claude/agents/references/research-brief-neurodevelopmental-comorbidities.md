@@ -2,7 +2,7 @@
 description: >
   Research brief for the med-researcher agent. Archives the core evidence base on adult ADHD, ASD, AuDHD
   (co-occurring ADHD+ASD), and common psychiatric comorbidities (depression, bipolar disorder, anxiety disorders,
-  OCD, PTSD, substance use disorders, sleep disorders, eating disorders, personality disorders) into med-db/.
+  OCD, PTSD, substance use disorders, sleep disorders, eating disorders, personality disorders) into the archive.
   Run once per system to bootstrap the psychotherapist agent's local knowledge base.
 topics:
   - adhd-comorbidity
@@ -14,7 +14,7 @@ last_updated: 2026-08-25
 
 # Neurodevelopmental Comorbidities — Knowledge Base Bootstrap
 
-Directs med-researcher agent what to archive in `med-db/` for psychotherapist agent's local, reproducible evidence base: adult ADHD, ASD, AuDHD, common comorbidities. Same papers used to build psychotherapist's Neurodevelopmental Specialization. Read-only. Never edit. Archive under topics in frontmatter.
+Directs med-researcher agent what to archive for psychotherapist agent's local, reproducible evidence base: adult ADHD, ASD, AuDHD, common comorbidities. Same papers used to build psychotherapist's Neurodevelopmental Specialization. Read-only. Never edit. Archive under topics in frontmatter.
 
 ## Archive access
 
@@ -22,9 +22,9 @@ All archive and query operations go through the `med-db` skill. Archive each PMI
 
 ## Pre-flight
 
-Verify `med-db/` exists. If not, any archival command auto-creates directory tree and `index.json`. No manual setup.
+Verify the archive exists. If not, any archival command auto-creates the archive tree and index. No manual setup.
 
-Check existing topics via the `med-db` skill (`med-db-query --list-topics`). If `adhd-comorbidity`, `asd-comorbidity`, and `neurodevelopmental-overlap` all have papers, knowledge base may already be bootstrapped. Check each via `med-db-query --topic <slug>`.
+Check existing topics via the `med-db` skill. If `adhd-comorbidity`, `asd-comorbidity`, and `neurodevelopmental-overlap` all have papers, knowledge base may already be bootstrapped. Check each via the matching topic query through the `med-db` skill.
 
 All three populated → bootstrap complete. Stop, report to psychotherapist agent. Otherwise proceed, skipping populated topics.
 
@@ -64,7 +64,7 @@ Archive under `adhd-comorbidity`. Foundation for ADHD comorbidity prevalence and
 **DOI:** 10.1016/j.psychres.2026.117085
 **Why:** Pooled 57% any PD prevalence in adults with ADHD. High BPD overlap (~22%). Foundation for personality disorder differential diagnosis guidance.
 
-Resolve the DOI via the `med-db` skill (`med-db-lookup`), then archive under `adhd-comorbidity`. If no PMID, search Europe PMC via the `med-db` skill for `Adamis 2026 personality disorders ADHD adult meta-analysis` and archive the first result.
+Resolve the DOI via the `med-db` skill, then archive under `adhd-comorbidity`. If no PMID, search Europe PMC via the `med-db` skill for `Adamis 2026 personality disorders ADHD adult meta-analysis` and archive the first result.
 
 ### 1.7 Magdi et al. (2025) — ADHD and PTSD adult comorbidity: systematic review
 
@@ -143,7 +143,7 @@ Search PubMed via the `med-db` skill for `ADHD autism combined comorbidity adult
 
 ## Phase 5: Validation
 
-After all phases, run comprehensive validation via the `med-db` skill (`med-db-integrity-check`). Then verify topics are populated via `med-db-query --list-topics` and `--topic <slug>`.
+After all phases, run comprehensive validation via the `med-db` skill. Then verify topics are populated via the `med-db` skill.
 
 Expected topics: `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-overlap`. If queries returned papers on additional topics, those appear as well.
 
@@ -151,12 +151,12 @@ Expected topics: `adhd-comorbidity`, `asd-comorbidity`, `neurodevelopmental-over
 
 ## Psychotherapist Agent Usage
 
-Once archived, psychotherapist agent queries med-db/ for evidence-backed comorbidity data via the `med-db` skill:
+Once archived, psychotherapist agent queries the archive for evidence-backed comorbidity data via the `med-db` skill:
 
-- List all comorbidity papers: `med-db-query --topic <slug>`
-- Look up a specific reference: `med-db-lookup --pmid <ID>`
-- Keyword search across all topics: `med-db-query --search-keyword <term>`
-- Read full metadata for a paper: `med-db-query --read-metadata <path>`
+- List all comorbidity papers via the `med-db` skill.
+- Look up a specific reference via the `med-db` skill.
+- Keyword search across all topics via the `med-db` skill.
+- Read full metadata for a paper via the `med-db` skill.
 
 Read-only queries — work without knowledge of archive layout. Only need topic slugs and PMID lookup.
 

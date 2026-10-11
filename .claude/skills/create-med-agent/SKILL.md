@@ -32,7 +32,7 @@ aliases. Point the body at the shared agent file.
 and brief runtime notes.
 6. Push broader workflow out of the agent: repo-wide behavior into `CLAUDE.md`, reusable procedure into
 `.claude/skills/`. Agent wrappers stay short.
-7. Reuse repo tooling: `med-db/` workflow and `.claude/scripts/`. Keep evidence and safety rules in repo-level
+7. Reuse repo tooling: the `med-db` skill workflow and `.claude/scripts/`. Keep evidence and safety rules in repo-level
 instructions unless the shared agent file needs specialization.
 8. Update `README.md` only if the agent should be advertised. Update `CLAUDE.md` or `.github/copilot-instructions.md`
 only when routing boundaries change.
