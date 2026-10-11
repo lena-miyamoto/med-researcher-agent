@@ -142,16 +142,24 @@ start. Top up on the [billing page](https://platform.deepseek.com/top_up) if nee
 Set the base URL and API key. Replace `<your-key>` with the key from the step above.
 
 ```bash
-export DEEPSEEK_API_KEY="<your-key>"
-export DEEPSEEK_BASE_URL="https://api.deepseek.com/anthropic"
-export ANTHROPIC_DEFAULT_FABLE_MODEL="deepseek-v4-pro[1m]"
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
-export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]"
-export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"
-export ANTHROPIC_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_AUTH_TOKEN="<your-key>"
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-flash"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-flash"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro"
+export ANTHROPIC_DEFAULT_FABLE_MODEL="deepseek-v4-pro"
+export ANTHROPIC_DEFAULT_MODEL="deepseek-flash"
+
+export FORCE_HYPERLINK=1
+export CLAUDE_CODE_NO_FLICKER=1
+export CLAUDE_CODE_RETRY_WATCHDOG=1
+
 export CLAUDE_CODE_DISABLE_1M_CONTEXT=1
+export CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000
+export CLAUDE_CODE_MAX_CONTEXT_TOKENS=200000
+export CLAUDE_CODE_AUTO_COMPACT_WINDOW=193000
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
-export DISABLE_GROWTHBOOK=1
+export CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1
 
 claude
 ```
