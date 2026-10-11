@@ -7,28 +7,37 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 
 ## Skills
 
-| Skill                    | Summary                                                                      |
-| ------------------------ | ---------------------------------------------------------------------------- |
-| `analyze-med-claims`     | Verify medical claims against literature; produce evidence reports.          |
-| `evaluate-paper`         | Score scientific papers 0-100 for evidence-based quality.                    |
-| `check-retraction`       | Check whether a paper is retracted (Crossref + PubMed APIs).                 |
-| `create-med-skill`       | Add a new shared skill with harness wrappers.                                |
-| `create-med-agent`       | Add a new shared agent with harness wrappers.                                |
-| `create-workout-routine` | Build a personalized, science-backed workout routine.                        |
-| `create-diet-plan`       | Build a personalized, evidence-based dietary plan.                           |
-| `start-therapy-session`  | Start a live AI therapy session with the psychotherapist agent.              |
-| `optimize-repo`          | Audit and clean up repo instruction files for source-of-truth hygiene.       |
-| `fetch-paper`            | Download a paper's full text (PDF + source text) into the med-db archive.    |
-| `define-terms`           | Complete glossary CSVs or define medical terms, backed by sources in med-db. |
+| Skill                    | Summary                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `analyze-med-claims`     | Verify medical claims against literature; produce evidence reports.                                |
+| `apply-fixes`            | Apply approved fixes from a `review-changeset` plan (caller-invoked).                              |
+| `check-retraction`       | Check whether a paper is retracted (Crossref + PubMed APIs).                                       |
+| `compress-skill`         | Compress instruction `.md` files to cut token cost, keeping meaning exact.                         |
+| `create-diet-plan`       | Build a personalized, evidence-based dietary plan.                                                 |
+| `create-med-agent`       | Add a new shared agent with harness wrappers.                                                      |
+| `create-med-skill`       | Add a new shared skill with harness wrappers.                                                      |
+| `create-workout-routine` | Build a personalized, science-backed workout routine.                                              |
+| `define-terms`           | Complete glossary CSVs or define medical terms, backed by sources in med-db.                       |
+| `end-therapy-session`    | Write post-session therapy documentation (invoked automatically by `start-therapy-session`).       |
+| `end-voice-training`     | Write post-session voice-training documentation (invoked automatically by `start-voice-training`). |
+| `evaluate-paper`         | Score scientific papers 0-100 for evidence-based quality.                                          |
+| `fetch-paper`            | Download a paper's full text (PDF + source text) into the med-db archive.                          |
+| `med-db`                 | Access the local `med-db` archive — search, query, archive, validate, ICD-11 lookup.               |
+| `optimize-repo`          | Audit and clean up repo instruction files for source-of-truth hygiene.                             |
+| `review-changeset`       | Review the current changeset for logic flaws, stale references, and wrapper misalignment.          |
+| `start-therapy-session`  | Start a live AI therapy session with the psychotherapist agent.                                    |
+| `start-voice-training`   | Start a live AI voice training session with the voice-trainer agent.                               |
 
 ### Agents
 
-| Agent             | Summary                                                                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `med-researcher`  | Medical and dietological research specialist with mandatory evidence-quality standards.                                            |
-| `fitness-coach`   | Science-backed fitness coach for workout design, exercise selection, and programming.                                              |
-| `dietologist`     | Evidence-based nutrition specialist for dietary planning and supplementation assessment.                                           |
-| `psychotherapist` | AI psychotherapist grounded in Liberation/Critical Psychology. Diagnosis, case formulation, therapeutic dialogue. Bilingual DE/EN. |
+| Agent             | Summary                                                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `med-researcher`  | Medical and dietological research specialist with mandatory evidence-quality standards.                                                                                           |
+| `fitness-coach`   | Science-backed fitness coach for workout design, exercise selection, and programming.                                                                                             |
+| `dietologist`     | Evidence-based nutrition specialist for dietary planning and supplementation assessment.                                                                                          |
+| `psychotherapist` | AI psychotherapist grounded in Liberation/Critical Psychology. Diagnosis, case formulation, therapeutic dialogue. Bilingual DE/EN.                                                |
+| `psychiatrist`    | AI psychiatrist and psychopharmacology specialist for ADHD, autism, anxiety disorders, and depression. Diagnosis, medication management, differential diagnosis. Bilingual DE/EN. |
+| `voice-trainer`   | AI voice trainer for voice feminization (trans women and transfeminine people). Evidence-based pitch, resonance, and articulation coaching. Bilingual DE/EN.                      |
 
 ## Prerequisites
 
@@ -173,4 +182,6 @@ claude --agent med-researcher
 claude --agent fitness-coach
 claude --agent dietologist
 claude --agent psychotherapist
+claude --agent psychiatrist
+claude --agent voice-trainer
 ```
