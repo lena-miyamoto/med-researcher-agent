@@ -832,6 +832,7 @@ def download_paper(
     med_db=None,
     email=None,
     force=False,
+    body_file=None,
     allow_sci_hub=True,
     sci_hub_mirrors=None,
     pubmed_fetch_func=None,
@@ -842,8 +843,10 @@ def download_paper(
 ):
     """Download one paper's full text into the med-db fulltext archive.
 
-    Returns a result dict; raises RuntimeError when no source could provide
-    the full text.
+    When *body_file* is given, its text is used as the full text and the
+    network chain (PDF download, Europe PMC, OpenAlex, Sci-Hub) is skipped;
+    metadata resolution still runs.  Returns a result dict; raises
+    RuntimeError when no source could provide the full text.
     """
     if med_db is None:
         med_db = utils.MED_DB
@@ -870,6 +873,13 @@ def download_paper(
             "title": resolved["title"],
         }
 
+    text = None
+    if body_file is not None:
+        try:
+            text = Path(body_file).read_text(encoding="utf-8")
+        except OSError as exc:
+            raise RuntimeError(f"could not read --body-file {body_file}: {exc}") from None
+
     created = not target.exists()
     target.mkdir(parents=True, exist_ok=True)
     pdf_destination = target / "paper.pdf"
@@ -884,13 +894,21 @@ def download_paper(
     }
     fetched_pdf = False
 
+    if text is not None:
+        provenance["extraction_method"] = "archive.is-scrape"
+        source_chain.append({"source": "archive.is", "outcome": "ok", "detail": str(body_file)})
+
     # 1. Direct PDF URL (--url input)
-    if resolved.get("direct_pdf_url") and attempt_pdf_download(
-        resolved["direct_pdf_url"],
-        "direct-url",
-        pdf_destination,
-        source_chain,
-        download_binary_func,
+    if (
+        text is None
+        and resolved.get("direct_pdf_url")
+        and attempt_pdf_download(
+            resolved["direct_pdf_url"],
+            "direct-url",
+            pdf_destination,
+            source_chain,
+            download_binary_func,
+        )
     ):
         fetched_pdf = True
         provenance["pdf_source"] = "direct-url"
@@ -898,11 +916,10 @@ def download_paper(
 
     # 2. Europe PMC fullTextXML (open-access text). PMID-resolved records use
     #    the MED:<pmid> alias so PubMed-only records get an open-access attempt.
-    text = None
     epmc_record = resolved.get("epmc_record") or (
         f"MED:{resolved['pmid']}" if resolved.get("pmid") else None
     )
-    if not fetched_pdf and epmc_record:
+    if text is None and not fetched_pdf and epmc_record:
         try:
             xml_string = fetch_fulltext_xml(
                 epmc_record,
@@ -1011,7 +1028,10 @@ def download_paper(
             provenance["extraction_method"] = "none"
 
     if text:
-        extraction_notes = "Full text from Europe PMC fullTextXML"
+        if body_file is not None:
+            extraction_notes = "Full text from archive.is scrape"
+        else:
+            extraction_notes = "Full text from Europe PMC fullTextXML"
         if fetched_pdf:
             extraction_notes += f"; PDF from {provenance['pdf_source']}"
         else:
@@ -1107,6 +1127,10 @@ def parse_args():
         help="Re-download even if the paper is already archived.",
     )
     parser.add_argument(
+        "--body-file",
+        help="Read the full text from this file instead of the network chain (e.g. a scrape from 'uv run fetch-archive'). Requires --reference or --title.",
+    )
+    parser.add_argument(
         "--no-sci-hub",
         action="store_true",
         help="Disable Sci-Hub entirely (paywalled papers fall back to legal sources only).",
@@ -1129,6 +1153,8 @@ def parse_args():
         parser.error("--topic is required")
     if args.year is not None and not args.title:
         parser.error("--year requires --title")
+    if args.body_file and not args.reference and not args.title:
+        parser.error("--body-file requires --reference or --title")
     if args.year is not None and args.year < 1:
         parser.error("--year must be a positive integer")
     if args.delay < 0:
@@ -1192,6 +1218,7 @@ def main():
                 med_db=med_db,
                 email=args.email,
                 force=args.force,
+                body_file=args.body_file,
                 allow_sci_hub=not args.no_sci_hub,
                 sci_hub_mirrors=sci_hub_mirrors,
             )

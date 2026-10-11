@@ -36,6 +36,8 @@ Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always in
 | `--doi`                | str[]  | `[]`            | DOI to resolve and archive; repeatable. Tries PubMed, then Europe PMC, then Crossref metadata (covers DOIs indexed in neither, e.g. APA journals) |
 | `--remove-pmid`        | str[]  | `[]`            | Remove archived paper folders by PMID; repeatable. Cannot combine with archival options                                                           |
 | `--remove-epmc-record` | str[]  | `[]`            | Remove archived paper folders by Europe PMC record as `SOURCE:ID`; repeatable. Cannot combine with archival options                               |
+| `--remove`             | flag   | off             | Remove the archive entry at `--path` (folder, search JSON, or web HTML); requires `--path`. Cannot combine with archival options                  |
+| `--path`               | str    | —               | Archive-relative path of the entry to remove; requires `--remove`. Rejects container dirs and category roots (min-depth guard)                    |
 | `--archive-first`      | int    | `0`             | Also archive first N PMIDs returned by `--query`                                                                                                  |
 | `--retmax`             | int    | `20`            | Machine-readable hits to request for archived search JSON                                                                                         |
 | `--med-db`             | str    | `med-db`        | Target `med-db/` directory path                                                                                                                   |
@@ -89,11 +91,13 @@ Query local `med-db/` archive. Exactly one operation flag required (mutually exc
 | Flag                  | Type | Description                                                  |
 | --------------------- | ---- | ------------------------------------------------------------ |
 | `--list-topics`       | flag | List all topics with paper and search counts                 |
+| `--stats`             | flag | Overall archive statistics per category                      |
 | `--topic`             | str  | List all papers under a topic                                |
 | `--check-pmid`        | str  | Check if a PMID is already archived                          |
 | `--check-epmc`        | str  | Check if a Europe PMC record (`SOURCE:ID`) is archived       |
 | `--pmids-from-search` | str  | Extract PMID list from search JSON file path                 |
 | `--read-metadata`     | str  | Read metadata from a paper directory path                    |
+| `--read-source`       | str  | Read source file(s) at an archive-relative file/dir path     |
 | `--search-keyword`    | str  | Search papers by keyword (case-insensitive)                  |
 | `--recent`            | int  | List N most recently added papers                            |
 | `--search-searches`   | str  | Search archived search queries by keyword (case-insensitive) |
@@ -104,6 +108,7 @@ Query local `med-db/` archive. Exactly one operation flag required (mutually exc
 | -------------------- | ---- | ------- | ------------------------------------------------------------------------------------- | --------------------------------------------------- |
 | `--search-topic`     | str  | —       | `--search-keyword`, `--search-searches`                                               | Restrict search to a specific topic                 |
 | `--show-abstract`    | flag | off     | `--read-metadata`                                                                     | Include abstract text in output                     |
+| `--body-only`        | flag | off     | `--read-source`                                                                       | Strip YAML frontmatter; output body text only       |
 | `--summary`          | flag | off     | `--search-keyword`                                                                    | Compact output (identifiers + titles only)          |
 | `--identifiers-only` | flag | off     | `--topic`, `--search-keyword`, `--recent`, `--pmids-from-search`, `--search-searches` | Output identifiers/paths/PMIDs one per line         |
 | `--title-only`       | flag | off     | `--read-metadata`                                                                     | Output only the title text                          |
@@ -197,21 +202,22 @@ on completion.
 
 At least one input required: `--reference`, `--title`, or `--url`. `--topic` is required.
 
-| Parameter          | Type   | Default  | Description                                                                       |
-| ------------------ | ------ | -------- | --------------------------------------------------------------------------------- |
-| `--reference`      | str[]  | `[]`     | Paper reference (DOI, PMID, arXiv ID, Europe PMC `SOURCE:ID`, or URL); repeatable |
-| `--title`          | str    | —        | Paper title for title search                                                      |
-| `--year`           | int    | —        | Publication year for title search; requires `--title`                             |
-| `--url`            | str    | —        | Direct URL to a paper PDF or landing page                                         |
-| `--topic`          | str    | required | Medical topic for grouping output (e.g. `adhd`). Kebab-case slug auto-derived     |
-| `--topic-slug`     | str    | —        | Explicit kebab-case slug; overrides `--topic`                                     |
-| `--med-db`         | str    | `med-db` | Target `med-db/` directory path                                                   |
-| `--email`          | str    | —        | Contact email for NCBI E-utilities, Unpaywall, Crossref                           |
-| `--delay`          | float  | `0.34`   | Delay between downloads (seconds)                                                 |
-| `--force`          | flag   | off      | Re-download even if the paper is already archived                                 |
-| `--no-sci-hub`     | flag   | off      | Disable Sci-Hub entirely (paywalled papers fall back to legal sources only)       |
-| `--sci-hub-mirror` | str    | —        | Override the Sci-Hub mirror list (takes precedence)                               |
-| `--format`         | choice | `text`   | Output format: `json` or `text`                                                   |
+| Parameter          | Type   | Default  | Description                                                                                       |
+| ------------------ | ------ | -------- | ------------------------------------------------------------------------------------------------- |
+| `--reference`      | str[]  | `[]`     | Paper reference (DOI, PMID, arXiv ID, Europe PMC `SOURCE:ID`, or URL); repeatable                 |
+| `--title`          | str    | —        | Paper title for title search                                                                      |
+| `--year`           | int    | —        | Publication year for title search; requires `--title`                                             |
+| `--url`            | str    | —        | Direct URL to a paper PDF or landing page                                                         |
+| `--topic`          | str    | required | Medical topic for grouping output (e.g. `adhd`). Kebab-case slug auto-derived                     |
+| `--topic-slug`     | str    | —        | Explicit kebab-case slug; overrides `--topic`                                                     |
+| `--med-db`         | str    | `med-db` | Target `med-db/` directory path                                                                   |
+| `--email`          | str    | —        | Contact email for NCBI E-utilities, Unpaywall, Crossref                                           |
+| `--delay`          | float  | `0.34`   | Delay between downloads (seconds)                                                                 |
+| `--force`          | flag   | off      | Re-download even if the paper is already archived                                                 |
+| `--body-file`      | str    | —        | Ingest full text from this file instead of the network chain; requires `--reference` or `--title` |
+| `--no-sci-hub`     | flag   | off      | Disable Sci-Hub entirely (paywalled papers fall back to legal sources only)                       |
+| `--sci-hub-mirror` | str    | —        | Override the Sci-Hub mirror list (takes precedence)                                               |
+| `--format`         | choice | `text`   | Output format: `json` or `text`                                                                   |
 
 ---
 

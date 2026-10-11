@@ -4,7 +4,8 @@ description: >
   Download the full text of a scientific paper or article (PDF plus extracted source text) into the
   med-db archive. Use when research needs a paper's full text identified by DOI, PMID, arXiv ID,
   Europe PMC record, title, or URL. Open-access papers are fetched legally; paywalled papers go
-  straight to Sci-Hub, with legal alternatives tried only if Sci-Hub fails.
+  straight to Sci-Hub, with legal alternatives tried only if Sci-Hub fails. When the automatic chain
+  fails, an interactive archive.is scrape (fetch-archive) can feed the text in via --body-file.
 argument-hint: "DOI, PMID, arXiv ID, Europe PMC SOURCE:ID, title (+year), or URL of the paper to download"
 user-invocable: true
 ---
@@ -62,7 +63,8 @@ uv run med-db-download-paper --reference <REF> --topic '<name>'
 
 or `--title '<title>' --year <YEAR>`, or `--url <URL>`. Key flags: `--topic` (required), `--force`
 (re-download), `--no-sci-hub` (disable the fallback), `--sci-hub-mirror <URL>` (mirror override),
-`--email <address>` (E-utilities/Unpaywall/Crossref), `--format json|text`. Pass `--email` whenever
+`--email <address>` (E-utilities/Unpaywall/Crossref), `--body-file <FILE>` (ingest externally
+obtained full text, see archive.is fallback below), `--format json|text`. Pass `--email` whenever
 one is available — Unpaywall rejects requests without an email (HTTP 422).
 
 The script runs the Source Chain below, writes the archive files, syncs `index.json`, and runs the
@@ -98,6 +100,20 @@ recorded in `metadata.json` provenance (`source_chain`) and, on success, `source
 Every Sci-Hub download is recorded: `metadata.json` provenance (`sci_hub_used: true`, `pdf_source`)
 and `source.md` frontmatter (`extraction_notes`). To disable Sci-Hub entirely, pass `--no-sci-hub`
 (paywalled papers then fall back to the legal sources only).
+
+**Manual archive.is fallback.** When the automatic chain fails (Sci-Hub mirrors down, no open-access
+copy), offer the user an interactive archive.is scrape. It opens a visible browser and waits for a
+human CAPTCHA solve, so it is never auto-run — only propose it when the user can solve the CAPTCHA.
+Host prerequisite: `uvx playwright install chromium`.
+
+```text
+uv run fetch-archive '<article-url>' -o tmp/<slug>.txt
+uv run med-db-download-paper --reference '<doi>' --body-file tmp/<slug>.txt --topic '<name>'
+```
+
+`--body-file` skips steps 1-4 of the source chain and archives the file's text as the full text;
+metadata resolution still runs, so `--reference` or `--title` is required. Provenance records
+`extraction_method: archive.is-scrape` and `pdf_source: null`; the chain shows `archive.is ok`.
 
 PMC open access is intentionally absent: the PMC PDF endpoint now requires a JavaScript
 proof-of-work challenge, and the PMC OA service is deprecated (ends 2026-08-24). Unpaywall and
