@@ -87,7 +87,7 @@ def fetch_archive():
     return _load_script("fetch_archive", "fetch-archive.py").main()
 
 
-def lint_md(args=None):
+def lint_md():
     """Run rumdl on repo markdown files.
 
     Delegates to utils.lint_source_md when --check-source-md or
@@ -95,9 +95,7 @@ def lint_md(args=None):
     CLAUDE.md, .github, and .claude by default.  Pass --fix to auto-fix
     violations.  rumdl reads its rule set from .rumdl.toml.
     """
-    if args is None:
-        args = sys.argv[1:]
-    args = list(args)
+    args = list(sys.argv[1:])
 
     source_md_result = utils.lint_source_md(args)
     if source_md_result != -1:
@@ -126,7 +124,7 @@ def lint_md(args=None):
     return subprocess.run(["rumdl", "check", *args], check=False).returncode
 
 
-def test(args=None):
+def test():
     """Run pytest on the test suite. Passes ``tests/ -v`` by default."""
     try:
         from pytest import main as pytest_main
@@ -135,8 +133,7 @@ def test(args=None):
             "pytest is not installed; run 'uv sync' to install the dev dependencies"
         ) from exc
 
-    if args is None:
-        args = sys.argv[1:] or ["tests/", "-v"]
+    args = sys.argv[1:] or ["tests/", "-v"]
     return pytest_main(args)
 
 

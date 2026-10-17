@@ -1,6 +1,6 @@
 """CSV/TSV inspection and transform utility for the repo.
 
-For glossary and archive CSV work.
+Replaces ``mlr`` (Miller) and ``csvkit`` for glossary and archive CSV work.
 Run as ``uv run csv-util <command> ...`` from the repo root. The first row
 of every input file is treated as the header row.
 
@@ -426,7 +426,10 @@ def _add_output(parser):
         help="Output line ending. Default: auto (detect from input).",
     )
     parser.add_argument(
-        "--output", "-o", default=None, help="Output path. Default: stdout. Use '-' for stdout."
+        "--output",
+        "-o",
+        default=None,
+        help="Output path. Default: stdout. Use '-' for stdout.",
     )
     parser.add_argument(
         "--in-place", action="store_true", help="Overwrite the input file atomically."
@@ -435,14 +438,17 @@ def _add_output(parser):
 
 def _add_format(parser):
     parser.add_argument(
-        "--format", choices=("json", "text"), default="text", help="Output format. Default: text."
+        "--format",
+        choices=("json", "text"),
+        default="text",
+        help="Output format. Default: text.",
     )
 
 
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="csv-util",
-        description="Inspect and transform CSV/TSV files.",
+        description="Inspect and transform CSV/TSV files (replaces mlr and csvkit).",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -476,7 +482,11 @@ def build_parser():
     _add_file_and_delimiter(p)
     _add_output(p)
     p.add_argument(
-        "--rows", "-n", type=int, default=10, help="Number of data rows to show. Default: 10."
+        "--rows",
+        "-n",
+        type=int,
+        default=10,
+        help="Number of data rows to show. Default: 10.",
     )
     p.add_argument(
         "--columns",
@@ -523,7 +533,9 @@ def build_parser():
     _add_file_and_delimiter(p)
     _add_output(p)
     p.add_argument(
-        "--map", required=True, help='JSON file of the form {"key": {"column": "value"}}.'
+        "--map",
+        required=True,
+        help='JSON file of the form {"key": {"column": "value"}}.',
     )
     p.add_argument(
         "--key-column",
@@ -566,7 +578,13 @@ def main():
     args = parse_args()
     try:
         return _dispatch(args)
-    except (FileNotFoundError, ValueError, json.JSONDecodeError, OSError, csv.Error) as exc:
+    except (
+        FileNotFoundError,
+        ValueError,
+        json.JSONDecodeError,
+        OSError,
+        csv.Error,
+    ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

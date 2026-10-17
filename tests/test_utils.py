@@ -1,6 +1,7 @@
 """Tests for utils.py — shared helpers used across med-db scripts."""
 
 import json
+import threading
 import urllib.error
 
 import pytest
@@ -1381,3 +1382,45 @@ class TestLintSourceMd:
         result = utils.lint_source_md(["--fix-source-md", str(source_file)])
         assert result == 0
         assert "normalized 0 of 1 archive markdown file(s)" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------
+# ensure_med_db_structure
+# ---------------------------------------------------------------------------
+
+
+class TestEnsureMedDbStructure:
+    def test_creates_directories(self, tmp_path):
+        utils.ensure_med_db_structure(tmp_path)
+        for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
+            assert (tmp_path / name).is_dir()
+
+
+# ---------------------------------------------------------------------------
+# index_lock (cross-process serialization)
+# ---------------------------------------------------------------------------
+
+
+class TestIndexLock:
+    def test_index_lock_is_exclusive_across_threads(self, tmp_path):
+        """A held lock blocks a second acquisition until it is released."""
+        utils.ensure_med_db_structure(tmp_path)
+        acquired = threading.Event()
+
+        def second():
+            with utils.index_lock(tmp_path):
+                acquired.set()
+
+        with utils.index_lock(tmp_path):
+            t = threading.Thread(target=second, daemon=True)
+            t.start()
+            assert not acquired.wait(timeout=0.3)
+        assert acquired.wait(timeout=2.0)
+        t.join(timeout=2.0)
+
+    def test_no_op_without_fcntl(self, tmp_path, monkeypatch):
+        """The non-POSIX fallback yields without blocking (no deadlock)."""
+        utils.ensure_med_db_structure(tmp_path)
+        monkeypatch.setattr(utils, "fcntl", None)
+        with utils.index_lock(tmp_path), utils.index_lock(tmp_path):
+            pass

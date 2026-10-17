@@ -56,18 +56,27 @@ in real sessions. **None of them are acceptable.**
 | `node -e`, `perl -e` touching med-db files                        | Same bypass, different language                                         | `uv run med-db-*` tools                                                       |
 | `WebFetch` / `WebSearch` / `wget` / `curl` on a Wikipedia article | Scrapes raw HTML, bypasses the REST summary tool and its error contract | `uv run med-db-term-wikipedia --title "<English title>"`                      |
 
+## Concurrency
+
+- Archive and index writes are serial. Never dispatch two `med-db` archival, `--sync-index`,
+  or `--remove` commands at the same time — from separate shells, separate agents, or as
+  parallel tool calls. Run them one at a time and wait for each to finish.
+- The tool takes an exclusive file lock around the `index.json` read-modify-write, so
+  interleaved writers no longer lose index updates. Serialise at the caller.
+
 ## Bootstrap
 
 - `./med-db/` is gitignored and does not ship with the repo.
 - Do not create `med-db/` or its subdirectories by hand; the tooling creates the archive
   tree and initial `index.json`.
-- To bootstrap a fresh checkout: run any archival command (e.g.
-  `uv run med-db --pmid 12345678`). The tooling auto-creates the full tree
+- To bootstrap a fresh checkout: run `uv run med-db --sync-index` (network-free — creates the
+  archive tree and `index.json` without fetching), or any archival command (e.g.
+  `uv run med-db --pmid 12345678`) to also fetch content. The tooling auto-creates the full tree
   (`searches/`, `papers/`, `fulltext/`, `guidelines/`, `web/`, `dictionary/`) plus `index.json`.
 - To verify bootstrap: `uv run med-db-integrity-check --med-db med-db`. An empty archive
   passes if all six directories and `index.json` exist.
-- Query and lookup tools are read-only. If they report that `med-db/` is missing, run an
-  archival command first.
+- Query and lookup tools are read-only. If they report that `med-db/` is missing, run a
+  bootstrap command (`--sync-index` or any archival command) first.
 
 ### What First Init Fetches
 
@@ -135,7 +144,7 @@ local, no-network** commands are permitted during the session:
 | `uv run med-db-query --search-keyword "..."`                       | `uv run med-db --pmid ...` (archival — writes)                             |
 | `uv run med-db-query --search-keyword "..." --identifiers-only`    | `uv run med-db --source pubmed --query "..."` (network search)             |
 | `uv run med-db-query --list-topics`                                | `uv run med-db-download-icd11` (setup — writes)                            |
-| `uv run med-db-query --stats`                                      |                                                                            |
+| `uv run med-db-query --stats`                                      | `uv run med-db --sync-index` (setup — writes)                              |
 | `uv run med-db-query --list-topics --names-only`                   | `uv run med-db-download-paper ...` (full-text download — network + writes) |
 | `uv run med-db-query --check-pmid "..." --locations-only`          | `uv run med-db-integrity-check` (harmless but unnecessary mid-session)     |
 | `uv run med-db-query --read-metadata "..."`                        | `WebSearch`, `WebFetch` for new papers (network)                           |
@@ -212,6 +221,7 @@ Default text output; `--format json` for structured, `--quiet` for folder paths 
 | Paths only (quiet)     | `uv run med-db ... --quiet`                                                                      |
 | Migrate (dry run)      | `uv run med-db --migrate-dry-run`                                                                |
 | Migrate                | `uv run med-db --migrate`                                                                        |
+| Sync index             | `uv run med-db --sync-index`                                                                     |
 
 DOI resolution tries PubMed, then Europe PMC, then Crossref metadata — Crossref covers DOIs indexed in neither (e.g. APA journals).
 

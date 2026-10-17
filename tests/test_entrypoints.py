@@ -83,14 +83,16 @@ class TestLintMd:
 
     def test_explicit_path_single_check(self, monkeypatch):
         run_mock = self._mock_rumdl(monkeypatch)
-        result = ep.lint_md(["README.md"])
+        self._patch_argv(monkeypatch, ["README.md"])
+        result = ep.lint_md()
         assert result == 0
         run_mock.assert_called_once_with(["rumdl", "check", "README.md"], check=False)
 
     def test_default_targets(self, monkeypatch):
         run_mock = self._mock_rumdl(monkeypatch)
         repo_root = Path(ep.SCRIPTS_DIR).resolve().parent.parent
-        result = ep.lint_md([])
+        self._patch_argv(monkeypatch, [])
+        result = ep.lint_md()
         assert result == 0
         run_mock.assert_called_once_with(
             [
@@ -107,7 +109,8 @@ class TestLintMd:
 
     def test_fix_formats_then_checks(self, monkeypatch):
         run_mock = self._mock_rumdl(monkeypatch)
-        result = ep.lint_md(["--fix", "README.md"])
+        self._patch_argv(monkeypatch, ["--fix", "README.md"])
+        result = ep.lint_md()
         assert result == 0
         assert run_mock.call_args_list == [
             mock.call(["rumdl", "fmt", "README.md"], check=False),
@@ -123,13 +126,15 @@ class TestLintMd:
 
     def test_returns_rumdl_exit_code(self, monkeypatch):
         self._mock_rumdl(monkeypatch, returncode=1)
-        assert ep.lint_md(["README.md"]) == 1
+        self._patch_argv(monkeypatch, ["README.md"])
+        assert ep.lint_md() == 1
 
     def test_check_source_md_delegates_to_utils(self, tmp_path, monkeypatch, capsys):
         source_file = tmp_path / "source.md"
         source_file.write_text("x" * 130 + "\n", encoding="utf-8")
         run_mock = self._mock_rumdl(monkeypatch)
-        result = ep.lint_md(["--check-source-md", str(source_file)])
+        self._patch_argv(monkeypatch, ["--check-source-md", str(source_file)])
+        result = ep.lint_md()
         assert result == 1
         assert "line length 130 > 120" in capsys.readouterr().out
         run_mock.assert_not_called()
@@ -138,7 +143,8 @@ class TestLintMd:
         source_file = tmp_path / "source.md"
         source_file.write_text("word " * 40, encoding="utf-8")
         run_mock = self._mock_rumdl(monkeypatch)
-        result = ep.lint_md(["--fix-source-md", str(source_file)])
+        self._patch_argv(monkeypatch, ["--fix-source-md", str(source_file)])
+        result = ep.lint_md()
         assert result == 0
         run_mock.assert_not_called()
         for line in source_file.read_text(encoding="utf-8").splitlines():
@@ -146,9 +152,10 @@ class TestLintMd:
 
 
 class TestRunTests:
-    def test_test_function_runs_pytest_with_args(self):
+    def test_test_function_runs_pytest_with_args(self, monkeypatch):
+        monkeypatch.setattr(ep.sys, "argv", ["entrypoints.py", "tests/", "-q"])
         with mock.patch("pytest.main", return_value=0) as pytest_main:
-            result = ep.test(["tests/", "-q"])
+            result = ep.test()
         assert result == 0
         pytest_main.assert_called_once_with(["tests/", "-q"])
 

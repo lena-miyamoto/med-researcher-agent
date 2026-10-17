@@ -6,7 +6,7 @@ description: >
 
 # med-db Command Reference
 
-`uv run <entry-point> …` from repo root. Default JSON; `--format text` for readable output.
+`uv run <entry-point> …` from repo root. Query and lookup tools default to JSON; `--format text` for readable output.
 
 Direct Python invocation **forbidden**. Access only through `uv run` entry points — validation, indexing, integrity checks always applied.
 
@@ -17,6 +17,26 @@ Full-text acquisition: follow the `fetch-paper` skill.
 
 `med-db-integrity-check` runs after every archival, setup, or download. Errors block completion (exit code 1) — fix immediately.
 
+## Exit codes and output
+
+Every command follows one agent-facing contract:
+
+- **Exit code** — `0` success, non-zero failure. Check it before trusting a result.
+- **stdout vs stderr** — results print to stdout (JSON by default for `med-db-query`,
+  `med-db-lookup`, and the term/ICD-11 lookup tools). Fatal diagnostics and usage errors
+  print to stderr; per-record `error` entries from `med-db-lookup` and read-operation errors
+  from `med-db-query` are part of the normal stdout payload. Parse stdout JSON together with
+  the exit code — never parse prose to detect success.
+- **`med-db-query`** — exits `1` when `med-db/` is missing, `--check-epmc` has a malformed
+  `SOURCE:ID`, or `--pmids-from-search` points at a missing file; an empty result set still
+  exits `0`.
+- **`med-db-lookup`** — exits `1` when any result carries an `error` field (PMID/DOI/EPMC
+  record not found, or source unreachable). That is a *negative result*, not a crash: the JSON
+  is still valid and the `error` field explains why. Exit `0` with no `error` field means a
+  match was found.
+- **`med-db-integrity-check`** — exits `1` on errors, `2` when only warnings remain, `0` on a
+  clean archive.
+
 ---
 
 ## `uv run med-db` — Archival (PubMed, Europe PMC, web discovery)
@@ -24,30 +44,31 @@ Full-text acquisition: follow the `fetch-paper` skill.
 Archive searches, PMIDs, DOIs, EPMC records into local `med-db/` tree. Always include
 `--topic` (human-readable name, e.g. `adhd`). Integrity check runs on completion.
 
-| Parameter              | Type   | Default         | Description                                                                                                                                       |
-| ---------------------- | ------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--source`             | choice | `pubmed`        | Primary source: `pubmed`, `europe-pmc`, `google-scholar`, `doaj`, `open-science-directory`, `free-medical-journals`, `openmd`, `trip-database`    |
-| `--query`              | str    | —               | Search query for selected source                                                                                                                  |
-| `--search-slug`        | str    | —               | Optional slug for saved search file                                                                                                               |
-| `--topic`              | str    | `uncategorized` | Medical topic for grouping output (e.g. `endometriosis`, `adhd`). Kebab-case slug auto-derived                                                    |
-| `--topic-slug`         | str    | —               | Explicit kebab-case slug; overrides `--topic`                                                                                                     |
-| `--pmid`               | str[]  | `[]`            | PMID to archive; repeatable (`--pmid 1 --pmid 2`)                                                                                                 |
-| `--epmc-record`        | str[]  | `[]`            | Europe PMC record as `SOURCE:ID`; repeatable                                                                                                      |
-| `--doi`                | str[]  | `[]`            | DOI to resolve and archive; repeatable. Tries PubMed, then Europe PMC, then Crossref metadata (covers DOIs indexed in neither, e.g. APA journals) |
-| `--remove-pmid`        | str[]  | `[]`            | Remove archived paper folders by PMID; repeatable. Cannot combine with archival options                                                           |
-| `--remove-epmc-record` | str[]  | `[]`            | Remove archived paper folders by Europe PMC record as `SOURCE:ID`; repeatable. Cannot combine with archival options                               |
-| `--remove`             | flag   | off             | Remove the archive entry at `--path` (folder, search JSON, or web HTML); requires `--path`. Cannot combine with archival options                  |
-| `--path`               | str    | —               | Archive-relative path of the entry to remove; requires `--remove`. Rejects container dirs and category roots (min-depth guard)                    |
-| `--archive-first`      | int    | `0`             | Also archive first N PMIDs returned by `--query`                                                                                                  |
-| `--retmax`             | int    | `20`            | Machine-readable hits to request for archived search JSON                                                                                         |
-| `--med-db`             | str    | `med-db`        | Target `med-db/` directory path                                                                                                                   |
-| `--email`              | str    | —               | Contact email for NCBI E-utilities                                                                                                                |
-| `--delay`              | float  | `0.34`          | Delay between PMID fetches (seconds)                                                                                                              |
-| `--migrate`            | flag   | off             | Migrate flat `med-db/` to topic-based per-paper folders                                                                                           |
-| `--migrate-dry-run`    | flag   | off             | Preview `--migrate` without copying files                                                                                                         |
-| `--force`              | flag   | off             | Re-fetch and overwrite papers already archived (useful after transient fetch failures)                                                            |
-| `--format`             | choice | `text`          | Output format: `json` or `text`                                                                                                                   |
-| `--quiet`              | flag   | off             | Output only created folder paths, one per line                                                                                                    |
+| Parameter              | Type   | Default         | Description                                                                                                                                                                       |
+| ---------------------- | ------ | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--source`             | choice | `pubmed`        | Primary source: `pubmed`, `europe-pmc`, `google-scholar`, `doaj`, `open-science-directory`, `free-medical-journals`, `openmd`, `trip-database`                                    |
+| `--query`              | str    | —               | Search query for selected source                                                                                                                                                  |
+| `--search-slug`        | str    | —               | Optional slug for saved search file                                                                                                                                               |
+| `--topic`              | str    | `uncategorized` | Medical topic for grouping output (e.g. `endometriosis`, `adhd`). Kebab-case slug auto-derived                                                                                    |
+| `--topic-slug`         | str    | —               | Explicit kebab-case slug; overrides `--topic`                                                                                                                                     |
+| `--pmid`               | str[]  | `[]`            | PMID to archive; repeatable (`--pmid 1 --pmid 2`)                                                                                                                                 |
+| `--epmc-record`        | str[]  | `[]`            | Europe PMC record as `SOURCE:ID`; repeatable                                                                                                                                      |
+| `--doi`                | str[]  | `[]`            | DOI to resolve and archive; repeatable. Tries PubMed, then Europe PMC, then Crossref metadata (covers DOIs indexed in neither, e.g. APA journals)                                 |
+| `--remove-pmid`        | str[]  | `[]`            | Remove archived paper folders by PMID; repeatable. Cannot combine with archival options                                                                                           |
+| `--remove-epmc-record` | str[]  | `[]`            | Remove archived paper folders by Europe PMC record as `SOURCE:ID`; repeatable. Cannot combine with archival options                                                               |
+| `--remove`             | flag   | off             | Remove the archive entry at `--path` (folder, search JSON, or web HTML); requires `--path`. Cannot combine with archival options                                                  |
+| `--path`               | str    | —               | Archive-relative path of the entry to remove; requires `--remove`. Rejects container dirs and category roots (min-depth guard)                                                    |
+| `--archive-first`      | int    | `0`             | Also archive first N PMIDs returned by `--query`                                                                                                                                  |
+| `--retmax`             | int    | `20`            | Machine-readable hits to request for archived search JSON                                                                                                                         |
+| `--med-db`             | str    | `med-db`        | Target `med-db/` directory path                                                                                                                                                   |
+| `--email`              | str    | —               | Contact email for NCBI E-utilities                                                                                                                                                |
+| `--delay`              | float  | `0.34`          | Delay between PMID fetches (seconds)                                                                                                                                              |
+| `--migrate`            | flag   | off             | Migrate flat `med-db/` to topic-based per-paper folders                                                                                                                           |
+| `--migrate-dry-run`    | flag   | off             | Preview `--migrate` without copying files                                                                                                                                         |
+| `--sync-index`         | flag   | off             | Regenerate `index.json` from the filesystem without fetching; cannot combine with archival, removal, or migration options; creates the archive tree and `index.json` when missing |
+| `--force`              | flag   | off             | Re-fetch and overwrite papers already archived (useful after transient fetch failures)                                                                                            |
+| `--format`             | choice | `text`          | Output format: `json` or `text`                                                                                                                                                   |
+| `--quiet`              | flag   | off             | Output only created folder paths, one per line                                                                                                                                    |
 
 ---
 

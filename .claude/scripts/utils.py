@@ -5,6 +5,7 @@ parser used across med-db.py, med-db-lookup.py, med-db-query.py, and
 med-db-integrity-check.py.
 """
 
+import contextlib
 import html as _html
 import json
 import re
@@ -18,6 +19,11 @@ import urllib.parse
 import urllib.request
 from collections import Counter as _Counter
 from pathlib import Path
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - POSIX-only guarantee; no Windows target
+    fcntl = None
 
 # ---------------------------------------------------------------------------
 # Repository paths — canonical single source for all scripts
@@ -73,6 +79,35 @@ def atomic_write(path, content):
     tmp.replace(path)
 
 
+INDEX_LOCK_NAME = "index.json.lock"
+
+
+@contextlib.contextmanager
+def index_lock(med_db):
+    """Serialise read-modify-write cycles on the archive index across processes.
+
+    Blocks until an exclusive advisory ``flock`` on ``<med_db>/index.json.lock``
+    is held, then yields.  The lock lives in its own file — never on ``index.json``
+    itself — because :func:`atomic_write` replaces index.json's inode on every
+    write, which would silently orphan a lock held on the old inode.  ``flock``
+    locks are per open file description, so a second acquisition (even in the same
+    process) blocks until this one exits: callers acquire, work, and release within
+    a single call and never nest ``index_lock``.
+    """
+    if fcntl is None:  # pragma: no cover - non-POSIX fallback
+        yield
+        return
+
+    lock_path = Path(med_db) / INDEX_LOCK_NAME
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock_path, "a", encoding="utf-8") as lock_file:
+        fcntl.flock(lock_file, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file, fcntl.LOCK_UN)
+
+
 def _trash_or_unlink(file_path):
     """Move *file_path* to the desktop trash, falling back to permanent delete.
 
@@ -122,6 +157,16 @@ def trash_or_rmtree(directory):
         )
     except (FileNotFoundError, subprocess.CalledProcessError, OSError):
         shutil.rmtree(path_str)
+
+
+# ---------------------------------------------------------------------------
+# Archive structure
+# ---------------------------------------------------------------------------
+
+
+def ensure_med_db_structure(root):
+    for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
+        (root / name).mkdir(parents=True, exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -547,14 +592,14 @@ def check_required_dirs(root, findings):
                     CATEGORY_STRUCTURAL,
                     str(p),
                     f"Required top-level directory is missing: {name}/",
-                    "Run any archival command (e.g. 'uv run med-db --pmid 12345678') to bootstrap the directory tree.",
+                    "Run 'uv run med-db --sync-index' to bootstrap the directory tree.",
                 )
             )
 
 
 def check_empty_files(root, findings):
     for p in root.rglob("*"):
-        if p.is_file() and p.stat().st_size == 0:
+        if p.is_file() and p.name != INDEX_LOCK_NAME and p.stat().st_size == 0:
             findings.append(
                 finding(
                     SEVERITY_ERROR,
@@ -568,7 +613,7 @@ def check_empty_files(root, findings):
 
 def check_no_loose_files(root, findings):
     for p in root.iterdir():
-        if p.is_file() and p.name != "index.json":
+        if p.is_file() and p.name not in ("index.json", INDEX_LOCK_NAME):
             findings.append(
                 finding(
                     SEVERITY_ERROR,

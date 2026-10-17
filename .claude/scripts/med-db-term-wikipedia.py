@@ -5,6 +5,9 @@ Calls ``/api/rest_v1/page/summary/{title}`` and returns the lead-section
 canonical article URL.  Used by the ``define-terms`` skill as the fallback
 web source for term definitions.
 
+Read-only: does NOT archive to med-db. Archive the passage via
+``uv run med-db-term --term <term> --definition <extract>``.
+
 Reference: https://en.wikipedia.org/api/rest_v1/
 """
 

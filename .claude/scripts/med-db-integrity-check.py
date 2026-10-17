@@ -41,7 +41,7 @@ def _format_human(findings):
         return "\n".join(lines)
 
     # Errors first, then warnings
-    for _severity, group, label in [
+    for _, group, label in [
         (SEVERITY_ERROR, errors, "ERRORS"),
         (SEVERITY_WARNING, warnings, "WARNINGS"),
     ]:

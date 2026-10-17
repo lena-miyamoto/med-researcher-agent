@@ -77,9 +77,7 @@ def save_text(path, content):
     utils.atomic_write(path, content)
 
 
-def ensure_med_db_structure(med_db):
-    for name in ("searches", "papers", "fulltext", "guidelines", "web", "dictionary"):
-        (med_db / name).mkdir(parents=True, exist_ok=True)
+ensure_med_db_structure = utils.ensure_med_db_structure
 
 
 def validate_topic_slug(topic):
@@ -383,58 +381,63 @@ def sync_index(
 ):
     """Generate index.json from filesystem, merging in user-provided metadata."""
     index_path = med_db / "index.json"
-    (
-        existing_searches,
-        existing_papers,
-        existing_fulltexts,
-        existing_guidelines,
-        existing_web,
-        existing_dictionary,
-    ) = load_existing_index_entries(index_path)
 
-    if search_updates:
-        existing_searches.update(search_updates)
-    if paper_updates:
-        existing_papers.update(paper_updates)
-    if fulltext_updates:
-        existing_fulltexts.update(fulltext_updates)
-    if guideline_updates:
-        existing_guidelines.update(guideline_updates)
-    if web_updates:
-        existing_web.update(web_updates)
-    if dictionary_updates:
-        existing_dictionary.update(dictionary_updates)
+    # Hold the archive lock across the whole read-modify-write so concurrent
+    # archival processes cannot clobber each other's index updates.
+    with utils.index_lock(med_db):
+        (
+            existing_searches,
+            existing_papers,
+            existing_fulltexts,
+            existing_guidelines,
+            existing_web,
+            existing_dictionary,
+        ) = load_existing_index_entries(index_path)
 
-    fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web, fs_dictionary = collect_index_data(
-        med_db
-    )
+        if search_updates:
+            existing_searches.update(search_updates)
+        if paper_updates:
+            existing_papers.update(paper_updates)
+        if fulltext_updates:
+            existing_fulltexts.update(fulltext_updates)
+        if guideline_updates:
+            existing_guidelines.update(guideline_updates)
+        if web_updates:
+            existing_web.update(web_updates)
+        if dictionary_updates:
+            existing_dictionary.update(dictionary_updates)
 
-    def _merge(fs_list, existing_dict):
-        """Merge filesystem-derived items with existing index entries.
+        fs_searches, fs_papers, fs_fulltexts, fs_guidelines, fs_web, fs_dictionary = (
+            collect_index_data(med_db)
+        )
 
-        Filesystem data provides the canonical base (path, identifier,
-        url, source, query, accessed).  All existing entry fields are
-        overlaid so user edits (purpose, notes, etc.) are preserved.
-        """
-        result = []
-        for item in fs_list:
-            entry = existing_dict.get(item["path"], {})
-            merged = dict(item)
-            merged.update(entry)
-            result.append(merged)
-        return result
+        def _merge(fs_list, existing_dict):
+            """Merge filesystem-derived items with existing index entries.
 
-    index_data = {
-        "searches": _merge(fs_searches, existing_searches),
-        "papers": _merge(fs_papers, existing_papers),
-        "fulltext": _merge(fs_fulltexts, existing_fulltexts),
-        "guidelines": _merge(fs_guidelines, existing_guidelines),
-        "web": _merge(fs_web, existing_web),
-        "dictionary": _merge(fs_dictionary, existing_dictionary),
-    }
-    index_path.write_text(
-        json.dumps(index_data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+            Filesystem data provides the canonical base (path, identifier,
+            url, source, query, accessed).  All existing entry fields are
+            overlaid so user edits (purpose, notes, etc.) are preserved.
+            """
+            result = []
+            for item in fs_list:
+                entry = existing_dict.get(item["path"], {})
+                merged = dict(item)
+                merged.update(entry)
+                result.append(merged)
+            return result
+
+        index_data = {
+            "searches": _merge(fs_searches, existing_searches),
+            "papers": _merge(fs_papers, existing_papers),
+            "fulltext": _merge(fs_fulltexts, existing_fulltexts),
+            "guidelines": _merge(fs_guidelines, existing_guidelines),
+            "web": _merge(fs_web, existing_web),
+            "dictionary": _merge(fs_dictionary, existing_dictionary),
+        }
+        utils.atomic_write(
+            index_path,
+            json.dumps(index_data, indent=2, ensure_ascii=False) + "\n",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -723,7 +726,7 @@ def remove_paper_folders(med_db, folder_prefix):
     for meta_path in sorted(papers_dir.rglob("metadata.json")):
         paper_dir = meta_path.parent
         if paper_dir.name.startswith(folder_prefix):
-            shutil.rmtree(paper_dir)
+            utils.trash_or_rmtree(paper_dir)
             removed.append(str(paper_dir.relative_to(med_db)))
     return removed
 
@@ -1018,6 +1021,11 @@ def parse_args():
         help="Preview --migrate without copying files.",
     )
     parser.add_argument(
+        "--sync-index",
+        action="store_true",
+        help="Regenerate index.json from the filesystem without fetching.",
+    )
+    parser.add_argument(
         "--format",
         choices=("json", "text"),
         default="text",
@@ -1029,6 +1037,25 @@ def parse_args():
         help="Output only created folder paths, one per line.",
     )
     args = parser.parse_args()
+
+    if args.sync_index:
+        if (
+            args.query
+            or args.pmid
+            or args.epmc_record
+            or args.doi
+            or args.archive_first
+            or args.remove_pmid
+            or args.remove_epmc_record
+            or args.remove
+            or args.path is not None
+            or args.migrate
+            or args.migrate_dry_run
+        ):
+            parser.error(
+                "--sync-index cannot be combined with archival, removal, or migration options"
+            )
+        return args
 
     if args.remove or args.path is not None:
         if not args.remove:
@@ -1130,6 +1157,15 @@ def main():
             sync_index(med_db)
             if utils.verify_and_report_integrity(med_db) != 0:
                 return 1
+        return 0
+
+    if args.sync_index:
+        med_db.mkdir(parents=True, exist_ok=True)
+        ensure_med_db_structure(med_db)
+        sync_index(med_db)
+        if utils.verify_and_report_integrity(med_db) != 0:
+            return 1
+        print("index.json updated.")
         return 0
 
     med_db.mkdir(parents=True, exist_ok=True)
