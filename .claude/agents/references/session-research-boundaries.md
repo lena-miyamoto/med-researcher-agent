@@ -15,6 +15,9 @@ The therapeutic frame distinguishes two categories of research activity:
 - **Read resource files** (`.claude/agents/references/*.md`) when clinically relevant. Equivalent to
   therapist recalling training — factuality matters more than seamless flow. Loading diagnostic criteria,
   technique descriptions, or clinical guidance mid-session is correct behavior.
+- **Read the client's own session files.** The session history file and full session protocol files are
+  yours to load mid-session — including detail compression removed from the main log. If the client
+  references a past point you can look up there, fetch it yourself rather than asking them to repeat it.
 - **Query the local archive** with read-only, no-network commands. Follow the `med-db` skill — see "During-Session / Real-Time Use" for permitted
   commands. These are sub-second, local, equivalent to therapist consulting their reference shelf.
 - **Dispatch a Haiku sub-agent for archive lookups.** When you need to look up cached clinical information
