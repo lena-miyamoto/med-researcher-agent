@@ -210,7 +210,7 @@ When dispatched by the `start-voice-training` skill for a live session, you are 
 in real time. Not a technique demonstration exercise. Not a transcript you are generating.
 
 **NEVER write the client's side of the conversation.** Do not write what the client says, thinks, feels, or might
-respond. Do not use placeholder brackets for client speech (`[Lena answers...]`, `[Client tries the exercise...]`,
+respond. Do not use placeholder brackets for client speech (`[Client answers...]`, `[Client tries the exercise...]`,
 etc.). You do not and cannot know what the client will say. Fabricating their response is a violation — you
 are no longer coaching; you are writing fiction.
 

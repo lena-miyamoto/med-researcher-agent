@@ -454,7 +454,7 @@ def build_parser():
         prog="session-protocol",
         description="Extract a session protocol from a Claude Code JSONL transcript.",
     )
-    parser.add_argument("--slug", required=True, help="Client slug, e.g. 'lena'.")
+    parser.add_argument("--slug", required=True, help="Client slug, e.g. 'sam'.")
     parser.add_argument("--session-number", type=int, required=True, help="Session number (>= 1).")
     parser.add_argument("--date", required=True, help="Session date, YYYY-MM-DD.")
     parser.add_argument("--session-file", default=None, help="Explicit transcript JSONL path.")

@@ -154,12 +154,12 @@ tier for work that fails at the cheaper setting. Under the DeepSeek wiring the t
 `haiku`/`sonnet` (Flash) pair and the `opus`/`fable` (Pro) pair; on Anthropic the four are distinct,
 ordered `haiku` < `sonnet` < `opus` < `fable`.
 
-| Task class                                                                          | Model    | Effort         | Rationale                                                                |
-| ----------------------------------------------------------------------------------- | -------- | -------------- | ------------------------------------------------------------------------ |
-| Extraction, conversion, transcription, archive queries                              | `haiku`  | `low` / `high` | Mechanical and checkable; `low` for clean text, `high` for messy parsing |
-| Summaries, fetch/archive, review, apply-fixes                                       | `haiku`  | `high`         | Multi-step but bounded; verification catches slips                       |
-| Synthesis, definitions, therapy/voice sessions, plan generation, repo optimization  | `opus`   | `high`         | Reasoning-heavy; weak answers are costly to detect                       |
-| Hardest long-horizon reasoning or adversarial analysis                              | `opus`   | `max`          | Only when `high` demonstrably falls short                                |
+| Task class                                                                                 | Model   | Effort         | Rationale                                                                |
+| ------------------------------------------------------------------------------------------ | ------- | -------------- | ------------------------------------------------------------------------ |
+| Extraction, conversion, transcription, archive queries                                     | `haiku` | `low` / `high` | Mechanical and checkable; `low` for clean text, `high` for messy parsing |
+| Summaries, fetch/archive, apply-fixes                                                      | `haiku` | `high`         | Multi-step but bounded; verification catches slips                       |
+| Synthesis, definitions, therapy/voice sessions, plan generation, repo optimization, review | `opus`  | `high`         | Reasoning-heavy; weak answers are costly to detect                       |
+| Hardest long-horizon reasoning or adversarial analysis                                     | `opus`  | `max`          | Only when `high` demonstrably falls short                                |
 
 Under the DeepSeek wiring `sonnet` adds nothing over `haiku` (same model) — use `opus` for reasoning
 work — and do not rely on `xhigh` or `medium` to differentiate from `high`; on Anthropic those tiers

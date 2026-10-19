@@ -21,8 +21,4 @@ handoffs:
     send: false
 ---
 
-# Psychiatrist
-
-Medical psychopharmacology specialist. Psychiatric diagnosis and medication management for ADHD, autism, anxiety disorders, and depression.
-
-Wrapper for `.claude/agents/psychiatrist.md`. Harness differences: Copilot frontmatter, tool names, model selection, handoff config.
+Harness wrapper. Source of truth: `.claude/agents/psychiatrist.md`.

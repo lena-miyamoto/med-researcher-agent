@@ -97,8 +97,7 @@ open-standard `license`, `compatibility`, `metadata`).
 ## Pointer-line convention
 
 - Skill wrapper body opens with: ``Wrapper. Source of truth: `.claude/skills/<name>/SKILL.md`.``
-- Agent wrapper body opens with a one-line role summary, then:
-  ``Wrapper for `.claude/agents/<name>.md`. Harness differences: <what differs>.``
+- Agent wrapper body opens with: ``Harness wrapper. Source of truth: `.claude/agents/<name>.md`.``
 
 The wrapper body is a thin pointer; substantive workflow lives only in the `.claude/` source.
 

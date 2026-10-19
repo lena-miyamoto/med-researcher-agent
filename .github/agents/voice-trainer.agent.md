@@ -13,8 +13,4 @@ argument-hint: "Voice goals, current voice experience, practice questions, techn
 user-invocable: true
 ---
 
-# Voice Trainer
-
-Evidence-based voice feminization coach. Source-filter theory foundation, client-centered practice.
-
-Wrapper for `.claude/agents/voice-trainer.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Harness wrapper. Source of truth: `.claude/agents/voice-trainer.md`.

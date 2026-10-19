@@ -69,7 +69,7 @@ can use your real name, a pseudonym, or anything you're comfortable with — or 
 **Stop and wait for client to respond.** Client declines to give name → use neutral placeholder they
 agree to (e.g., "Client C", their initial). Do not fabricate a name. Do not proceed until name resolved.
 
-Once client gives name, create client slug: lowercase kebab-case (`lena`, `alex-m`, `jordan-k`).
+Once client gives name, create client slug: lowercase kebab-case (`sam`, `alex-m`, `jordan-k`).
 
 Create sessions directory if it doesn't exist (auto-bootstraps):
 

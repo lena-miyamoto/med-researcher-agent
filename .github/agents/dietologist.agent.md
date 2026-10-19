@@ -11,8 +11,4 @@ argument-hint: "Nutrition goal, dietary pattern, health conditions, or a specifi
 user-invocable: true
 ---
 
-# Dietologist
-
-Evidence-based nutrition specialist. Clinical-scientist, precise and cautious.
-
-Wrapper for `.claude/agents/dietologist.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Harness wrapper. Source of truth: `.claude/agents/dietologist.md`.

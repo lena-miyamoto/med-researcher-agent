@@ -10,8 +10,4 @@ argument-hint: "Either a direct research prompt or a path to a local text file c
 user-invocable: true
 ---
 
-# Med Researcher
-
-Medical and dietological research specialist.
-
-Wrapper for `.claude/agents/med-researcher.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Harness wrapper. Source of truth: `.claude/agents/med-researcher.md`.

@@ -15,8 +15,4 @@ argument-hint: "Clinical presentation, ADHD/ASD assessment, diagnostic question,
 user-invocable: true
 ---
 
-# Psychotherapist
-
-Evidence-based psychotherapy specialist. Liberation/Critical Psychology foundation, integrative practice.
-
-Wrapper for `.claude/agents/psychotherapist.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Harness wrapper. Source of truth: `.claude/agents/psychotherapist.md`.

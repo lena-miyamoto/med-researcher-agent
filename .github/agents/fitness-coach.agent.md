@@ -10,8 +10,4 @@ argument-hint: "Training goal, experience level, equipment, schedule, or a speci
 user-invocable: true
 ---
 
-# Fitness Coach
-
-Science-backed fitness coach. Warm mentor, serious about the science.
-
-Wrapper for `.claude/agents/fitness-coach.md`. Harness differences: Copilot frontmatter, tool names, model selection.
+Harness wrapper. Source of truth: `.claude/agents/fitness-coach.md`.

@@ -48,7 +48,7 @@ def session_end_entry(closing="Closing words."):
 
 
 def end_skill_entry(skill="end-therapy-session"):
-    return assistant_entry(tool_use_block("Skill", {"skill": skill, "args": "lena"}))
+    return assistant_entry(tool_use_block("Skill", {"skill": skill, "args": "sam"}))
 
 
 def write_jsonl(path, entries):
@@ -56,17 +56,17 @@ def write_jsonl(path, entries):
     return path
 
 
-def write_history(path, client="Lena", language="de"):
+def write_history(path, client="Sam", language="de"):
     lines = [
         "---",
         f"client: {client}",
-        "slug: lena",
+        "slug: sam",
         f"language: {language}",
         "first_session: 2026-07-17",
         "sessions: 22",
         "---",
         "",
-        "# Lena — Session History",
+        "# Sam — Session History",
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path
@@ -452,7 +452,7 @@ class TestRenderProtocol:
     def test_de_exact(self):
         turns = [("therapist", "Hallo."), ("client", "Guten Tag.")]
         expected = (
-            "# S22: 2026-08-29 — Lena\n"
+            "# S22: 2026-08-29 — Sam\n"
             "\n"
             "**Session language:** de\n"
             "\n"
@@ -465,34 +465,30 @@ class TestRenderProtocol:
             "Guten Tag.\n"
         )
         assert (
-            sp.render_protocol(turns, "Lena", "de", 22, "2026-08-29", "Therapeutin", "Therapist")
+            sp.render_protocol(turns, "Sam", "de", 22, "2026-08-29", "Therapeutin", "Therapist")
             == expected
         )
 
     def test_en_therapist_label(self):
         turns = [("therapist", "Hello.")]
-        result = sp.render_protocol(
-            turns, "Lena", "en", 1, "2026-01-01", "Therapeutin", "Therapist"
-        )
+        result = sp.render_protocol(turns, "Sam", "en", 1, "2026-01-01", "Therapeutin", "Therapist")
         assert "**Therapist:**" in result
         assert "**Therapeutin:**" not in result
 
     def test_language_case_insensitive(self):
         turns = [("therapist", "Hallo.")]
-        result = sp.render_protocol(
-            turns, "Lena", "DE", 1, "2026-01-01", "Therapeutin", "Therapist"
-        )
+        result = sp.render_protocol(turns, "Sam", "DE", 1, "2026-01-01", "Therapeutin", "Therapist")
         assert "**Therapeutin:**" in result
 
     def test_voice_de_label(self):
         turns = [("therapist", "Hallo."), ("client", "Hallo!")]
-        result = sp.render_protocol(turns, "Lena", "de", 1, "2026-01-01", "Trainerin", "Trainer")
+        result = sp.render_protocol(turns, "Sam", "de", 1, "2026-01-01", "Trainerin", "Trainer")
         assert "**Trainerin:**" in result
         assert "**Therapeutin:**" not in result
 
     def test_voice_en_label(self):
         turns = [("therapist", "Hello.")]
-        result = sp.render_protocol(turns, "Lena", "en", 1, "2026-01-01", "Trainerin", "Trainer")
+        result = sp.render_protocol(turns, "Sam", "en", 1, "2026-01-01", "Trainerin", "Trainer")
         assert "**Trainer:**" in result
         assert "**Therapist:**" not in result
 
@@ -584,11 +580,11 @@ class TestSelectSessionFile:
 
 
 class TestCLI:
-    def _setup(self, tmp_path, client="Lena", language="de"):
+    def _setup(self, tmp_path, client="Sam", language="de"):
         projects = tmp_path / "projects"
         sessions = tmp_path / "sessions"
         sessions.mkdir(parents=True)
-        write_history(sessions / "lena.md", client=client, language=language)
+        write_history(sessions / "sam.md", client=client, language=language)
         primary = projects / sp.encode_project_directory(utils.REPO_ROOT)
         primary.mkdir(parents=True)
         make_transcript(primary, "session.jsonl", mtime=100)
@@ -597,7 +593,7 @@ class TestCLI:
     def _args(self, projects, sessions, **extra):
         args = [
             "--slug",
-            "lena",
+            "sam",
             "--session-number",
             "22",
             "--date",
@@ -616,9 +612,9 @@ class TestCLI:
         assert run_main(self._args(projects, sessions)) == 0
         out = capsys.readouterr().out
         assert "protocol:" in out
-        output = sessions / "protocols" / "2026-08-29_S22_lena.md"
+        output = sessions / "protocols" / "2026-08-29_S22_sam.md"
         assert output.is_file()
-        assert output.read_text(encoding="utf-8").startswith("# S22: 2026-08-29 — Lena\n")
+        assert output.read_text(encoding="utf-8").startswith("# S22: 2026-08-29 — Sam\n")
 
     def test_protocols_dir_autocreated(self, tmp_path):
         projects, sessions = self._setup(tmp_path)
@@ -640,14 +636,14 @@ class TestCLI:
             )
             == 0
         )
-        content = (sessions / "protocols" / "2026-01-01_S1_lena.md").read_text(encoding="utf-8")
+        content = (sessions / "protocols" / "2026-01-01_S1_sam.md").read_text(encoding="utf-8")
         assert "**Therapist:**" in content
 
     def test_voice_kind_end_to_end(self, tmp_path, capsys):
         projects = tmp_path / "projects"
         sessions = tmp_path / "sessions"
         (sessions / "voice").mkdir(parents=True)
-        write_history(sessions / "voice" / "lena.md", client="Lena", language="de")
+        write_history(sessions / "voice" / "sam.md", client="Sam", language="de")
         primary = projects / sp.encode_project_directory(utils.REPO_ROOT)
         primary.mkdir(parents=True)
         make_transcript(
@@ -660,10 +656,10 @@ class TestCLI:
         assert run_main(self._args(projects, sessions, **{"--session-kind": "voice"})) == 0
         out = capsys.readouterr().out
         assert "protocol:" in out
-        output = sessions / "voice" / "protocols" / "2026-08-29_S22_lena.md"
+        output = sessions / "voice" / "protocols" / "2026-08-29_S22_sam.md"
         assert output.is_file()
         content = output.read_text(encoding="utf-8")
-        assert content.startswith("# S22: 2026-08-29 — Lena\n")
+        assert content.startswith("# S22: 2026-08-29 — Sam\n")
         assert "**Trainerin:**" in content
         assert "**Therapeutin:**" not in content
 
@@ -694,7 +690,7 @@ class TestCLI:
         projects = tmp_path / "projects"
         sessions = tmp_path / "sessions"
         sessions.mkdir(parents=True)
-        (sessions / "lena.md").write_text("---\nclient: Lena\nslug: lena\n---\n", encoding="utf-8")
+        (sessions / "sam.md").write_text("---\nclient: Sam\nslug: sam\n---\n", encoding="utf-8")
         (projects / sp.encode_project_directory(utils.REPO_ROOT)).mkdir(parents=True)
         assert run_main(self._args(projects, sessions)) == 1
         assert "error:" in capsys.readouterr().err
@@ -704,7 +700,7 @@ class TestCLI:
         assert "error:" in capsys.readouterr().err
 
     def test_error_bad_slug(self, tmp_path, capsys):
-        assert run_main(self._args(tmp_path / "p", tmp_path / "s", **{"--slug": "../lena"})) == 1
+        assert run_main(self._args(tmp_path / "p", tmp_path / "s", **{"--slug": "../sam"})) == 1
         assert "error:" in capsys.readouterr().err
 
     def test_error_invalid_session_kind(self, tmp_path, capsys):
@@ -717,7 +713,7 @@ class TestCLI:
         projects = tmp_path / "projects"
         sessions = tmp_path / "sessions"
         sessions.mkdir(parents=True)
-        write_history(sessions / "lena.md")
+        write_history(sessions / "sam.md")
         (projects / sp.encode_project_directory(utils.REPO_ROOT)).mkdir(parents=True)
         assert run_main(self._args(projects, sessions)) == 1
         assert "error:" in capsys.readouterr().err
