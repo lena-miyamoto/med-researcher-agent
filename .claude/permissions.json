@@ -37,9 +37,7 @@
     ],
     "Skill": [
       "^analyze-med-claims$",
-      "^apply-fixes$",
       "^check-retraction$",
-      "^compress-skill$",
       "^create-diet-plan$",
       "^create-med-agent$",
       "^create-med-skill$",
@@ -50,10 +48,8 @@
       "^end-voice-training$",
       "^evaluate-paper$",
       "^fetch-paper$",
-      "^optimize-repo$",
       "^med-db$",
-      "^define-terms$",
-      "^review-changeset$"
+      "^define-terms$"
     ],
     "Bash": [
       "^uv run med-db(\\s|$)",

@@ -28,13 +28,8 @@
 
 ## Commits
 
-Commit messages follow Conventional Commits v1.0.0 — read
-`.claude/references/conventional-commits.md` before composing one.
+Commit messages follow Conventional Commits v1.0.0 — <https://www.conventionalcommits.org/en/v1.0.0/#specification>.
 
 ## Medical DB
 
 **Only the `med-db` skill may touch `./med-db/` files directly.** Sole executor.
-
-## Architecture (Claude-Specific)
-
-Context engineering: `.claude/skills/optimize-repo/references/context-engineering-best-practices.md`. Agent dispatch: Agent tool with `subagent_type: "<name>"` per YAML `name`.

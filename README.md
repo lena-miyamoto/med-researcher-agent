@@ -10,9 +10,7 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 | Skill                    | Summary                                                                                            |
 | ------------------------ | -------------------------------------------------------------------------------------------------- |
 | `analyze-med-claims`     | Verify medical claims against literature; produce evidence reports.                                |
-| `apply-fixes`            | Apply approved fixes from a `review-changeset` plan (caller-invoked).                              |
 | `check-retraction`       | Check whether a paper is retracted (Crossref + PubMed APIs).                                       |
-| `compress-skill`         | Compress instruction `.md` files to cut token cost, keeping meaning exact.                         |
 | `create-diet-plan`       | Build a personalized, evidence-based dietary plan.                                                 |
 | `create-med-agent`       | Add a new shared agent with harness wrappers.                                                      |
 | `create-med-skill`       | Add a new shared skill with harness wrappers.                                                      |
@@ -23,8 +21,6 @@ discovery sources (Google Scholar, DOAJ, Open Science Directory, Free Medical Jo
 | `evaluate-paper`         | Score scientific papers 0-100 for evidence-based quality.                                          |
 | `fetch-paper`            | Download a paper's full text (PDF + source text) into the med-db archive.                          |
 | `med-db`                 | Access the local `med-db` archive — search, query, archive, validate, ICD-11 lookup.               |
-| `optimize-repo`          | Audit and clean up repo instruction files for source-of-truth hygiene.                             |
-| `review-changeset`       | Review the current changeset for logic flaws, stale references, and wrapper misalignment.          |
 | `start-therapy-session`  | Start a live AI therapy session with the psychotherapist agent.                                    |
 | `start-voice-training`   | Start a live AI voice training session with the voice-trainer agent.                               |
 

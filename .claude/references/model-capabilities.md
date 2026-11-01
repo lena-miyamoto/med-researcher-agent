@@ -157,8 +157,8 @@ ordered `haiku` < `sonnet` < `opus` < `fable`.
 | Task class                                                                                 | Model   | Effort         | Rationale                                                                |
 | ------------------------------------------------------------------------------------------ | ------- | -------------- | ------------------------------------------------------------------------ |
 | Extraction, conversion, transcription, archive queries                                     | `haiku` | `low` / `high` | Mechanical and checkable; `low` for clean text, `high` for messy parsing |
-| Summaries, fetch/archive, apply-fixes                                                      | `haiku` | `high`         | Multi-step but bounded; verification catches slips                       |
-| Synthesis, definitions, therapy/voice sessions, plan generation, repo optimization, review | `opus`  | `high`         | Reasoning-heavy; weak answers are costly to detect                       |
+| Summaries, fetch/archive                                                                   | `haiku` | `high`         | Multi-step but bounded; verification catches slips                       |
+| Synthesis, definitions, therapy/voice sessions, plan generation                            | `opus`  | `high`         | Reasoning-heavy; weak answers are costly to detect                       |
 | Hardest long-horizon reasoning or adversarial analysis                                     | `opus`  | `max`          | Only when `high` demonstrably falls short                                |
 
 Under the DeepSeek wiring `sonnet` adds nothing over `haiku` (same model) — use `opus` for reasoning
