@@ -1,7 +1,7 @@
 ---
 description: >
   Compact session note format for documenting voice training sessions in the client's
-  history file. Referenced by SKILL.md Step 5.
+  history file. Referenced by Step 2 of `end-voice-training`.
 ---
 
 # Session Note Format

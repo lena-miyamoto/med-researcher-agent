@@ -1,7 +1,7 @@
 ---
 description: >
   Token-efficient compression rules for therapy session history files.
-  Applied after every session (SKILL.md Step 6) to minimize token cost
+  Applied after every session (Step 5 of `end-therapy-session`) to minimize token cost
   when the history file is loaded into context.
 ---
 
@@ -16,7 +16,7 @@ start — every token matters.
 `## Permanent Client Profile` section and everything under it **exempt from all compression rules**.
 Do not remove, rewrite, abbreviate, or collapse any content in this section. Contains intake information
 and clinically essential facts that must persist verbatim across all sessions. Only update by adding new
-information (Step 5b) or correcting outdated facts (e.g., client's pronouns changed).
+information (Step 3 of `end-therapy-session`) or correcting outdated facts (e.g., client's pronouns changed).
 
 ## Rules (Apply to Session Log Archive Only)
 
@@ -45,8 +45,10 @@ information (Step 5b) or correcting outdated facts (e.g., client's pronouns chan
   lines each ("S1: [date] — intake. Key themes: X, Y. Client uses [metaphor] for anxiety.") unless
   information still clinically active.
 
-- **Frontmatter hygiene.** Keep YAML frontmatter minimal: `client`, `slug`, `first_session`, `sessions`,
-  any standing abbreviations legend. Remove frontmatter fields grown stale.
+- **Frontmatter hygiene.** Keep YAML frontmatter minimal: `client`, `slug`, `language`, `first_session`,
+  `sessions`, any standing abbreviations legend. `language` is required — never remove it
+  (`end-therapy-session` structural Check 1 requires it present and identical to backup). Remove frontmatter
+  fields grown stale.
 
 - **No narrative.** File is clinical documentation, not a story. Zero narrative connective tissue.
   Adjacent bullets that belong together don't need transition sentences — proximity is enough.

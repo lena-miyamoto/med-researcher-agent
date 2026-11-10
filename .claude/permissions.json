@@ -73,7 +73,9 @@
       "^uv run pre-commit(\\s|$)",
       "^uv run test(\\s|$)",
       "^python3? -m json\\.tool(\\s|$)",
-      "^html2text(\\s|$)"
+      "^html2text(\\s|$)",
+      "^printenv CLAUDE_EFFORT$",
+      "^printenv CLAUDE_CODE_EFFORT_LEVEL$"
     ]
   },
   "deny": {
